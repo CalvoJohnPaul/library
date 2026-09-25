@@ -1,10 +1,10 @@
-import {BrowserRouter, Route, Routes} from 'react-router';
 import {Toast, Toaster} from '@ark-ui/react';
 import {XIcon} from 'lucide-react';
-import {RootLayout} from './features/RootLayout/RootLayout';
-import {toaster} from './utils/toaster';
 import {lazy, Suspense} from 'react';
+import {BrowserRouter, Route, Routes} from 'react-router';
+import {RootLayout} from './features/RootLayout/RootLayout';
 import {Transactions} from './features/Transactions/Transactions';
+import {toaster} from './utils/toaster';
 
 const Books = lazy(() => import('./features/Books/Books').then((m) => ({default: m.Books})));
 
