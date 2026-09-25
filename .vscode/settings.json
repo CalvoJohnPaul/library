@@ -1,0 +1,12 @@
+{
+	"biome.enabled": false,
+	"prettier.enable": true,
+	"editor.codeActionsOnSave": {
+		"source.fixAll.eslint": "always",
+		"source.fixAll.prettier": "always"
+	},
+	"files.associations": {
+		"*.css": "tailwindcss"
+	},
+	"tailwindCSS.classFunctions": ["tv", "cx", "twMerge", "twJoin"]
+}
