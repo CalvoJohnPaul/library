@@ -1,9 +1,0 @@
-{
-	"plugins": ["prettier-plugin-tailwindcss"],
-	"useTabs": true,
-	"printWidth": 80,
-	"singleQuote": true,
-	"bracketSpacing": false,
-	"tailwindStylesheet": "./src/index.css",
-	"tailwindFunctions": ["tv", "cx", "twMerge", "twJoin"]
-}

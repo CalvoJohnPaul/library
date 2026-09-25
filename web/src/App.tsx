@@ -1,21 +1,17 @@
-import {BrowserRouter, Route, Routes} from 'react-router';
-import {Toast, Toaster} from '@ark-ui/react';
-import {XIcon} from 'lucide-react';
-import {RootLayout} from './features/RootLayout/RootLayout';
-import {toaster} from './utils/toaster';
-import {lazy, Suspense} from 'react';
-import {Transactions} from './features/Transactions/Transactions';
+import {BrowserRouter, Route, Routes} from "react-router";
+import {Toast, Toaster} from "@ark-ui/react";
+import {XIcon} from "lucide-react";
+import {RootLayout} from "./features/RootLayout/RootLayout";
+import {toaster} from "./utils/toaster";
+import {lazy, Suspense} from "react";
+import {Transactions} from "./features/Transactions/Transactions";
 
-const Books = lazy(() =>
-	import('./features/Books/Books').then((m) => ({default: m.Books})),
-);
+const Books = lazy(() => import("./features/Books/Books").then((m) => ({default: m.Books})));
 
-const Book = lazy(() =>
-	import('./features/Book/Book').then((m) => ({default: m.Book})),
-);
+const Book = lazy(() => import("./features/Book/Book").then((m) => ({default: m.Book})));
 
 const NotFound = lazy(() =>
-	import('./features/NotFound/NotFound').then((m) => ({default: m.NotFound})),
+	import("./features/NotFound/NotFound").then((m) => ({default: m.NotFound})),
 );
 
 export function App() {

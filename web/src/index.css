@@ -1,9 +1,9 @@
-@import 'tailwindcss';
-@plugin 'tailwind-zag';
+@import "tailwindcss";
+@plugin "tailwind-zag";
 
 @theme {
 	--font-*: initial;
-	--font-sans: 'Inter', sans-serif;
+	--font-sans: "Inter", sans-serif;
 	--font-weight-*: initial;
 	--font-weight-normal: 400;
 	--font-weight-medium: 500;
