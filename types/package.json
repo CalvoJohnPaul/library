@@ -1,0 +1,28 @@
+{
+	"name": "@library/types",
+	"type": "module",
+	"private": true,
+	"main": "./dist/index.js",
+	"module": "./dist/index.js",
+	"types": "./dist/index.d.ts",
+	"exports": {
+		".": {
+			"types": "./dist/index.d.ts",
+			"import": "./dist/index.js"
+		}
+	},
+	"files": [
+		"dist"
+	],
+	"scripts": {
+		"dev": "tsdown --watch",
+		"build": "tsdown --clean --sourcemap"
+	},
+	"dependencies": {
+		"zod": "catalog:"
+	},
+	"devDependencies": {
+		"tsdown": "^0.23.0",
+		"typescript": "catalog:"
+	}
+}

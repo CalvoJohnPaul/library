@@ -1,6 +1,6 @@
-import {SpinnerIcon} from "@/components/icons/SpinnerIcon";
-import {Suspense} from "react";
-import {Outlet} from "react-router";
+import {SpinnerIcon} from '@/components/icons/SpinnerIcon';
+import {Suspense} from 'react';
+import {Outlet} from 'react-router';
 
 export function RootLayout() {
 	return (

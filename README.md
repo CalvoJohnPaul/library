@@ -26,14 +26,12 @@
   - `dateTimeCreated`
 - **Account**
   - `id`
-  - `type` (_admin_, _member_)
+  - `type` (_admin_, _student_)
   - `name`
-  - `email`
   - `image`
+  - `username`
   - `password`
   - `studentId`
-  - `firstName`
-  - `lastName`
   - `course`
   - `yearAndSection`
   - `dateTimeCreated`

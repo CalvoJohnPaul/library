@@ -1,10 +1,10 @@
-import type {Assign} from "@ark-ui/react";
-import {mergeProps} from "@ark-ui/react/utils";
-import {get, isNil} from "es-toolkit/compat";
-import * as React from "react";
-import {twJoin} from "tailwind-merge";
-import type {VariantProps} from "tailwind-variants";
-import {splitProps} from "./splitProps";
+import type {Assign} from '@ark-ui/react';
+import {mergeProps} from '@ark-ui/react/utils';
+import {get, isNil} from 'es-toolkit/compat';
+import * as React from 'react';
+import {twJoin} from 'tailwind-merge';
+import type {VariantProps} from 'tailwind-variants';
+import {splitProps} from './splitProps';
 
 // biome-ignore lint/suspicious/noExplicitAny: ""
 type GenericProps = Record<string, any>;
@@ -94,10 +94,10 @@ export function createRecipeContext<
 				const getStyle = get(context, slot as string);
 
 				return isNil(getStyle)
-					? get(localProps, "className")
+					? get(localProps, 'className')
 					: getStyle({
 							...recipeProps,
-							className: get(localProps, "className"),
+							className: get(localProps, 'className'),
 						});
 			}, [context, localProps, recipeProps]);
 
@@ -110,7 +110,7 @@ export function createRecipeContext<
 					<Component
 						ref={ref}
 						{...mergedProps}
-						className={twJoin(get(defaultProps, "className"), className)}
+						className={twJoin(get(defaultProps, 'className'), className)}
 					/>
 				</RecipeContext.Provider>
 			);
@@ -139,10 +139,10 @@ export function createRecipeContext<
 					: get(recipe(recipeProps), slot as string);
 
 				return isNil(getStyle)
-					? get(localProps, "className")
+					? get(localProps, 'className')
 					: getStyle({
 							...recipeProps,
-							className: get(localProps, "className"),
+							className: get(localProps, 'className'),
 						});
 			}, [context, localProps, recipeProps]);
 
@@ -154,7 +154,7 @@ export function createRecipeContext<
 				<Component
 					ref={ref}
 					{...mergedProps}
-					className={twJoin(get(defaultProps, "className"), className)}
+					className={twJoin(get(defaultProps, 'className'), className)}
 				/>
 			);
 		});
