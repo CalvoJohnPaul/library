@@ -4,6 +4,7 @@ import {XIcon} from 'lucide-react';
 import {RootLayout} from './features/RootLayout/RootLayout';
 import {toaster} from './utils/toaster';
 import {lazy, Suspense} from 'react';
+import {Transactions} from './features/Transactions/Transactions';
 
 const Books = lazy(() =>
 	import('./features/Books/Books').then((m) => ({default: m.Books})),
@@ -26,6 +27,7 @@ export function App() {
 						<Route path="/" element={<RootLayout />}>
 							<Route index element={<Books />} />
 							<Route path=":id" element={<Book />} />
+							<Route path="transactions" element={<Transactions />} />
 							<Route path="*" element={<NotFound />} />
 						</Route>
 					</Routes>
