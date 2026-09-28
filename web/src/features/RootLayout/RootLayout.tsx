@@ -1,41 +1,39 @@
 import {useEffect} from 'react';
 import {Outlet} from 'react-router';
+import {useMeQuery} from '@/hooks/useMeQuery';
+import {Login} from './Login';
 import {Navbar} from './Navbar';
 
 export function RootLayout() {
+	const query = useMeQuery();
+
 	useEffect(() => {
-		const timeout = setTimeout(hideSplash, 1500);
+		const interval = setInterval(() => {
+			if (!query.isFetched) return;
+			hideSplash();
+			clearInterval(interval);
+		}, 1000);
 
 		return () => {
-			clearTimeout(timeout);
-			showSplash();
+			clearInterval(interval);
 		};
-	}, []);
+	}, [query.isFetched]);
+
+	if (!query.data) return <Login />;
 
 	return (
 		<>
 			<Navbar />
-			<main>
+			<main className="mx-auto max-w-344 p-12">
 				<Outlet />
 			</main>
 		</>
 	);
 }
 
-let __splash: HTMLElement | null = null;
-let __splash_css: CSSStyleDeclaration | null = null;
-
 function hideSplash() {
-	if (!__splash) __splash = document.getElementById('splash');
-	if (!__splash) return;
-	if (!__splash_css) __splash_css = getComputedStyle(__splash);
-	__splash.hidden = true;
-	__splash.style.display = 'none';
-}
-
-function showSplash() {
-	if (!__splash) __splash = document.getElementById('splash');
-	if (!__splash) return;
-	__splash.hidden = false;
-	__splash.style.display = __splash_css?.display ?? '';
+	const splash = document.getElementById('splash');
+	if (!splash) return;
+	splash.hidden = true;
+	splash.style.display = 'none';
 }

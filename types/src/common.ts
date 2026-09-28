@@ -2,12 +2,6 @@ import * as z from 'zod';
 
 export const IdDefinition = z.number().positive().min(1, 'Invalid ID');
 
-export const PasswordDefinition = z
-	.string()
-	.trim()
-	.min(8, 'Password too short')
-	.max(100, 'Password too long');
-
 export const DateDefinition = z
 	.union([z.date(), z.string().refine((v) => !Number.isNaN(new Date(v).getTime()), 'Invalid date')])
 	.transform((v) => (typeof v === 'string' ? new Date(v) : v));

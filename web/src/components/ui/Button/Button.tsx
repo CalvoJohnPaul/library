@@ -8,5 +8,5 @@ export interface ButtonProps extends HTMLArkProps<'button'>, ButtonRecipeProps {
 
 export function Button(props: ButtonProps) {
 	const [recipeProps, localProps] = splitProps(props, ...buttonRecipe.variantKeys, 'className');
-	return <ark.button className={buttonRecipe(recipeProps)} {...localProps} />;
+	return <ark.button type="button" className={buttonRecipe(recipeProps)} {...localProps} />;
 }

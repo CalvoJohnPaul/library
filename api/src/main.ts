@@ -78,9 +78,9 @@ async function main() {
 			cookie: {
 				path: '/',
 				maxAge: 60 * 60 * 24 /* 1d */,
-				secure: 'auto',
+				secure: process.env.NODE_ENV === 'production',
 				signed: true,
-				sameSite: 'none',
+				sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
 				httpOnly: true,
 			},
 		});

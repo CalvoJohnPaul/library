@@ -9,10 +9,10 @@ export default fp(
 				? null
 				: await fastify.prisma.account.findUnique({
 						where: {id},
-						select: {id: true, type: true},
+						select: {id: true},
 					});
 
-			if (account?.type !== 'ADMIN') return reply.unauthorized();
+			if (!account) return reply.unauthorized();
 
 			request.account = account;
 		});
