@@ -9,7 +9,6 @@
 	},
 	"dependencies": {
 		"@ark-ui/react": "^5.39.2",
-		"@fontsource/inter": "^5.3.0",
 		"@library/types": "workspace:*",
 		"@tanstack/pacer": "^0.22.0",
 		"@tanstack/react-form": "^1.33.5",

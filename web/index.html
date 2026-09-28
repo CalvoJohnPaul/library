@@ -3,11 +3,53 @@
 	<head>
 		<meta charset="UTF-8">
 		<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+		<link rel="preconnect" href="https://fonts.googleapis.com">
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+		<link
+			rel="stylesheet"
+			href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap"
+		>
 		<meta name="viewport" content="width=device-width, initial-scale=1.0">
 		<title>Library</title>
+		<style>
+		#splash {
+			position: fixed;
+			inset: 0;
+			background: white;
+			z-index: 9999;
+			display: flex;
+			justify-content: center;
+			align-items: center;
+		}
+
+		#splash svg {
+			width: 56px;
+			height: 56px;
+		}
+		</style>
 	</head>
 	<body class="minh-dvh bg-white font-sans text-gray-800 antialiased">
 		<div id="root"></div>
+		<div id="splash">
+			<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24">
+				<path
+					fill="oklch(93.2% 0.032 255.585)"
+					d="M12,1A11,11,0,1,0,23,12,11,11,0,0,0,12,1Zm0,19a8,8,0,1,1,8-8A8,8,0,0,1,12,20Z"
+				/>
+				<path
+					fill="oklch(54.6% 0.245 262.881)"
+					d="M12,4a8,8,0,0,1,7.89,6.7A1.53,1.53,0,0,0,21.38,12h0a1.5,1.5,0,0,0,1.48-1.75,11,11,0,0,0-21.72,0A1.5,1.5,0,0,0,2.62,12h0a1.53,1.53,0,0,0,1.49-1.3A8,8,0,0,1,12,4Z"
+				>
+					<animateTransform
+						attributeName="transform"
+						dur="0.75s"
+						repeatCount="indefinite"
+						type="rotate"
+						values="0 12 12;360 12 12"
+					/>
+				</path>
+			</svg>
+		</div>
 		<script type="module" src="/src/main.tsx"></script>
 	</body>
 </html>

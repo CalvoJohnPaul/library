@@ -1,3 +1,3 @@
 export function Navbar() {
-	return null;
+	return <header></header>;
 }

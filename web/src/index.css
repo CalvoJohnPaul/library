@@ -4,9 +4,4 @@
 @theme {
 	--font-*: initial;
 	--font-sans: "Inter", sans-serif;
-	--font-weight-*: initial;
-	--font-weight-normal: 400;
-	--font-weight-medium: 500;
-	--font-weight-semibold: 600;
-	--font-weight-bold: 700;
 }
