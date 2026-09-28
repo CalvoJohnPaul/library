@@ -1,6 +1,6 @@
 import * as z from 'zod';
 
-export const TransactionTypeDefinition = z.enum(['borrow', 'return']);
+export const TransactionTypeDefinition = z.enum(['BORROW', 'RETURN']);
 export const TransactionDefinition = z.object({
 	id: z.string(),
 	type: TransactionTypeDefinition,

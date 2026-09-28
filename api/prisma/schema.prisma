@@ -1,0 +1,26 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/.generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum AccountType {
+  ADMIN
+  STUDENT
+}
+
+model Account {
+  id              Int         @id @default(autoincrement())
+  type            AccountType @default(STUDENT)
+  name            String
+  username        String?     @unique
+  password        String?
+  studentId       String?
+  course          String?
+  yearAndSection  String?
+  dateTimeCreated DateTime    @default(now())
+  dateTimeUpdated DateTime    @updatedAt
+}

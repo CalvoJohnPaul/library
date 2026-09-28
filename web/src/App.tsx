@@ -1,22 +1,19 @@
 import {Toast, Toaster} from '@ark-ui/react';
+import {QueryClientProvider} from '@tanstack/react-query';
 import {XIcon} from 'lucide-react';
-import {lazy, Suspense} from 'react';
+import {Suspense} from 'react';
 import {BrowserRouter, Route, Routes} from 'react-router';
+import {Book} from './features/Book/Book';
+import {Books} from './features/Books/Books';
+import {NotFound} from './features/NotFound/NotFound';
 import {RootLayout} from './features/RootLayout/RootLayout';
 import {Transactions} from './features/Transactions/Transactions';
+import {client} from './utils/client';
 import {toaster} from './utils/toaster';
-
-const Books = lazy(() => import('./features/Books/Books').then((m) => ({default: m.Books})));
-
-const Book = lazy(() => import('./features/Book/Book').then((m) => ({default: m.Book})));
-
-const NotFound = lazy(() =>
-	import('./features/NotFound/NotFound').then((m) => ({default: m.NotFound})),
-);
 
 export function App() {
 	return (
-		<>
+		<QueryClientProvider client={client}>
 			<Suspense fallback={null}>
 				<BrowserRouter>
 					<Routes>
@@ -40,6 +37,6 @@ export function App() {
 					</Toast.Root>
 				)}
 			</Toaster>
-		</>
+		</QueryClientProvider>
 	);
 }

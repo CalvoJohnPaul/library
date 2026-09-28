@@ -1,6 +1,6 @@
 import * as z from 'zod';
 
-export const BookStatusDefinition = z.enum(['available', 'borrowed']);
+export const BookStatusDefinition = z.enum(['AVAILABLE', 'BORROWED']);
 export const BookCopyDefinition = z.object({
 	id: z.string(),
 	bookId: z.string(),
