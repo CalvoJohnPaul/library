@@ -9,6 +9,7 @@ export default defineConfig({
 		tsconfigPaths: true,
 	},
 	server: {
+		open: true,
 		port: 80,
 	},
 	preview: {
