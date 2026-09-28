@@ -1,4 +1,5 @@
 import {Field} from '@/components/ui/Field';
+import {PasswordInput} from '@/components/ui/PasswordInput';
 
 export function Books() {
 	return (
@@ -13,6 +14,18 @@ export function Books() {
 				<Field.Label>Description</Field.Label>
 				<Field.Textarea placeholder="Enter description" />
 				<Field.ErrorText>Error message</Field.ErrorText>
+			</Field.Root>
+
+			<Field.Root>
+				<Field.Label>Password</Field.Label>
+				<PasswordInput.Root>
+					<PasswordInput.Control>
+						<PasswordInput.Input placeholder="Enter password" />
+						<PasswordInput.VisibilityTrigger>
+							<PasswordInput.Indicator />
+						</PasswordInput.VisibilityTrigger>
+					</PasswordInput.Control>
+				</PasswordInput.Root>
 			</Field.Root>
 		</div>
 	);
