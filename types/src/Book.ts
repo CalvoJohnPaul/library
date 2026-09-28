@@ -9,6 +9,8 @@ export const BookDefinition = z.object({
 	yearPublished: z.number().positive(),
 	dateTimeCreated: DateDefinition,
 	dateTimeUpdated: DateDefinition,
+	totalCopies: z.number(),
+	available: z.boolean(),
 });
 
 export const CreateBookInputDefinition = z.object({

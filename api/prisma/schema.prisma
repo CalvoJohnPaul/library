@@ -15,3 +15,58 @@ model Account {
   dateTimeCreated DateTime @default(now())
   dateTimeUpdated DateTime @updatedAt
 }
+
+enum BookStatus {
+  AVAILABLE
+  BORROWED
+}
+
+model Book {
+  id              Int        @id @default(autoincrement())
+  title           String
+  author          String
+  genre           String
+  yearPublished   Int
+  dateTimeCreated DateTime   @default(now())
+  dateTimeUpdated DateTime   @updatedAt
+  copies          BookCopy[]
+}
+
+model BookCopy {
+  id              Int           @id @default(autoincrement())
+  isbn            String
+  book            Book          @relation(fields: [bookId], references: [id])
+  bookId          Int
+  status          BookStatus    @default(AVAILABLE)
+  dateTimeCreated DateTime      @default(now())
+  dateTimeUpdated DateTime      @updatedAt
+  transactions    Transaction[]
+}
+
+model Student {
+  id              Int           @id @default(autoincrement())
+  externalId      String        @unique
+  firstName       String
+  lastName        String
+  course          String
+  yearAndSection  String
+  dateTimeCreated DateTime      @default(now())
+  dateTimeUpdated DateTime      @updatedAt
+  transactions    Transaction[]
+}
+
+enum TransactionType {
+  BORROW
+  RETURN
+}
+
+model Transaction {
+  id              Int             @id @default(autoincrement())
+  type            TransactionType
+  student         Student         @relation(fields: [studentId], references: [id])
+  studentId       Int
+  bookCopy        BookCopy        @relation(fields: [bookCopyId], references: [id])
+  bookCopyId      Int
+  dateTimeCreated DateTime        @default(now())
+  dateTimeUpdated DateTime        @updatedAt
+}

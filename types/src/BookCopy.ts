@@ -1,11 +1,18 @@
 import * as z from 'zod';
+import {BookDefinition} from './Book.js';
 import {DateDefinition, IdDefinition} from './common.js';
 
 export const BookStatusDefinition = z.enum(['AVAILABLE', 'BORROWED']);
 export const BookCopyDefinition = z.object({
 	id: IdDefinition,
 	isbn: z.string(),
-	bookId: IdDefinition,
+	book: BookDefinition.pick({
+		id: true,
+		title: true,
+		genre: true,
+		author: true,
+		yearPublished: true,
+	}),
 	status: BookStatusDefinition,
 	dateTimeCreated: DateDefinition,
 	dateTimeUpdated: DateDefinition,

@@ -1,12 +1,26 @@
 import * as z from 'zod';
+import {BookCopyDefinition} from './BookCopy.js';
 import {DateDefinition, IdDefinition} from './common.js';
+import {StudentDefinition} from './Student.js';
 
 export const TransactionTypeDefinition = z.enum(['BORROW', 'RETURN']);
 export const TransactionDefinition = z.object({
 	id: IdDefinition,
 	type: TransactionTypeDefinition,
-	accountId: IdDefinition,
-	bookCopyId: IdDefinition,
+	student: StudentDefinition.pick({
+		id: true,
+		externalId: true,
+		firstName: true,
+		lastName: true,
+		course: true,
+		yearAndSection: true,
+	}),
+	bookCopy: BookCopyDefinition.pick({
+		id: true,
+		book: true,
+		isbn: true,
+		status: true,
+	}),
 	dateTimeCreated: DateDefinition,
 	dateTimeUpdated: DateDefinition,
 });
