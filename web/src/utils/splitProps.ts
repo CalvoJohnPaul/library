@@ -1,6 +1,7 @@
 import {omit, pick} from 'es-toolkit';
 import type {Simplify} from 'type-fest';
 
+// biome-ignore lint/suspicious/noExplicitAny: ""
 export function splitProps<T extends Record<string, any>, K extends keyof T>(
 	props: T,
 	...keys: K[]

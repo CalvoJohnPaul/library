@@ -6,6 +6,7 @@ import {twMerge} from 'tailwind-merge';
 import type {VariantProps} from 'tailwind-variants';
 import {splitProps} from './splitProps';
 
+// biome-ignore lint/suspicious/noExplicitAny: ""
 type GenericProps = Record<string, any>;
 type GenericRecipeEntries = Record<string, (props: GenericProps) => string>;
 type GenericRecipe = {
