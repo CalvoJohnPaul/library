@@ -470,7 +470,6 @@ const plugin: FastifyPluginAsyncZod = async (app) => {
 					400: FailedHttpResponseDefinition,
 					401: FailedHttpResponseDefinition,
 					403: FailedHttpResponseDefinition,
-					404: FailedHttpResponseDefinition,
 				},
 				headers: z.object({
 					'x-csrf-token': z.string().nullable().optional(),
@@ -478,11 +477,7 @@ const plugin: FastifyPluginAsyncZod = async (app) => {
 			},
 		},
 		async (req, reply) => {
-			if (!(await app.prisma.bookCopy.exists({id: req.params.id}))) {
-				return reply.notFound();
-			}
-
-			await app.prisma.bookCopy.delete({where: {id: req.params.id}});
+			await app.prisma.bookCopy.deleteMany({where: {id: req.params.id}});
 
 			return reply.send({ok: true});
 		},
@@ -535,10 +530,24 @@ const plugin: FastifyPluginAsyncZod = async (app) => {
 				return reply.badRequest('Student not found');
 			}
 
-			const [bookCopy] = await app.prisma.$transaction([
-				app.prisma.bookCopy.update({
-					where: {id: req.params.id},
+			const bookCopy = await app.prisma.$transaction(async (tx) => {
+				const {count} = await tx.bookCopy.updateMany({
+					where: {id: req.params.id, status: 'AVAILABLE'},
 					data: {status: 'BORROWED'},
+				});
+
+				if (count === 0) return null;
+
+				await tx.transaction.create({
+					data: {
+						type: 'BORROW',
+						bookCopyId: req.params.id,
+						studentId: req.body.studentId,
+					},
+				});
+
+				return tx.bookCopy.findUnique({
+					where: {id: req.params.id},
 					select: {
 						id: true,
 						isbn: true,
@@ -555,15 +564,12 @@ const plugin: FastifyPluginAsyncZod = async (app) => {
 							},
 						},
 					},
-				}),
-				app.prisma.transaction.create({
-					data: {
-						type: 'BORROW',
-						bookCopyId: req.params.id,
-						studentId: req.body.studentId,
-					},
-				}),
-			]);
+				});
+			});
+
+			if (!bookCopy) {
+				return reply.conflict('Book copy is not available');
+			}
 
 			return reply.send({
 				ok: true,
@@ -632,41 +638,46 @@ const plugin: FastifyPluginAsyncZod = async (app) => {
 				return reply.badRequest('Student not found');
 			}
 
-			await app.prisma.$transaction([
-				app.prisma.bookCopy.update({
-					where: {id: req.params.id},
+			const bookCopy = await app.prisma.$transaction(async (tx) => {
+				const {count} = await tx.bookCopy.updateMany({
+					where: {id: req.params.id, status: 'BORROWED'},
 					data: {status: 'AVAILABLE'},
-				}),
-				app.prisma.transaction.create({
+				});
+
+				if (count === 0) return null;
+
+				await tx.transaction.create({
 					data: {
 						type: 'RETURN',
 						bookCopyId: req.params.id,
 						studentId: req.body.studentId,
 					},
-				}),
-			]);
+				});
 
-			const bookCopy = await app.prisma.bookCopy.findUnique({
-				where: {id: req.params.id},
-				select: {
-					id: true,
-					isbn: true,
-					status: true,
-					dateTimeCreated: true,
-					dateTimeUpdated: true,
-					book: {
-						select: {
-							id: true,
-							title: true,
-							genre: true,
-							author: true,
-							yearPublished: true,
+				return tx.bookCopy.findUnique({
+					where: {id: req.params.id},
+					select: {
+						id: true,
+						isbn: true,
+						status: true,
+						dateTimeCreated: true,
+						dateTimeUpdated: true,
+						book: {
+							select: {
+								id: true,
+								title: true,
+								genre: true,
+								author: true,
+								yearPublished: true,
+							},
 						},
 					},
-				},
+				});
 			});
 
-			if (!bookCopy) return reply.notFound();
+			if (!bookCopy) {
+				return reply.conflict('Book copy is not borrowed');
+			}
 
 			return reply.send({
 				ok: true,

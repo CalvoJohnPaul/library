@@ -18,6 +18,7 @@ import {
 	validatorCompiler,
 } from 'fastify-type-provider-zod';
 import * as z from 'zod';
+import {Prisma} from '../prisma/.generated/client';
 import {ExcelWorkbookDefinition} from './types';
 
 z.globalRegistry.add(ExcelWorkbookDefinition, {
@@ -40,6 +41,73 @@ async function main() {
 		const server = fastify(options);
 
 		server.setErrorHandler((error, _req, reply) => {
+			const map_0: Record<number, string> = {
+				400: 'BadRequestError',
+				401: 'UnauthorizedError',
+				403: 'ForbiddenError',
+				404: 'NotFoundError',
+				405: 'MethodNotAllowedError',
+				409: 'ConflictError',
+				413: 'PayloadTooLargeError',
+				415: 'UnsupportedMediaTypeError',
+				422: 'UnprocessableEntityError',
+				429: 'TooManyRequestsError',
+				500: 'InternalServerError',
+			};
+
+			const map_1: Record<number, string> = {
+				400: 'Invalid request.',
+				401: 'You are not authorized to access this resource.',
+				403: 'You do not have permission to access this resource.',
+				404: 'Resource not found.',
+				405: 'Method not allowed.',
+				409: 'The request conflicts with the current state of the resource.',
+				413: 'The request payload is too large.',
+				415: 'The request media type is not supported.',
+				422: 'The request could not be processed.',
+				429: 'Too many requests. Please try again later.',
+				500: 'An unexpected error occurred.',
+			};
+
+			const map_2: Record<
+				string,
+				{
+					name: string;
+					message: string;
+					statusCode: number;
+				}
+			> = {
+				P2002: {
+					name: 'ConflictError',
+					message: 'A record with this value already exists.',
+					statusCode: 409,
+				},
+				P2003: {
+					name: 'BadRequestError',
+					message: 'A related record was not found.',
+					statusCode: 400,
+				},
+				P2025: {
+					name: 'NotFoundError',
+					message: 'Record not found.',
+					statusCode: 404,
+				},
+			};
+
+			if (error instanceof Prisma.PrismaClientKnownRequestError) {
+				const mapped = map_2[error.code];
+
+				if (mapped) {
+					return reply.code(mapped.statusCode).send({
+						ok: false,
+						error: {
+							name: mapped.name,
+							message: mapped.message,
+						},
+					});
+				}
+			}
+
 			const statusCode = get(error, 'statusCode', 500);
 
 			let name: string;
@@ -49,34 +117,6 @@ async function main() {
 				name = error.name;
 				message = error.message;
 			} else {
-				const map_0: Record<number, string> = {
-					400: 'BadRequestError',
-					401: 'UnauthorizedError',
-					403: 'ForbiddenError',
-					404: 'NotFoundError',
-					405: 'MethodNotAllowedError',
-					409: 'ConflictError',
-					413: 'PayloadTooLargeError',
-					415: 'UnsupportedMediaTypeError',
-					422: 'UnprocessableEntityError',
-					429: 'TooManyRequestsError',
-					500: 'InternalServerError',
-				};
-
-				const map_1: Record<number, string> = {
-					400: 'Invalid request.',
-					401: 'You are not authorized to access this resource.',
-					403: 'You do not have permission to access this resource.',
-					404: 'Resource not found.',
-					405: 'Method not allowed.',
-					409: 'The request conflicts with the current state of the resource.',
-					413: 'The request payload is too large.',
-					415: 'The request media type is not supported.',
-					422: 'The request could not be processed.',
-					429: 'Too many requests. Please try again later.',
-					500: 'An unexpected error occurred.',
-				};
-
 				name = map_0[statusCode] ?? map_0[500];
 				message = map_1[statusCode] ?? map_1[500];
 			}

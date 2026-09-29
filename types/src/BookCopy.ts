@@ -26,7 +26,6 @@ export const CreateBookCopyInputDefinition = z.object({
 export const UpdateBookCopyDataInputDefinition = z.object({
 	isbn: z.string().optional(),
 	bookId: IdDefinition.optional(),
-	status: BookStatusDefinition.optional(),
 });
 
 export const UpdateBookCopyInputDefinition = z.object({

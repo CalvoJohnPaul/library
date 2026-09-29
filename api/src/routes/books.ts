@@ -459,7 +459,6 @@ const plugin: FastifyPluginAsyncZod = async (app) => {
 					400: FailedHttpResponseDefinition,
 					401: FailedHttpResponseDefinition,
 					403: FailedHttpResponseDefinition,
-					404: FailedHttpResponseDefinition,
 					500: FailedHttpResponseDefinition,
 				},
 				headers: z.object({
@@ -468,11 +467,7 @@ const plugin: FastifyPluginAsyncZod = async (app) => {
 			},
 		},
 		async (req, reply) => {
-			if (!(await app.prisma.book.exists({id: req.params.id}))) {
-				return reply.notFound();
-			}
-
-			await app.prisma.book.delete({where: {id: req.params.id}});
+			await app.prisma.book.deleteMany({where: {id: req.params.id}});
 
 			return reply.send({ok: true});
 		},
