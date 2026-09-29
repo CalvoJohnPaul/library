@@ -1,15 +1,261 @@
+import {
+	BookDefinition,
+	BookSortByInputDefinition,
+	FailedHttpResponseDefinition,
+	PaginatedDefinition,
+	SortOrderDefinition,
+	SuccessfulHttpResponseDefinition,
+} from '@library/types';
+import {clamp} from 'es-toolkit';
 import type {FastifyPluginAsyncZod} from 'fastify-type-provider-zod';
+import * as z from 'zod';
+import type {Prisma} from '../../prisma/.generated/client';
+import {
+	QueryString__BooleanDefinition,
+	QueryString__DateDefinition,
+	QueryString__NumberArrayDefinition,
+	QueryString__NumberDefinition,
+	QueryString__StringArrayDefinition,
+	QueryString__StringDefinition,
+} from '../types';
 
 const plugin: FastifyPluginAsyncZod = async (app) => {
 	app.get(
 		'/',
 		{
+			preHandler: [app.verifyAuth],
 			schema: {
 				tags: ['Books'],
-				response: {},
+				querystring: z.object({
+					page: QueryString__NumberDefinition,
+					pageSize: QueryString__NumberDefinition,
+					id__eq: QueryString__NumberDefinition,
+					id__neq: QueryString__NumberDefinition,
+					id__in: QueryString__NumberArrayDefinition,
+					id__nin: QueryString__NumberArrayDefinition,
+					title__eq: QueryString__StringDefinition,
+					title__neq: QueryString__StringDefinition,
+					title__in: QueryString__StringArrayDefinition,
+					title__nin: QueryString__StringArrayDefinition,
+					title__contains: QueryString__StringDefinition,
+					author__eq: QueryString__StringDefinition,
+					author__neq: QueryString__StringDefinition,
+					author__in: QueryString__StringArrayDefinition,
+					author__nin: QueryString__StringArrayDefinition,
+					author__contains: QueryString__StringDefinition,
+					genre__eq: QueryString__StringDefinition,
+					genre__neq: QueryString__StringDefinition,
+					genre__in: QueryString__StringArrayDefinition,
+					genre__nin: QueryString__StringArrayDefinition,
+					genre__contains: QueryString__StringDefinition,
+					yearPublished__gt: QueryString__NumberDefinition,
+					yearPublished__gte: QueryString__NumberDefinition,
+					yearPublished__lt: QueryString__NumberDefinition,
+					yearPublished__lte: QueryString__NumberDefinition,
+					dateTimeCreated__gt: QueryString__DateDefinition,
+					dateTimeCreated__gte: QueryString__DateDefinition,
+					dateTimeCreated__lt: QueryString__DateDefinition,
+					dateTimeCreated__lte: QueryString__DateDefinition,
+					dateTimeUpdated__gt: QueryString__DateDefinition,
+					dateTimeUpdated__gte: QueryString__DateDefinition,
+					dateTimeUpdated__lt: QueryString__DateDefinition,
+					dateTimeUpdated__lte: QueryString__DateDefinition,
+					available__eq: QueryString__BooleanDefinition,
+					available__neq: QueryString__BooleanDefinition,
+					sortBy: BookSortByInputDefinition.optional().nullable(),
+					sortOrder: SortOrderDefinition.optional().nullable(),
+				}),
+				response: {
+					200: SuccessfulHttpResponseDefinition(PaginatedDefinition(BookDefinition)),
+					400: FailedHttpResponseDefinition,
+					401: FailedHttpResponseDefinition,
+					403: FailedHttpResponseDefinition,
+				},
 			},
 		},
-		async () => {},
+		async (req, reply) => {
+			const where: Prisma.BookWhereInput = {};
+
+			if (
+				req.query.id__eq != null ||
+				req.query.id__neq != null ||
+				req.query.id__in != null ||
+				req.query.id__nin != null
+			) {
+				where.id = {
+					...(req.query.id__eq != null && {equals: req.query.id__eq}),
+					...(req.query.id__neq != null && {not: req.query.id__neq}),
+					...(req.query.id__in != null && {in: req.query.id__in}),
+					...(req.query.id__nin != null && {notIn: req.query.id__nin}),
+				};
+			}
+
+			if (
+				req.query.title__eq != null ||
+				req.query.title__neq != null ||
+				req.query.title__in != null ||
+				req.query.title__nin != null ||
+				req.query.title__contains
+			) {
+				where.title = {
+					...(req.query.title__eq != null && {equals: req.query.title__eq}),
+					...(req.query.title__neq != null && {not: req.query.title__neq}),
+					...(req.query.title__in != null && {in: req.query.title__in}),
+					...(req.query.title__nin != null && {notIn: req.query.title__nin}),
+					...(req.query.title__contains != null && {
+						contains: req.query.title__contains,
+						mode: 'insensitive',
+					}),
+				};
+			}
+
+			if (
+				req.query.author__eq != null ||
+				req.query.author__neq != null ||
+				req.query.author__in != null ||
+				req.query.author__nin != null ||
+				req.query.author__contains
+			) {
+				where.author = {
+					...(req.query.author__eq != null && {equals: req.query.author__eq}),
+					...(req.query.author__neq != null && {not: req.query.author__neq}),
+					...(req.query.author__in != null && {in: req.query.author__in}),
+					...(req.query.author__nin != null && {notIn: req.query.author__nin}),
+					...(req.query.author__contains != null && {
+						contains: req.query.author__contains,
+						mode: 'insensitive',
+					}),
+				};
+			}
+
+			if (
+				req.query.genre__eq != null ||
+				req.query.genre__neq != null ||
+				req.query.genre__in != null ||
+				req.query.genre__nin != null ||
+				req.query.genre__contains
+			) {
+				where.genre = {
+					...(req.query.genre__eq != null && {equals: req.query.genre__eq}),
+					...(req.query.genre__neq != null && {not: req.query.genre__neq}),
+					...(req.query.genre__in != null && {in: req.query.genre__in}),
+					...(req.query.genre__nin != null && {notIn: req.query.genre__nin}),
+					...(req.query.genre__contains != null && {
+						contains: req.query.genre__contains,
+						mode: 'insensitive',
+					}),
+				};
+			}
+
+			if (req.query.available__eq != null || req.query.available__neq != null) {
+				where.copies = {
+					...(req.query.available__eq === true && {some: {status: 'AVAILABLE'}}),
+					...(req.query.available__eq === false && {none: {status: 'AVAILABLE'}}),
+					...(req.query.available__neq === true && {none: {status: 'AVAILABLE'}}),
+					...(req.query.available__neq === false && {some: {status: 'AVAILABLE'}}),
+				};
+			}
+
+			if (
+				req.query.dateTimeCreated__gt != null ||
+				req.query.dateTimeCreated__gte != null ||
+				req.query.dateTimeCreated__lt != null ||
+				req.query.dateTimeCreated__lte != null
+			) {
+				where.dateTimeCreated = {
+					...(req.query.dateTimeCreated__gt != null && {gt: req.query.dateTimeCreated__gt}),
+					...(req.query.dateTimeCreated__gte != null && {gte: req.query.dateTimeCreated__gte}),
+					...(req.query.dateTimeCreated__lt != null && {lt: req.query.dateTimeCreated__lt}),
+					...(req.query.dateTimeCreated__lte != null && {lte: req.query.dateTimeCreated__lte}),
+				};
+			}
+
+			if (
+				req.query.dateTimeUpdated__gt != null ||
+				req.query.dateTimeUpdated__gte != null ||
+				req.query.dateTimeUpdated__lt != null ||
+				req.query.dateTimeUpdated__lte != null
+			) {
+				where.dateTimeUpdated = {
+					...(req.query.dateTimeUpdated__gt != null && {gt: req.query.dateTimeUpdated__gt}),
+					...(req.query.dateTimeUpdated__gte != null && {gte: req.query.dateTimeUpdated__gte}),
+					...(req.query.dateTimeUpdated__lt != null && {lt: req.query.dateTimeUpdated__lt}),
+					...(req.query.dateTimeUpdated__lte != null && {lte: req.query.dateTimeUpdated__lte}),
+				};
+			}
+
+			const page = req.query.page ?? 1;
+			const take = clamp(req.query.pageSize ?? 10, 10, 100);
+			const skip = take * (page - 1);
+
+			const [total, rows] = await app.prisma.$transaction([
+				app.prisma.book.count({where}),
+				app.prisma.book.findMany({
+					skip,
+					take,
+					where,
+					select: {
+						id: true,
+						title: true,
+						author: true,
+						genre: true,
+						yearPublished: true,
+						dateTimeCreated: true,
+						dateTimeUpdated: true,
+						_count: {
+							select: {
+								copies: true,
+							},
+						},
+						copies: {
+							where: {status: 'AVAILABLE'},
+							select: {id: true},
+							take: 1,
+						},
+					},
+					orderBy: {
+						dateTimeCreated: 'desc',
+					},
+					...(req.query.sortBy != null && {
+						orderBy: {
+							...(req.query.sortBy === 'dateTimeCreated' && {
+								dateTimeCreated: req.query.sortOrder === 'ASC' ? 'asc' : 'desc',
+							}),
+							...(req.query.sortBy === 'dateTimeUpdated' && {
+								dateTimeUpdated: req.query.sortOrder === 'ASC' ? 'asc' : 'desc',
+							}),
+						},
+					}),
+				}),
+			]);
+
+			const hasNext = page < Math.ceil(total / take);
+			const hasPrevious = page > 1;
+			const next = hasNext ? page + 1 : null;
+			const previous = page > 1 ? page - 1 : null;
+
+			return reply.send({
+				ok: true,
+				data: {
+					rows: rows.map((row) => ({
+						id: row.id,
+						title: row.title,
+						author: row.author,
+						genre: row.genre,
+						yearPublished: row.yearPublished,
+						dateTimeCreated: row.dateTimeCreated,
+						dateTimeUpdated: row.dateTimeUpdated,
+						totalCopies: row._count.copies,
+						available: row.copies.length > 0,
+					})),
+					next,
+					hasNext,
+					previous,
+					hasPrevious,
+					total,
+				},
+			});
+		},
 	);
 
 	app.get(

@@ -9,6 +9,7 @@ import session from '@fastify/secure-session';
 import sensible from '@fastify/sensible';
 import swagger from '@fastify/swagger';
 import swaggerUi from '@fastify/swagger-ui';
+import {get} from 'es-toolkit/compat';
 import type {FastifyServerOptions} from 'fastify';
 import fastify from 'fastify';
 import {
@@ -30,6 +31,57 @@ async function main() {
 
 	try {
 		const server = fastify(options);
+
+		server.setErrorHandler((error, _req, reply) => {
+			let name: string;
+			let message: string;
+
+			if (error instanceof Error) {
+				name = error.name;
+				message = error.message;
+			} else {
+				const map_0: Record<number, string> = {
+					400: 'BadRequestError',
+					401: 'UnauthorizedError',
+					403: 'ForbiddenError',
+					404: 'NotFoundError',
+					405: 'MethodNotAllowedError',
+					409: 'ConflictError',
+					413: 'PayloadTooLargeError',
+					415: 'UnsupportedMediaTypeError',
+					422: 'UnprocessableEntityError',
+					429: 'TooManyRequestsError',
+					500: 'InternalServerError',
+				};
+
+				const map_1: Record<number, string> = {
+					400: 'Invalid request.',
+					401: 'You are not authorized to access this resource.',
+					403: 'You do not have permission to access this resource.',
+					404: 'Resource not found.',
+					405: 'Method not allowed.',
+					409: 'The request conflicts with the current state of the resource.',
+					413: 'The request payload is too large.',
+					415: 'The request media type is not supported.',
+					422: 'The request could not be processed.',
+					429: 'Too many requests. Please try again later.',
+					500: 'An unexpected error occurred.',
+				};
+
+				const code = get(error, 'code') ?? reply.statusCode ?? 500;
+
+				name = map_0[code] ?? map_0[500];
+				message = map_1[code] ?? map_1[500];
+			}
+
+			reply.send({
+				ok: false,
+				error: {
+					name,
+					message,
+				},
+			});
+		});
 
 		server.setValidatorCompiler(validatorCompiler);
 		server.setSerializerCompiler(serializerCompiler);

@@ -32,7 +32,10 @@ export const UpdateBookInputDefinition = z.object({
 	data: UpdateBookDataInputDefinition,
 });
 
+export const BookSortByInputDefinition = z.enum(['dateTimeCreated', 'dateTimeUpdated']);
+
 export type Book = z.infer<typeof BookDefinition>;
 export type CreateBookInput = z.infer<typeof CreateBookInputDefinition>;
 export type UpdateBookDataInput = z.infer<typeof UpdateBookDataInputDefinition>;
 export type UpdateBookInput = z.infer<typeof UpdateBookInputDefinition>;
+export type BookSortByInput = z.infer<typeof BookSortByInputDefinition>;
