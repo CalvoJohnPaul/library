@@ -2,6 +2,7 @@ import {
 	BookCopyDefinition,
 	BookCopySortByInputDefinition,
 	BookStatusDefinition,
+	BorrowBookCopyDataInputDefinition,
 	CreateBookCopyInputDefinition,
 	FailedHttpResponseDefinition,
 	PaginatedDefinition,
@@ -493,9 +494,7 @@ const plugin: FastifyPluginAsyncZod = async (app) => {
 				params: z.object({
 					id: z.coerce.number().positive(),
 				}),
-				body: z.object({
-					studentId: z.number().positive(),
-				}),
+				body: BorrowBookCopyDataInputDefinition,
 				response: {
 					200: SuccessfulHttpResponseDefinition(BookCopyDefinition),
 					400: FailedHttpResponseDefinition,
@@ -601,9 +600,6 @@ const plugin: FastifyPluginAsyncZod = async (app) => {
 				params: z.object({
 					id: z.coerce.number().positive(),
 				}),
-				body: z.object({
-					studentId: z.number().positive(),
-				}),
 				response: {
 					200: SuccessfulHttpResponseDefinition(BookCopyDefinition),
 					400: FailedHttpResponseDefinition,
@@ -618,13 +614,18 @@ const plugin: FastifyPluginAsyncZod = async (app) => {
 			},
 		},
 		async (req, reply) => {
-			const [existing, studentCount] = await app.prisma.$transaction([
-				app.prisma.bookCopy.findUnique({
-					where: {id: req.params.id},
-					select: {status: true},
-				}),
-				app.prisma.student.count({where: {id: req.body.studentId}}),
-			]);
+			const existing = await app.prisma.bookCopy.findUnique({
+				where: {id: req.params.id},
+				select: {
+					status: true,
+					transactions: {
+						where: {type: 'BORROW'},
+						orderBy: {dateTimeCreated: 'desc'},
+						take: 1,
+						select: {studentId: true},
+					},
+				},
+			});
 
 			if (!existing) {
 				return reply.notFound();
@@ -634,8 +635,10 @@ const plugin: FastifyPluginAsyncZod = async (app) => {
 				return reply.conflict('Book copy is not borrowed');
 			}
 
-			if (studentCount <= 0) {
-				return reply.badRequest('Student not found');
+			const borrow = existing.transactions.at(0);
+
+			if (!borrow) {
+				return reply.conflict('Book copy is not borrowed');
 			}
 
 			const bookCopy = await app.prisma.$transaction(async (tx) => {
@@ -650,7 +653,7 @@ const plugin: FastifyPluginAsyncZod = async (app) => {
 					data: {
 						type: 'RETURN',
 						bookCopyId: req.params.id,
-						studentId: req.body.studentId,
+						studentId: borrow.studentId,
 					},
 				});
 

@@ -1,6 +1,31 @@
 @import "tailwindcss";
 @plugin "tailwind-zag";
 
+@layer base {
+	button,
+	[role="button"],
+	[type="button"],
+	[type="submit"] {
+		cursor: pointer;
+	}
+
+	:disabled,
+	[data-disabled] {
+		cursor: not-allowed;
+	}
+
+	::placeholder,
+	[data-placeholder-shown] {
+		color: var(--color-neutral-400);
+	}
+
+	*,
+	*::after,
+	*::before {
+		border-color: var(--color-neutral-800);
+	}
+}
+
 @theme {
 	--font-*: initial;
 	--font-sans: "Google Sans", sans-serif;

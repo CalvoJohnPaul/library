@@ -10,13 +10,14 @@ export const tagsRecipe = tv({
 			'items-center',
 			'gap-0.5',
 			'border',
-			'bg-neutral-700/25',
+			'border-gray-300',
+			'bg-gray-100',
 			'px-2.5',
 			'py-1',
 			'rounded-md',
 		],
-		itemText: 'text-neutral-300',
+		itemText: 'text-gray-700',
 		itemCloseTrigger:
-			'flex icon:size-4 h-2.5 items-center justify-center pl-1 icon:text-neutral-400',
+			'flex icon:size-4 h-2.5 items-center justify-center pl-1 icon:text-gray-500',
 	},
 });

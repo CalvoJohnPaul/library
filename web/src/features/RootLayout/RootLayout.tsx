@@ -28,7 +28,7 @@ export function RootLayout() {
 	return (
 		<>
 			<Navbar />
-			<main className="mx-auto max-w-344 p-12">
+			<main className="mx-auto p-12">
 				<Outlet />
 			</main>
 		</>

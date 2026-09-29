@@ -39,8 +39,8 @@ export function Table() {
 				'whitespace-nowrap',
 				'scrollbar:h-2',
 				'scrollbar-thumb:rounded-full',
-				'scrollbar-thumb:bg-neutral-700',
-				'scrollbar-track:bg-neutral-800',
+				'scrollbar-thumb:bg-gray-300',
+				'scrollbar-track:bg-gray-100',
 			)}
 		>
 			<table className="w-full">
@@ -50,7 +50,7 @@ export function Table() {
 							<th
 								key={col.id}
 								className={twMerge(
-									'not-last:border-r border-b px-4 py-3 text-left font-medium text-neutral-400 text-sm',
+									'border-gray-300 not-last:border-r border-b px-4 py-3 text-left font-medium text-gray-500 text-sm',
 									normalizeClassName(col.className).heading,
 								)}
 							>
@@ -75,13 +75,13 @@ export function Table() {
 											type="button"
 											className={twMerge(
 												'flex',
-												'rounded',
+												'rounded-md',
 												'p-0.5',
-												'text-neutral-500',
+												'text-gray-400',
 												'transition-all',
 												'duration-300',
-												'hover:text-neutral-400',
-												sortColumn === col.id ? 'text-blue-400 hover:text-blue-400' : '',
+												'hover:text-gray-600',
+												sortColumn === col.id ? 'text-blue-600 hover:text-blue-600' : '',
 												sortColumn === col.id && sortOrder === 'ASC' ? 'rotate-180' : '',
 												sortColumn === col.id && sortOrder === 'DESC' ? 'rotate-0' : '',
 											)}
@@ -124,7 +124,7 @@ export function Table() {
 										<td
 											key={col.id}
 											className={twMerge(
-												'not-last:border-r px-4 py-2.5 text-neutral-300',
+												'border-gray-300 not-last:border-r px-4 py-2.5 text-gray-700',
 												normalizeClassName(col.className).cell,
 											)}
 											data-numeric={col.numeric}
@@ -164,11 +164,11 @@ export function Table() {
 									<td
 										key={col.id}
 										className={twMerge(
-											'not-last:border-r px-4 py-2.5 text-neutral-300',
+											'border-gray-300 not-last:border-r px-4 py-2.5 text-gray-700',
 											normalizeClassName(col.className).cell,
 										)}
 									>
-										<div className="animate-pulse rounded-lg bg-neutral-800">
+										<div className="animate-pulse rounded-md bg-gray-200">
 											<div className="invisible" aria-hidden>
 												0
 											</div>
@@ -181,12 +181,12 @@ export function Table() {
 
 				{columns.some((col) => col.summary != null) && (
 					<tfoot>
-						<tr className="border-t">
+						<tr className="border-gray-300 border-t">
 							{columns.map((col) => (
 								<td
 									key={col.id}
 									className={twMerge(
-										'bg-neutral-800/15 px-4 py-2.5 text-neutral-300',
+										'bg-gray-100 px-4 py-2.5 text-gray-700',
 										col.numeric && 'text-right font-mono',
 										normalizeClassName(col.className).summary,
 									)}

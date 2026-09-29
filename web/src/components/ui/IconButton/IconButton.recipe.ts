@@ -1,13 +1,8 @@
 import {tv, type VariantProps} from 'tailwind-variants';
 
 export const iconButtonRecipe = tv({
-	base: 'inline-flex cursor-pointer items-center justify-center gap-2 rounded-md font-semibold outline-black/75 outline-offset-2 focus-visible:outline-2 disabled:cursor-not-allowed disabled:opacity-65',
+	base: 'inline-flex size-11 items-center justify-center gap-2 rounded-md font-semibold disabled:opacity-65',
 	variants: {
-		size: {
-			sm: 'size-10',
-			md: 'size-11',
-			lg: 'size-12',
-		},
 		variant: {
 			solid: 'border-none bg-(--bg) text-white',
 			outline: 'border border-(--border) bg-transparent text-(--fg)',
@@ -31,7 +26,6 @@ export const iconButtonRecipe = tv({
 		},
 	},
 	defaultVariants: {
-		size: 'md',
 		variant: 'solid',
 		accent: 'primary',
 	},

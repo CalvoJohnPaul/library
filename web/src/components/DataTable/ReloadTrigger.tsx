@@ -17,6 +17,8 @@ export function ReloadTrigger() {
 		<Tooltip.Root>
 			<Tooltip.Trigger asChild>
 				<IconButton
+					variant="outline"
+					accent="gray"
 					onClick={() => {
 						pending.setTrue();
 						onReload?.();

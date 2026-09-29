@@ -28,7 +28,7 @@ export function Empty() {
 			<div id={titleId} className="mt-5 font-semibold text-lg">
 				No results found
 			</div>
-			<div id={descriptionId} className="text-neutral-300">
+			<div id={descriptionId} className="text-gray-600">
 				There are no items that match your current search or filters.
 			</div>
 			<div className="mt-5 flex gap-3">

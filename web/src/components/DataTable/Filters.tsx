@@ -25,21 +25,21 @@ export function Filters() {
 
 	return (
 		<Presence present={filters.open} asChild>
-			<div className="shrink-0 ui-closed:animate-collapse-x-out ui-open:animate-collapse-x-in overflow-hidden rounded-xl border [--width:24rem]">
+			<div className="shrink-0 ui-closed:animate-collapse-x-out ui-open:animate-collapse-x-in overflow-hidden rounded-md border border-gray-300 [--width:24rem]">
 				<div className="w-(--width) overflow-hidden p-4">
 					<div className="space-y-2">
 						{dataTable.columns.map((col) => {
 							if (col.filter?.type === 'COMBOBOX') {
 								if (col.filter.multiple) {
 									return (
-										<Field.Root key={col.id} className="w-full rounded-md bg-neutral-800/25 p-2">
+										<Field.Root key={col.id} className="w-full rounded-md bg-gray-100 p-2">
 											<Field.Label>{col.heading}</Field.Label>
 											<ComboboxField {...omit(col.filter, ['type'])} portalled />
 										</Field.Root>
 									);
 								} else {
 									return (
-										<Field.Root key={col.id} className="w-full rounded-md bg-neutral-800/25 p-2">
+										<Field.Root key={col.id} className="w-full rounded-md bg-gray-100 p-2">
 											<Field.Label>{col.heading}</Field.Label>
 											<ComboboxField {...omit(col.filter, ['type'])} portalled />
 										</Field.Root>
@@ -50,14 +50,14 @@ export function Filters() {
 							if (col.filter?.type === 'ASYNC_COMBOBOX') {
 								if (col.filter.multiple) {
 									return (
-										<Field.Root key={col.id} className="w-full rounded-md bg-neutral-800/25 p-2">
+										<Field.Root key={col.id} className="w-full rounded-md bg-gray-100 p-2">
 											<Field.Label>{col.heading}</Field.Label>
 											<AsyncComboboxField {...omit(col.filter, ['type'])} portalled />
 										</Field.Root>
 									);
 								} else {
 									return (
-										<Field.Root key={col.id} className="w-full rounded-md bg-neutral-800/25 p-2">
+										<Field.Root key={col.id} className="w-full rounded-md bg-gray-100 p-2">
 											<Field.Label>{col.heading}</Field.Label>
 											<AsyncComboboxField {...omit(col.filter, ['type'])} portalled />
 										</Field.Root>
@@ -68,14 +68,14 @@ export function Filters() {
 							if (col.filter?.type === 'SELECT') {
 								if (col.filter.multiple) {
 									return (
-										<Field.Root key={col.id} className="w-full rounded-md bg-neutral-800/25 p-2">
+										<Field.Root key={col.id} className="w-full rounded-md bg-gray-100 p-2">
 											<Field.Label>{col.heading}</Field.Label>
 											<SelectField {...omit(col.filter, ['type'])} portalled />
 										</Field.Root>
 									);
 								} else {
 									return (
-										<Field.Root key={col.id} className="w-full rounded-md bg-neutral-800/25 p-2">
+										<Field.Root key={col.id} className="w-full rounded-md bg-gray-100 p-2">
 											<Field.Label>{col.heading}</Field.Label>
 											<SelectField {...omit(col.filter, ['type'])} portalled />
 										</Field.Root>
@@ -85,7 +85,7 @@ export function Filters() {
 
 							if (col.filter?.type === 'TEXT') {
 								return (
-									<Field.Root key={col.id} className="w-full rounded-md bg-neutral-800/25 p-2">
+									<Field.Root key={col.id} className="w-full rounded-md bg-gray-100 p-2">
 										<Field.Label>{col.heading}</Field.Label>
 										<DebouncedTextField {...omit(col.filter, ['type'])} />
 									</Field.Root>
@@ -94,7 +94,7 @@ export function Filters() {
 
 							if (col.filter?.type === 'DATE_RANGE') {
 								return (
-									<Field.Root key={col.id} className="w-full rounded-md bg-neutral-800/25 p-2">
+									<Field.Root key={col.id} className="w-full rounded-md bg-gray-100 p-2">
 										<Field.Label>{col.heading}</Field.Label>
 										<DateRangeField {...omit(col.filter, ['type'])} portalled />
 									</Field.Root>
@@ -103,7 +103,7 @@ export function Filters() {
 
 							if (col.filter?.type === 'NUMBER_RANGE') {
 								return (
-									<Field.Root key={col.id} className="w-full rounded-md bg-neutral-800/25 p-2">
+									<Field.Root key={col.id} className="w-full rounded-md bg-gray-100 p-2">
 										<Field.Label>{col.heading}</Field.Label>
 										<DebouncedNumberRangeField
 											{...omit(col.filter, ['type'])}
@@ -116,7 +116,7 @@ export function Filters() {
 
 							if (col.filter?.type === 'TOGGLE') {
 								return (
-									<Field.Root key={col.id} className="w-full rounded-md bg-neutral-800/25 p-2">
+									<Field.Root key={col.id} className="w-full rounded-md bg-gray-100 p-2">
 										<Field.Label>{col.heading}</Field.Label>
 										<ToggleField {...omit(col.filter, ['type'])} />
 									</Field.Root>
@@ -191,8 +191,9 @@ export function FiltersTrigger() {
 		<Tooltip.Root>
 			<Tooltip.Trigger asChild>
 				<IconButton
+					variant="outline"
+					accent="gray"
 					onClick={() => filters.setOpen((v) => !v)}
-					className="ui-open:outline-2 ui-open:outline-blue-600 ui-open:outline-solid ui-open:-outline-offset-1"
 					data-state={filters.open ? 'open' : 'closed'}
 				>
 					<Settings2Icon />

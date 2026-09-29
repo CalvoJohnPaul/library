@@ -13,7 +13,7 @@ export function Search() {
 
 	return (
 		<Field.Root className="relative w-80">
-			<SearchIcon className="pointer-events-none absolute top-1/2 right-4 size-5 -translate-y-1/2 text-neutral-300" />
+			<SearchIcon className="pointer-events-none absolute top-1/2 right-4 size-5 -translate-y-1/2 text-gray-400" />
 			<DebouncedTextField
 				placeholder="Search"
 				value={search}

@@ -99,13 +99,13 @@ function AsyncComboboxField__single(props: AsyncComboboxField__singleProps) {
 					</Combobox.Item>
 				))}
 				<Combobox.Empty className="p-8">
-					<div className="mx-auto grid size-10 place-items-center rounded-lg border border-neutral-700/75">
-						<SearchIcon className="size-5 text-neutral-300" />
+					<div className="mx-auto grid size-10 place-items-center rounded-md border border-gray-300">
+						<SearchIcon className="size-5 text-gray-600" />
 					</div>
-					<h2 className="mt-2 text-center font-semibold text-neutral-300 text-sm">
+					<h2 className="mt-2 text-center font-semibold text-gray-700 text-sm">
 						No results found
 					</h2>
-					<p className="text-center text-neutral-400 text-xs">
+					<p className="text-center text-gray-500 text-xs">
 						There are no items that match your current search or filters.
 					</p>
 				</Combobox.Empty>
@@ -191,13 +191,13 @@ function AsyncComboboxField__multi(props: AsyncComboboxField__multiProps) {
 					</Combobox.Item>
 				))}
 				<Combobox.Empty className="p-8">
-					<div className="mx-auto grid size-10 place-items-center rounded-lg border border-neutral-700/75">
-						<SearchIcon className="size-5 text-neutral-300" />
+					<div className="mx-auto grid size-10 place-items-center rounded-md border border-gray-300">
+						<SearchIcon className="size-5 text-gray-600" />
 					</div>
-					<h2 className="mt-2 text-center font-semibold text-neutral-300 text-sm">
+					<h2 className="mt-2 text-center font-semibold text-gray-700 text-sm">
 						No results found
 					</h2>
-					<p className="text-center text-neutral-400 text-xs">
+					<p className="text-center text-gray-500 text-xs">
 						There are no items that match your current search or filters.
 					</p>
 				</Combobox.Empty>

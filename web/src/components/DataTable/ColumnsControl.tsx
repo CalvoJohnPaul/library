@@ -27,7 +27,7 @@ export function ColumnsControl() {
 
 	return (
 		<Presence present={columnsControl.open} asChild>
-			<div className="shrink-0 ui-closed:animate-collapse-x-out ui-open:animate-collapse-x-in overflow-hidden rounded-xl border [--width:20rem]">
+			<div className="shrink-0 ui-closed:animate-collapse-x-out ui-open:animate-collapse-x-in overflow-hidden rounded-md border border-gray-300 [--width:20rem]">
 				<div className="w-(--width) overflow-hidden p-4">
 					<Items />
 				</div>
@@ -86,14 +86,14 @@ function Items() {
 							}}
 							disabled={!col.hideable}
 						>
-							<div className="grow truncate text-base text-neutral-300">{col.heading}</div>
+							<div className="grow truncate text-base text-gray-700">{col.heading}</div>
 						</CheckField>
 					);
 
 					if (!col.orderable) {
 						return (
 							<div key={col.id} className="not-last:mb-1.5 flex items-center gap-1.5">
-								<button type="button" className="text-neutral-400" disabled>
+								<button type="button" className="text-gray-500" disabled>
 									<GripIcon className="size-5" />
 								</button>
 								{content}
@@ -135,7 +135,7 @@ function SortableItem(props: SortableItemProps) {
 				type="button"
 				{...listeners}
 				{...attributes}
-				className="cursor-grab ui-dragging:cursor-grabbing text-neutral-400"
+				className="cursor-grab ui-dragging:cursor-grabbing text-gray-500"
 				data-dragging={isDragging || undefined}
 			>
 				<GripIcon className="size-5" />
@@ -155,8 +155,9 @@ export function ColumnsControlTrigger() {
 		<Tooltip.Root>
 			<Tooltip.Trigger asChild>
 				<IconButton
+					variant="outline"
+					accent="gray"
 					onClick={() => columnsControl.setOpen((v) => !v)}
-					className="ui-open:outline-2 ui-open:outline-blue-600 ui-open:outline-solid ui-open:-outline-offset-1"
 					data-state={columnsControl.open ? 'open' : 'closed'}
 				>
 					<Columns3Icon />
