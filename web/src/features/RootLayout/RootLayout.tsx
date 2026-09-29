@@ -1,15 +1,11 @@
 import {useEffect} from 'react';
 import {Outlet} from 'react-router';
 import {useMeQuery} from '@/hooks/useMeQuery';
-import {useNetworkState} from '@/hooks/useNetworkState';
 import {Login} from './Login';
 import {Navbar} from './Navbar';
 
 export function RootLayout() {
 	const query = useMeQuery();
-	const networkState = useNetworkState();
-
-	console.log(networkState);
 
 	useEffect(() => {
 		const interval = setInterval(() => {

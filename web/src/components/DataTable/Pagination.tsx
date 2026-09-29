@@ -22,7 +22,7 @@ export function Pagination() {
 	if (!paginationEnabled) return null;
 
 	return (
-		<div className="flex items-center gap-2 border-gray-300 border-t p-3 pl-4 lg:gap-3 lg:p-4 lg:pl-6">
+		<div className="@container flex items-center gap-2 border-gray-300 border-t p-3 pl-4 lg:gap-3 lg:p-4 lg:pl-6">
 			<p className="grow text-gray-500 text-sm">
 				Page {formatNumber(clamp(page, totalPages))} of {formatNumber(totalPages)}
 			</p>
@@ -71,9 +71,10 @@ export function Pagination() {
 					setPage(1);
 					setPageSize(details.pageSize);
 				}}
+				siblingCount={0}
 			>
 				<ArkPagination.PrevTrigger />
-				<div className="hidden lg:contents">
+				<div className="@xl:contents hidden">
 					<ArkPagination.Context>
 						{(api) =>
 							api.pages.map((page, idx) =>

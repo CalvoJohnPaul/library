@@ -3,7 +3,7 @@ import {useControllableState} from '@radix-ui/react-use-controllable-state';
 import {omit} from 'es-toolkit';
 import {Settings2Icon} from 'lucide-react';
 import {useState} from 'react';
-import {useDebounceCallback, useTimeout} from 'usehooks-ts';
+import {useDebounceCallback} from 'usehooks-ts';
 import {AsyncComboboxField} from '../forms/AsyncComboboxField';
 import {ComboboxField} from '../forms/ComboboxField';
 import {DateRangeField} from '../forms/DateRangeField';
@@ -14,14 +14,11 @@ import {ToggleField} from '../forms/ToggleField';
 import {Field} from '../ui/Field';
 import {IconButton} from '../ui/IconButton';
 import {Tooltip} from '../ui/Tooltip';
-import {useColumnsControlContext, useDataTableContext, useFiltersContext} from './DataTableContext';
+import {useDataTableContext, useFiltersContext} from './DataTableContext';
 
 export function Filters() {
 	const filters = useFiltersContext();
 	const dataTable = useDataTableContext();
-	const columnsControl = useColumnsControlContext();
-
-	useTimeout(() => filters.setOpen(false), columnsControl.open ? 1 : null);
 
 	return (
 		<Presence present={filters.open} asChild>

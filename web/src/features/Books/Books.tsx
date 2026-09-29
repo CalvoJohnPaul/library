@@ -1,18 +1,39 @@
-import {createListCollection} from '@ark-ui/react';
+import {createListCollection, Portal} from '@ark-ui/react';
 import {format} from 'date-fns';
-import {PlusIcon, SettingsIcon} from 'lucide-react';
+import {PenSquareIcon, PlusIcon, SettingsIcon, TrashIcon} from 'lucide-react';
+import {useReducer} from 'react';
 import {DataTable} from '@/components/DataTable';
 import {Button} from '@/components/ui/Button';
+import {Menu} from '@/components/ui/Menu';
 import {useBooksQuery} from '@/hooks/useBooksQuery';
 
+interface State {
+	page: number;
+	pageSize: number;
+}
+
 export function Books() {
-	const query = useBooksQuery();
+	const [state, setState] = useReducer(
+		(prev: State, next: Partial<State>) => ({
+			...prev,
+			...next,
+		}),
+		{
+			page: 1,
+			pageSize: 10,
+		},
+	);
+
+	const query = useBooksQuery({
+		page: state.page,
+		pageSize: state.pageSize,
+	});
 
 	return (
 		<div>
 			<div className="mb-6 flex items-center">
 				<div className="grow">
-					<h1 className="font-bold text-lg">Books</h1>
+					<h1 className="font-bold text-xl">Books</h1>
 					<p className="text-gray-600 text-sm">Manage your book collection below.</p>
 				</div>
 				<Button>
@@ -42,7 +63,11 @@ export function Books() {
 							return data.author;
 						},
 						filter: {
-							type: 'TEXT',
+							type: 'ASYNC_COMBOBOX',
+							placeholder: 'Search author',
+							options: async () => {
+								return [];
+							},
 						},
 						hideable: true,
 						orderable: true,
@@ -53,6 +78,10 @@ export function Books() {
 						cell(data) {
 							return data.yearPublished;
 						},
+						filter: {
+							type: 'DATE_RANGE',
+							placeholder: 'Pick a year',
+						},
 						hideable: true,
 						orderable: true,
 					},
@@ -62,6 +91,12 @@ export function Books() {
 						cell(data) {
 							return data.genre;
 						},
+						filter: {
+							type: 'SELECT',
+							options: [],
+							multiple: true,
+							placeholder: 'Select genre',
+						},
 						hideable: true,
 						orderable: true,
 					},
@@ -70,6 +105,10 @@ export function Books() {
 						heading: 'Date added',
 						cell(data) {
 							return format(data.dateTimeCreated, 'MMM dd, yyyy hh:mm a');
+						},
+						filter: {
+							type: 'DATE_RANGE',
+							placeholder: 'Pick a date',
 						},
 						sortable: true,
 						hideable: true,
@@ -81,6 +120,10 @@ export function Books() {
 						cell(data) {
 							return format(data.dateTimeUpdated, 'MMM dd, yyyy hh:mm a');
 						},
+						filter: {
+							type: 'DATE_RANGE',
+							placeholder: 'Pick a date',
+						},
 						sortable: true,
 						hideable: true,
 						orderable: true,
@@ -89,16 +132,43 @@ export function Books() {
 						id: 'actions',
 						heading: <SettingsIcon className="size-5" />,
 						cell() {
-							return <SettingsIcon className="size-5" />;
+							return (
+								<Menu.Root>
+									<Menu.Trigger>
+										<SettingsIcon className="size-5" />
+									</Menu.Trigger>
+									<Portal>
+										<Menu.Positioner>
+											<Menu.Content>
+												<Menu.Item value="edit">
+													<PenSquareIcon />
+													Edit
+												</Menu.Item>
+												<Menu.Item value="delete">
+													<TrashIcon />
+													Delete
+												</Menu.Item>
+											</Menu.Content>
+										</Menu.Positioner>
+									</Portal>
+								</Menu.Root>
+							);
 						},
 						className: 'w-0 text-center',
 					},
 				]}
-				onReload={() => {}}
+				loading={query.isLoading}
+				onReload={() => {
+					query.refetch();
+				}}
 				checkEnabled
 				searchEnabled
 				paginationEnabled
 				total={query.data?.total ?? 0}
+				page={state.page}
+				pageSize={state.pageSize}
+				onPageChange={(page) => setState({page})}
+				onPageSizeChange={(pageSize) => setState({pageSize})}
 			/>
 		</div>
 	);

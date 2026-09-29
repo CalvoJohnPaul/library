@@ -73,7 +73,7 @@ export function NumberRangeField(props: NumberRangeFieldProps) {
 						});
 					}}
 					min={props.min ?? 0}
-					max={props.max}
+					max={props.max ?? 999999}
 					disabled={props.disabled}
 					readOnly={props.readOnly}
 					invalid={props.invalid}
