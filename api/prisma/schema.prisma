@@ -35,7 +35,7 @@ model Book {
 model BookCopy {
   id              Int           @id @default(autoincrement())
   isbn            String
-  book            Book          @relation(fields: [bookId], references: [id])
+  book            Book          @relation(fields: [bookId], references: [id], onDelete: Cascade)
   bookId          Int
   status          BookStatus    @default(AVAILABLE)
   dateTimeCreated DateTime      @default(now())
@@ -63,9 +63,9 @@ enum TransactionType {
 model Transaction {
   id              Int             @id @default(autoincrement())
   type            TransactionType
-  student         Student         @relation(fields: [studentId], references: [id])
+  student         Student         @relation(fields: [studentId], references: [id], onDelete: Cascade)
   studentId       Int
-  bookCopy        BookCopy        @relation(fields: [bookCopyId], references: [id])
+  bookCopy        BookCopy        @relation(fields: [bookCopyId], references: [id], onDelete: Cascade)
   bookCopyId      Int
   dateTimeCreated DateTime        @default(now())
   dateTimeUpdated DateTime        @updatedAt

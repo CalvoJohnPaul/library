@@ -22,6 +22,17 @@ const plugin: FastifyPluginAsyncZod = async (app) => {
 		},
 		async () => {},
 	);
+
+	app.post(
+		'/export',
+		{
+			schema: {
+				tags: ['Transactions'],
+				response: {},
+			},
+		},
+		async () => {},
+	);
 };
 
 export const autoPrefix = '/transactions';
