@@ -6,6 +6,7 @@ export default defineConfig((config) => {
 		shims: true,
 		format: ['esm', 'cjs'],
 		outDir: 'dist',
+		sourcemap: true,
 		fixedExtension: false,
 		dts: {
 			build: true,

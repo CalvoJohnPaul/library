@@ -17,7 +17,7 @@
 	],
 	"scripts": {
 		"dev": "tsdown --watch",
-		"build": "tsdown --clean --sourcemap"
+		"build": "tsdown --clean"
 	},
 	"dependencies": {
 		"zod": "catalog:"
