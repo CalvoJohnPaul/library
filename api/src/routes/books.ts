@@ -15,6 +15,7 @@ import * as XLSX from 'xlsx';
 import * as z from 'zod';
 import type {Prisma} from '../../prisma/.generated/client';
 import {
+	ExcelWorkbookDefinition,
 	QueryString__BooleanDefinition,
 	QueryString__DateDefinition,
 	QueryString__NumberArrayDefinition,
@@ -22,13 +23,6 @@ import {
 	QueryString__StringArrayDefinition,
 	QueryString__StringDefinition,
 } from '../types';
-
-const ExcelWorkbookDefinition = z.any();
-
-z.globalRegistry.add(ExcelWorkbookDefinition, {
-	type: 'string',
-	format: 'binary',
-});
 
 const plugin: FastifyPluginAsyncZod = async (app) => {
 	app.get(

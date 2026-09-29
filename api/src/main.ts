@@ -17,6 +17,13 @@ import {
 	serializerCompiler,
 	validatorCompiler,
 } from 'fastify-type-provider-zod';
+import * as z from 'zod';
+import {ExcelWorkbookDefinition} from './types';
+
+z.globalRegistry.add(ExcelWorkbookDefinition, {
+	type: 'string',
+	format: 'binary',
+});
 
 async function main() {
 	const options: FastifyServerOptions = {

@@ -32,7 +32,10 @@ export const UpdateStudentInputDefinition = z.object({
 	data: UpdateStudentDataInputDefinition,
 });
 
+export const StudentSortByInputDefinition = z.enum(['dateTimeCreated', 'dateTimeUpdated']);
+
 export type Student = z.infer<typeof StudentDefinition>;
 export type CreateStudentInput = z.infer<typeof CreateStudentInputDefinition>;
 export type UpdateStudentDataInput = z.infer<typeof UpdateStudentDataInputDefinition>;
 export type UpdateStudentInput = z.infer<typeof UpdateStudentInputDefinition>;
+export type StudentSortByInput = z.infer<typeof StudentSortByInputDefinition>;

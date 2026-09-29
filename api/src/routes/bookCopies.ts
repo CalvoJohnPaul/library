@@ -1,92 +1,890 @@
+import {
+	BookCopyDefinition,
+	BookCopySortByInputDefinition,
+	BookStatusDefinition,
+	CreateBookCopyInputDefinition,
+	FailedHttpResponseDefinition,
+	PaginatedDefinition,
+	SortOrderDefinition,
+	SuccessfulHttpResponseDefinition,
+	UpdateBookCopyDataInputDefinition,
+	VoidSuccessfulHttpResponseDefinition,
+} from '@library/types';
+import {clamp, isNil, omitBy} from 'es-toolkit';
 import type {FastifyPluginAsyncZod} from 'fastify-type-provider-zod';
+import * as XLSX from 'xlsx';
+import * as z from 'zod';
+import type {Prisma} from '../../prisma/.generated/client';
+import {
+	ExcelWorkbookDefinition,
+	QueryString__DateDefinition,
+	QueryString__EnumArrayDefinition,
+	QueryString__EnumDefinition,
+	QueryString__NumberArrayDefinition,
+	QueryString__NumberDefinition,
+	QueryString__StringArrayDefinition,
+	QueryString__StringDefinition,
+} from '../types';
 
 const plugin: FastifyPluginAsyncZod = async (app) => {
 	app.get(
 		'/',
 		{
+			preHandler: [app.verifyAuth],
 			schema: {
 				tags: ['Book Copies'],
-				response: {},
+				querystring: z.object({
+					page: QueryString__NumberDefinition,
+					pageSize: QueryString__NumberDefinition,
+					id__eq: QueryString__NumberDefinition,
+					id__neq: QueryString__NumberDefinition,
+					id__in: QueryString__NumberArrayDefinition,
+					id__nin: QueryString__NumberArrayDefinition,
+					isbn__eq: QueryString__StringDefinition,
+					isbn__neq: QueryString__StringDefinition,
+					isbn__in: QueryString__StringArrayDefinition,
+					isbn__nin: QueryString__StringArrayDefinition,
+					isbn__contains: QueryString__StringDefinition,
+					status__eq: QueryString__EnumDefinition(BookStatusDefinition),
+					status__neq: QueryString__EnumDefinition(BookStatusDefinition),
+					status__in: QueryString__EnumArrayDefinition(BookStatusDefinition),
+					status__nin: QueryString__EnumArrayDefinition(BookStatusDefinition),
+					bookId__eq: QueryString__NumberDefinition,
+					bookId__neq: QueryString__NumberDefinition,
+					bookId__in: QueryString__NumberArrayDefinition,
+					bookId__nin: QueryString__NumberArrayDefinition,
+					dateTimeCreated__gt: QueryString__DateDefinition,
+					dateTimeCreated__gte: QueryString__DateDefinition,
+					dateTimeCreated__lt: QueryString__DateDefinition,
+					dateTimeCreated__lte: QueryString__DateDefinition,
+					dateTimeUpdated__gt: QueryString__DateDefinition,
+					dateTimeUpdated__gte: QueryString__DateDefinition,
+					dateTimeUpdated__lt: QueryString__DateDefinition,
+					dateTimeUpdated__lte: QueryString__DateDefinition,
+					sortBy: BookCopySortByInputDefinition.optional().nullable(),
+					sortOrder: SortOrderDefinition.optional().nullable(),
+				}),
+				response: {
+					200: SuccessfulHttpResponseDefinition(PaginatedDefinition(BookCopyDefinition)),
+					400: FailedHttpResponseDefinition,
+					401: FailedHttpResponseDefinition,
+					403: FailedHttpResponseDefinition,
+				},
 			},
 		},
-		async () => {},
+		async (req, reply) => {
+			const where: Prisma.BookCopyWhereInput = {};
+
+			if (
+				req.query.id__eq != null ||
+				req.query.id__neq != null ||
+				req.query.id__in != null ||
+				req.query.id__nin != null
+			) {
+				where.id = {
+					...(req.query.id__eq != null && {equals: req.query.id__eq}),
+					...(req.query.id__neq != null && {not: req.query.id__neq}),
+					...(req.query.id__in != null && {in: req.query.id__in}),
+					...(req.query.id__nin != null && {notIn: req.query.id__nin}),
+				};
+			}
+
+			if (
+				req.query.isbn__eq != null ||
+				req.query.isbn__neq != null ||
+				req.query.isbn__in != null ||
+				req.query.isbn__nin != null ||
+				req.query.isbn__contains
+			) {
+				where.isbn = {
+					...(req.query.isbn__eq != null && {equals: req.query.isbn__eq}),
+					...(req.query.isbn__neq != null && {not: req.query.isbn__neq}),
+					...(req.query.isbn__in != null && {in: req.query.isbn__in}),
+					...(req.query.isbn__nin != null && {notIn: req.query.isbn__nin}),
+					...(req.query.isbn__contains != null && {
+						contains: req.query.isbn__contains,
+						mode: 'insensitive',
+					}),
+				};
+			}
+
+			if (
+				req.query.status__eq != null ||
+				req.query.status__neq != null ||
+				req.query.status__in != null ||
+				req.query.status__nin != null
+			) {
+				where.status = {
+					...(req.query.status__eq != null && {equals: req.query.status__eq}),
+					...(req.query.status__neq != null && {not: req.query.status__neq}),
+					...(req.query.status__in != null && {in: req.query.status__in}),
+					...(req.query.status__nin != null && {notIn: req.query.status__nin}),
+				};
+			}
+
+			if (
+				req.query.bookId__eq != null ||
+				req.query.bookId__neq != null ||
+				req.query.bookId__in != null ||
+				req.query.bookId__nin != null
+			) {
+				where.bookId = {
+					...(req.query.bookId__eq != null && {equals: req.query.bookId__eq}),
+					...(req.query.bookId__neq != null && {not: req.query.bookId__neq}),
+					...(req.query.bookId__in != null && {in: req.query.bookId__in}),
+					...(req.query.bookId__nin != null && {notIn: req.query.bookId__nin}),
+				};
+			}
+
+			if (
+				req.query.dateTimeCreated__gt != null ||
+				req.query.dateTimeCreated__gte != null ||
+				req.query.dateTimeCreated__lt != null ||
+				req.query.dateTimeCreated__lte != null
+			) {
+				where.dateTimeCreated = {
+					...(req.query.dateTimeCreated__gt != null && {gt: req.query.dateTimeCreated__gt}),
+					...(req.query.dateTimeCreated__gte != null && {gte: req.query.dateTimeCreated__gte}),
+					...(req.query.dateTimeCreated__lt != null && {lt: req.query.dateTimeCreated__lt}),
+					...(req.query.dateTimeCreated__lte != null && {lte: req.query.dateTimeCreated__lte}),
+				};
+			}
+
+			if (
+				req.query.dateTimeUpdated__gt != null ||
+				req.query.dateTimeUpdated__gte != null ||
+				req.query.dateTimeUpdated__lt != null ||
+				req.query.dateTimeUpdated__lte != null
+			) {
+				where.dateTimeUpdated = {
+					...(req.query.dateTimeUpdated__gt != null && {gt: req.query.dateTimeUpdated__gt}),
+					...(req.query.dateTimeUpdated__gte != null && {gte: req.query.dateTimeUpdated__gte}),
+					...(req.query.dateTimeUpdated__lt != null && {lt: req.query.dateTimeUpdated__lt}),
+					...(req.query.dateTimeUpdated__lte != null && {lte: req.query.dateTimeUpdated__lte}),
+				};
+			}
+
+			const page = req.query.page ?? 1;
+			const take = clamp(req.query.pageSize ?? 10, 10, 100);
+			const skip = take * (page - 1);
+
+			const [total, rows] = await app.prisma.$transaction([
+				app.prisma.bookCopy.count({where}),
+				app.prisma.bookCopy.findMany({
+					skip,
+					take,
+					where,
+					select: {
+						id: true,
+						isbn: true,
+						status: true,
+						dateTimeCreated: true,
+						dateTimeUpdated: true,
+						book: {
+							select: {
+								id: true,
+								title: true,
+								genre: true,
+								author: true,
+								yearPublished: true,
+							},
+						},
+					},
+					orderBy: {
+						dateTimeCreated: 'desc',
+					},
+					...(req.query.sortBy != null && {
+						orderBy: {
+							...(req.query.sortBy === 'dateTimeCreated' && {
+								dateTimeCreated: req.query.sortOrder === 'ASC' ? 'asc' : 'desc',
+							}),
+							...(req.query.sortBy === 'dateTimeUpdated' && {
+								dateTimeUpdated: req.query.sortOrder === 'ASC' ? 'asc' : 'desc',
+							}),
+						},
+					}),
+				}),
+			]);
+
+			const hasNext = page < Math.ceil(total / take);
+			const hasPrevious = page > 1;
+			const next = hasNext ? page + 1 : null;
+			const previous = page > 1 ? page - 1 : null;
+
+			return reply.send({
+				ok: true,
+				data: {
+					rows: rows.map((bookCopy) => ({
+						id: bookCopy.id,
+						isbn: bookCopy.isbn,
+						book: {
+							id: bookCopy.book.id,
+							title: bookCopy.book.title,
+							genre: bookCopy.book.genre,
+							author: bookCopy.book.author,
+							yearPublished: bookCopy.book.yearPublished,
+						},
+						status: bookCopy.status,
+						dateTimeCreated: bookCopy.dateTimeCreated,
+						dateTimeUpdated: bookCopy.dateTimeUpdated,
+					})),
+					next,
+					hasNext,
+					previous,
+					hasPrevious,
+					total,
+				},
+			});
+		},
 	);
 
 	app.get(
 		'/:id',
 		{
+			preHandler: [app.verifyAuth],
 			schema: {
 				tags: ['Book Copies'],
-				response: {},
+				params: z.object({
+					id: z.coerce.number().positive(),
+				}),
+				response: {
+					200: SuccessfulHttpResponseDefinition(BookCopyDefinition),
+					400: FailedHttpResponseDefinition,
+					401: FailedHttpResponseDefinition,
+					403: FailedHttpResponseDefinition,
+					404: FailedHttpResponseDefinition,
+				},
 			},
 		},
-		async () => {},
+		async (req, reply) => {
+			const bookCopy = await app.prisma.bookCopy.findUnique({
+				where: {id: req.params.id},
+				select: {
+					id: true,
+					isbn: true,
+					status: true,
+					dateTimeCreated: true,
+					dateTimeUpdated: true,
+					book: {
+						select: {
+							id: true,
+							title: true,
+							genre: true,
+							author: true,
+							yearPublished: true,
+						},
+					},
+				},
+			});
+
+			if (!bookCopy) return reply.notFound();
+
+			return reply.send({
+				ok: true,
+				data: {
+					id: bookCopy.id,
+					isbn: bookCopy.isbn,
+					book: {
+						id: bookCopy.book.id,
+						title: bookCopy.book.title,
+						genre: bookCopy.book.genre,
+						author: bookCopy.book.author,
+						yearPublished: bookCopy.book.yearPublished,
+					},
+					status: bookCopy.status,
+					dateTimeCreated: bookCopy.dateTimeCreated,
+					dateTimeUpdated: bookCopy.dateTimeUpdated,
+				},
+			});
+		},
 	);
 
 	app.post(
 		'/',
 		{
+			onRequest: [app.csrfProtection],
+			preHandler: [app.verifyAuth],
 			schema: {
 				tags: ['Book Copies'],
-				response: {},
+				body: CreateBookCopyInputDefinition,
+				response: {
+					201: SuccessfulHttpResponseDefinition(BookCopyDefinition),
+					400: FailedHttpResponseDefinition,
+					401: FailedHttpResponseDefinition,
+					403: FailedHttpResponseDefinition,
+					409: FailedHttpResponseDefinition,
+				},
+				headers: z.object({
+					'x-csrf-token': z.string().nullable().optional(),
+				}),
 			},
 		},
-		async () => {},
+		async (req, reply) => {
+			if (await app.prisma.bookCopy.exists({isbn: req.body.isbn})) {
+				return reply.conflict('ISBN already exists');
+			}
+
+			if (!(await app.prisma.book.exists({id: req.body.bookId}))) {
+				return reply.badRequest('Book not found');
+			}
+
+			const bookCopy = await app.prisma.bookCopy.create({
+				data: {
+					isbn: req.body.isbn,
+					bookId: req.body.bookId,
+				},
+				select: {
+					id: true,
+					isbn: true,
+					status: true,
+					dateTimeCreated: true,
+					dateTimeUpdated: true,
+					book: {
+						select: {
+							id: true,
+							title: true,
+							genre: true,
+							author: true,
+							yearPublished: true,
+						},
+					},
+				},
+			});
+
+			return reply.code(201).send({
+				ok: true,
+				data: {
+					id: bookCopy.id,
+					isbn: bookCopy.isbn,
+					book: {
+						id: bookCopy.book.id,
+						title: bookCopy.book.title,
+						genre: bookCopy.book.genre,
+						author: bookCopy.book.author,
+						yearPublished: bookCopy.book.yearPublished,
+					},
+					status: bookCopy.status,
+					dateTimeCreated: bookCopy.dateTimeCreated,
+					dateTimeUpdated: bookCopy.dateTimeUpdated,
+				},
+			});
+		},
 	);
 
 	app.patch(
 		'/:id',
 		{
+			onRequest: [app.csrfProtection],
+			preHandler: [app.verifyAuth],
 			schema: {
 				tags: ['Book Copies'],
-				response: {},
+				params: z.object({
+					id: z.coerce.number().positive(),
+				}),
+				body: UpdateBookCopyDataInputDefinition,
+				response: {
+					200: SuccessfulHttpResponseDefinition(BookCopyDefinition),
+					400: FailedHttpResponseDefinition,
+					401: FailedHttpResponseDefinition,
+					403: FailedHttpResponseDefinition,
+					404: FailedHttpResponseDefinition,
+					409: FailedHttpResponseDefinition,
+					500: FailedHttpResponseDefinition,
+				},
+				headers: z.object({
+					'x-csrf-token': z.string().nullable().optional(),
+				}),
 			},
 		},
-		async () => {},
+		async (req, reply) => {
+			if (!(await app.prisma.bookCopy.exists({id: req.params.id}))) {
+				return reply.notFound();
+			}
+
+			const data = omitBy(req.body, (value) => isNil(value) || value === '');
+
+			if (data.bookId != null && !(await app.prisma.book.exists({id: data.bookId}))) {
+				return reply.badRequest('Book not found');
+			}
+
+			if (
+				data.isbn != null &&
+				(await app.prisma.bookCopy.exists({isbn: data.isbn, id: {not: req.params.id}}))
+			) {
+				return reply.conflict('ISBN already exists');
+			}
+
+			const bookCopy = await app.prisma.bookCopy.update({
+				where: {id: req.params.id},
+				data,
+				select: {
+					id: true,
+					isbn: true,
+					status: true,
+					dateTimeCreated: true,
+					dateTimeUpdated: true,
+					book: {
+						select: {
+							id: true,
+							title: true,
+							genre: true,
+							author: true,
+							yearPublished: true,
+						},
+					},
+				},
+			});
+
+			return reply.send({
+				ok: true,
+				data: {
+					id: bookCopy.id,
+					isbn: bookCopy.isbn,
+					book: {
+						id: bookCopy.book.id,
+						title: bookCopy.book.title,
+						genre: bookCopy.book.genre,
+						author: bookCopy.book.author,
+						yearPublished: bookCopy.book.yearPublished,
+					},
+					status: bookCopy.status,
+					dateTimeCreated: bookCopy.dateTimeCreated,
+					dateTimeUpdated: bookCopy.dateTimeUpdated,
+				},
+			});
+		},
 	);
 
 	app.delete(
 		'/:id',
 		{
+			onRequest: [app.csrfProtection],
+			preHandler: [app.verifyAuth],
 			schema: {
 				tags: ['Book Copies'],
-				response: {},
+				params: z.object({
+					id: z.coerce.number().positive(),
+				}),
+				response: {
+					200: VoidSuccessfulHttpResponseDefinition,
+					400: FailedHttpResponseDefinition,
+					401: FailedHttpResponseDefinition,
+					403: FailedHttpResponseDefinition,
+					404: FailedHttpResponseDefinition,
+				},
+				headers: z.object({
+					'x-csrf-token': z.string().nullable().optional(),
+				}),
 			},
 		},
-		async () => {},
+		async (req, reply) => {
+			if (!(await app.prisma.bookCopy.exists({id: req.params.id}))) {
+				return reply.notFound();
+			}
+
+			await app.prisma.bookCopy.delete({where: {id: req.params.id}});
+
+			return reply.send({ok: true});
+		},
 	);
 
 	app.post(
 		'/:id/borrow',
 		{
+			onRequest: [app.csrfProtection],
+			preHandler: [app.verifyAuth],
 			schema: {
 				tags: ['Book Copies'],
-				response: {},
+				params: z.object({
+					id: z.coerce.number().positive(),
+				}),
+				body: z.object({
+					studentId: z.number().positive(),
+				}),
+				response: {
+					200: SuccessfulHttpResponseDefinition(BookCopyDefinition),
+					400: FailedHttpResponseDefinition,
+					401: FailedHttpResponseDefinition,
+					403: FailedHttpResponseDefinition,
+					404: FailedHttpResponseDefinition,
+					409: FailedHttpResponseDefinition,
+				},
+				headers: z.object({
+					'x-csrf-token': z.string().nullable().optional(),
+				}),
 			},
 		},
-		async () => {},
+		async (req, reply) => {
+			const [existing, studentCount] = await app.prisma.$transaction([
+				app.prisma.bookCopy.findUnique({
+					where: {id: req.params.id},
+					select: {status: true},
+				}),
+				app.prisma.student.count({where: {id: req.body.studentId}}),
+			]);
+
+			if (!existing) {
+				return reply.notFound();
+			}
+
+			if (existing.status !== 'AVAILABLE') {
+				return reply.conflict('Book copy is not available');
+			}
+
+			if (studentCount <= 0) {
+				return reply.badRequest('Student not found');
+			}
+
+			const [bookCopy] = await app.prisma.$transaction([
+				app.prisma.bookCopy.update({
+					where: {id: req.params.id},
+					data: {status: 'BORROWED'},
+					select: {
+						id: true,
+						isbn: true,
+						status: true,
+						dateTimeCreated: true,
+						dateTimeUpdated: true,
+						book: {
+							select: {
+								id: true,
+								title: true,
+								genre: true,
+								author: true,
+								yearPublished: true,
+							},
+						},
+					},
+				}),
+				app.prisma.transaction.create({
+					data: {
+						type: 'BORROW',
+						bookCopyId: req.params.id,
+						studentId: req.body.studentId,
+					},
+				}),
+			]);
+
+			return reply.send({
+				ok: true,
+				data: {
+					id: bookCopy.id,
+					isbn: bookCopy.isbn,
+					book: {
+						id: bookCopy.book.id,
+						title: bookCopy.book.title,
+						genre: bookCopy.book.genre,
+						author: bookCopy.book.author,
+						yearPublished: bookCopy.book.yearPublished,
+					},
+					status: bookCopy.status,
+					dateTimeCreated: bookCopy.dateTimeCreated,
+					dateTimeUpdated: bookCopy.dateTimeUpdated,
+				},
+			});
+		},
 	);
 
 	app.post(
 		'/:id/return',
 		{
+			onRequest: [app.csrfProtection],
+			preHandler: [app.verifyAuth],
 			schema: {
 				tags: ['Book Copies'],
-				response: {},
+				params: z.object({
+					id: z.coerce.number().positive(),
+				}),
+				body: z.object({
+					studentId: z.number().positive(),
+				}),
+				response: {
+					200: SuccessfulHttpResponseDefinition(BookCopyDefinition),
+					400: FailedHttpResponseDefinition,
+					401: FailedHttpResponseDefinition,
+					403: FailedHttpResponseDefinition,
+					404: FailedHttpResponseDefinition,
+					409: FailedHttpResponseDefinition,
+				},
+				headers: z.object({
+					'x-csrf-token': z.string().nullable().optional(),
+				}),
 			},
 		},
-		async () => {},
+		async (req, reply) => {
+			const [existing, studentCount] = await app.prisma.$transaction([
+				app.prisma.bookCopy.findUnique({
+					where: {id: req.params.id},
+					select: {status: true},
+				}),
+				app.prisma.student.count({where: {id: req.body.studentId}}),
+			]);
+
+			if (!existing) {
+				return reply.notFound();
+			}
+
+			if (existing.status !== 'BORROWED') {
+				return reply.conflict('Book copy is not borrowed');
+			}
+
+			if (studentCount <= 0) {
+				return reply.badRequest('Student not found');
+			}
+
+			await app.prisma.$transaction([
+				app.prisma.bookCopy.update({
+					where: {id: req.params.id},
+					data: {status: 'AVAILABLE'},
+				}),
+				app.prisma.transaction.create({
+					data: {
+						type: 'RETURN',
+						bookCopyId: req.params.id,
+						studentId: req.body.studentId,
+					},
+				}),
+			]);
+
+			const bookCopy = await app.prisma.bookCopy.findUnique({
+				where: {id: req.params.id},
+				select: {
+					id: true,
+					isbn: true,
+					status: true,
+					dateTimeCreated: true,
+					dateTimeUpdated: true,
+					book: {
+						select: {
+							id: true,
+							title: true,
+							genre: true,
+							author: true,
+							yearPublished: true,
+						},
+					},
+				},
+			});
+
+			if (!bookCopy) return reply.notFound();
+
+			return reply.send({
+				ok: true,
+				data: {
+					id: bookCopy.id,
+					isbn: bookCopy.isbn,
+					book: {
+						id: bookCopy.book.id,
+						title: bookCopy.book.title,
+						genre: bookCopy.book.genre,
+						author: bookCopy.book.author,
+						yearPublished: bookCopy.book.yearPublished,
+					},
+					status: bookCopy.status,
+					dateTimeCreated: bookCopy.dateTimeCreated,
+					dateTimeUpdated: bookCopy.dateTimeUpdated,
+				},
+			});
+		},
 	);
 
 	app.post(
 		'/export',
 		{
+			preHandler: [app.verifyAuth],
 			schema: {
 				tags: ['Book Copies'],
-				response: {},
+				querystring: z.object({
+					id__eq: QueryString__NumberDefinition,
+					id__neq: QueryString__NumberDefinition,
+					id__in: QueryString__NumberArrayDefinition,
+					id__nin: QueryString__NumberArrayDefinition,
+					isbn__eq: QueryString__StringDefinition,
+					isbn__neq: QueryString__StringDefinition,
+					isbn__in: QueryString__StringArrayDefinition,
+					isbn__nin: QueryString__StringArrayDefinition,
+					isbn__contains: QueryString__StringDefinition,
+					status__eq: QueryString__EnumDefinition(BookStatusDefinition),
+					status__neq: QueryString__EnumDefinition(BookStatusDefinition),
+					status__in: QueryString__EnumArrayDefinition(BookStatusDefinition),
+					status__nin: QueryString__EnumArrayDefinition(BookStatusDefinition),
+					bookId__eq: QueryString__NumberDefinition,
+					bookId__neq: QueryString__NumberDefinition,
+					bookId__in: QueryString__NumberArrayDefinition,
+					bookId__nin: QueryString__NumberArrayDefinition,
+					dateTimeCreated__gt: QueryString__DateDefinition,
+					dateTimeCreated__gte: QueryString__DateDefinition,
+					dateTimeCreated__lt: QueryString__DateDefinition,
+					dateTimeCreated__lte: QueryString__DateDefinition,
+					dateTimeUpdated__gt: QueryString__DateDefinition,
+					dateTimeUpdated__gte: QueryString__DateDefinition,
+					dateTimeUpdated__lt: QueryString__DateDefinition,
+					dateTimeUpdated__lte: QueryString__DateDefinition,
+					sortBy: BookCopySortByInputDefinition.optional().nullable(),
+					sortOrder: SortOrderDefinition.optional().nullable(),
+				}),
+				response: {
+					200: {
+						description: 'Excel file',
+						content: {
+							'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': {
+								schema: ExcelWorkbookDefinition,
+							},
+						},
+					},
+				},
 			},
 		},
-		async () => {},
+		async (req, reply) => {
+			const where: Prisma.BookCopyWhereInput = {};
+
+			if (
+				req.query.id__eq != null ||
+				req.query.id__neq != null ||
+				req.query.id__in != null ||
+				req.query.id__nin != null
+			) {
+				where.id = {
+					...(req.query.id__eq != null && {equals: req.query.id__eq}),
+					...(req.query.id__neq != null && {not: req.query.id__neq}),
+					...(req.query.id__in != null && {in: req.query.id__in}),
+					...(req.query.id__nin != null && {notIn: req.query.id__nin}),
+				};
+			}
+
+			if (
+				req.query.isbn__eq != null ||
+				req.query.isbn__neq != null ||
+				req.query.isbn__in != null ||
+				req.query.isbn__nin != null ||
+				req.query.isbn__contains
+			) {
+				where.isbn = {
+					...(req.query.isbn__eq != null && {equals: req.query.isbn__eq}),
+					...(req.query.isbn__neq != null && {not: req.query.isbn__neq}),
+					...(req.query.isbn__in != null && {in: req.query.isbn__in}),
+					...(req.query.isbn__nin != null && {notIn: req.query.isbn__nin}),
+					...(req.query.isbn__contains != null && {
+						contains: req.query.isbn__contains,
+						mode: 'insensitive',
+					}),
+				};
+			}
+
+			if (
+				req.query.status__eq != null ||
+				req.query.status__neq != null ||
+				req.query.status__in != null ||
+				req.query.status__nin != null
+			) {
+				where.status = {
+					...(req.query.status__eq != null && {equals: req.query.status__eq}),
+					...(req.query.status__neq != null && {not: req.query.status__neq}),
+					...(req.query.status__in != null && {in: req.query.status__in}),
+					...(req.query.status__nin != null && {notIn: req.query.status__nin}),
+				};
+			}
+
+			if (
+				req.query.bookId__eq != null ||
+				req.query.bookId__neq != null ||
+				req.query.bookId__in != null ||
+				req.query.bookId__nin != null
+			) {
+				where.bookId = {
+					...(req.query.bookId__eq != null && {equals: req.query.bookId__eq}),
+					...(req.query.bookId__neq != null && {not: req.query.bookId__neq}),
+					...(req.query.bookId__in != null && {in: req.query.bookId__in}),
+					...(req.query.bookId__nin != null && {notIn: req.query.bookId__nin}),
+				};
+			}
+
+			if (
+				req.query.dateTimeCreated__gt != null ||
+				req.query.dateTimeCreated__gte != null ||
+				req.query.dateTimeCreated__lt != null ||
+				req.query.dateTimeCreated__lte != null
+			) {
+				where.dateTimeCreated = {
+					...(req.query.dateTimeCreated__gt != null && {gt: req.query.dateTimeCreated__gt}),
+					...(req.query.dateTimeCreated__gte != null && {gte: req.query.dateTimeCreated__gte}),
+					...(req.query.dateTimeCreated__lt != null && {lt: req.query.dateTimeCreated__lt}),
+					...(req.query.dateTimeCreated__lte != null && {lte: req.query.dateTimeCreated__lte}),
+				};
+			}
+
+			if (
+				req.query.dateTimeUpdated__gt != null ||
+				req.query.dateTimeUpdated__gte != null ||
+				req.query.dateTimeUpdated__lt != null ||
+				req.query.dateTimeUpdated__lte != null
+			) {
+				where.dateTimeUpdated = {
+					...(req.query.dateTimeUpdated__gt != null && {gt: req.query.dateTimeUpdated__gt}),
+					...(req.query.dateTimeUpdated__gte != null && {gte: req.query.dateTimeUpdated__gte}),
+					...(req.query.dateTimeUpdated__lt != null && {lt: req.query.dateTimeUpdated__lt}),
+					...(req.query.dateTimeUpdated__lte != null && {lte: req.query.dateTimeUpdated__lte}),
+				};
+			}
+
+			const rows = await app.prisma.bookCopy.findMany({
+				where,
+				select: {
+					id: true,
+					isbn: true,
+					status: true,
+					dateTimeCreated: true,
+					dateTimeUpdated: true,
+					book: {
+						select: {
+							id: true,
+							title: true,
+							genre: true,
+							author: true,
+							yearPublished: true,
+						},
+					},
+				},
+				orderBy: {
+					dateTimeCreated: 'desc',
+				},
+				...(req.query.sortBy != null && {
+					orderBy: {
+						...(req.query.sortBy === 'dateTimeCreated' && {
+							dateTimeCreated: req.query.sortOrder === 'ASC' ? 'asc' : 'desc',
+						}),
+						...(req.query.sortBy === 'dateTimeUpdated' && {
+							dateTimeUpdated: req.query.sortOrder === 'ASC' ? 'asc' : 'desc',
+						}),
+					},
+				}),
+			});
+
+			const worksheet = XLSX.utils.json_to_sheet(
+				rows.map((bookCopy) => ({
+					id: bookCopy.id,
+					isbn: bookCopy.isbn,
+					bookId: bookCopy.book.id,
+					title: bookCopy.book.title,
+					author: bookCopy.book.author,
+					genre: bookCopy.book.genre,
+					yearPublished: bookCopy.book.yearPublished,
+					status: bookCopy.status,
+					dateTimeCreated: bookCopy.dateTimeCreated.toISOString(),
+					dateTimeUpdated: bookCopy.dateTimeUpdated.toISOString(),
+				})),
+			);
+
+			const workbook = XLSX.utils.book_new();
+			XLSX.utils.book_append_sheet(workbook, worksheet, 'Book Copies');
+
+			const buffer = XLSX.write(workbook, {type: 'buffer', bookType: 'xlsx'}) as Buffer;
+
+			return reply
+				.header('content-type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+				.header('content-disposition', 'attachment; filename="book-copies.xlsx"')
+				.send(buffer);
+		},
 	);
 };
 

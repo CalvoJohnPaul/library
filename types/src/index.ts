@@ -5,4 +5,5 @@ export * from './Csrf.js';
 export * from './common.js';
 export * from './HttpResponse.js';
 export * from './Session.js';
+export * from './Student.js';
 export * from './Transaction.js';

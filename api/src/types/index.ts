@@ -1,5 +1,7 @@
 import * as z from 'zod';
 
+export const ExcelWorkbookDefinition = z.any();
+
 export const QueryString__StringDefinition = z
 	.string()
 	.nullable()

@@ -25,5 +25,8 @@ export const TransactionDefinition = z.object({
 	dateTimeUpdated: DateDefinition,
 });
 
+export const TransactionSortByInputDefinition = z.enum(['dateTimeCreated', 'dateTimeUpdated']);
+
 export type TransactionType = z.infer<typeof TransactionTypeDefinition>;
 export type Transaction = z.infer<typeof TransactionDefinition>;
+export type TransactionSortByInput = z.infer<typeof TransactionSortByInputDefinition>;
