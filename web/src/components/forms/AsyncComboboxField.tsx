@@ -1,0 +1,258 @@
+import {Portal} from '@ark-ui/react';
+import {useListCollection} from '@ark-ui/react/collection';
+import {useControllableState} from '@radix-ui/react-use-controllable-state';
+import {uniqBy} from 'es-toolkit';
+import {SearchIcon} from 'lucide-react';
+import {useRef} from 'react';
+import {useBoolean, useDebounceCallback, useTimeout} from 'usehooks-ts';
+import type {Option} from '@/types/index';
+import {Combobox} from '../ui/Combobox';
+import {Tags} from '../ui/Tags';
+
+export interface AsyncComboboxField__singleProps {
+	options: (inputValue: string, value: string) => Promise<Option[]>;
+	value?: string;
+	defaultValue?: string;
+	onChange?: (value: string) => void;
+	inpuValue?: string;
+	defaultInpuValue?: string;
+	onInpuValueChange?: (value: string) => void;
+	multiple?: false;
+	readOnly?: boolean;
+	disabled?: boolean;
+	required?: boolean;
+	invalid?: boolean;
+	placeholder?: string;
+	className?: string;
+	portalled?: boolean;
+}
+
+export interface AsyncComboboxField__multiProps {
+	options: (inputValue: string, value: string[]) => Promise<Option[]>;
+	value?: string[];
+	defaultValue?: string[];
+	onChange?: (value: string[]) => void;
+	inpuValue?: string;
+	defaultInpuValue?: string;
+	onInpuValueChange?: (value: string) => void;
+	multiple: true;
+	readOnly?: boolean;
+	disabled?: boolean;
+	required?: boolean;
+	invalid?: boolean;
+	placeholder?: string;
+	className?: string;
+	portalled?: boolean;
+}
+
+export type AsyncComboboxFieldProps =
+	| AsyncComboboxField__singleProps
+	| AsyncComboboxField__multiProps;
+
+export function AsyncComboboxField(props: AsyncComboboxFieldProps) {
+	if (props.multiple) return <AsyncComboboxField__multi {...props} />;
+	return <AsyncComboboxField__single {...props} />;
+}
+
+function AsyncComboboxField__single(props: AsyncComboboxField__singleProps) {
+	const [value, setValue] = useControllableState({
+		prop: props.value,
+		defaultProp: props.defaultValue ?? '',
+		onChange: props.onChange,
+	});
+
+	const [inputValue, setInputValue] = useControllableState({
+		prop: props.inpuValue,
+		defaultProp: props.defaultInpuValue ?? '',
+		onChange: props.onInpuValueChange,
+	});
+
+	const {collection, set} = useListCollection<Option>({
+		initialItems: [],
+		itemToString: (item) => item.label,
+		itemToValue: (item) => item.value,
+		isItemDisabled: (item) => item.disabled ?? false,
+	});
+
+	const loadOptions = useDebounceCallback(async (inputValue: string, value: string) => {
+		const l = await props.options(inputValue, value);
+		set(l);
+	}, 250);
+
+	const inited = useBoolean();
+
+	useTimeout(
+		() => {
+			inited.setTrue();
+			loadOptions('', value);
+		},
+		!inited.value ? 1 : null,
+	);
+
+	const content = (
+		<Combobox.Positioner>
+			<Combobox.Content>
+				{collection.items.map((item) => (
+					<Combobox.Item key={item.value} item={item}>
+						<Combobox.ItemText>{item.label}</Combobox.ItemText>
+						<Combobox.ItemIndicator />
+					</Combobox.Item>
+				))}
+				<Combobox.Empty className="p-8">
+					<div className="mx-auto grid size-10 place-items-center rounded-lg border border-neutral-700/75">
+						<SearchIcon className="size-5 text-neutral-300" />
+					</div>
+					<h2 className="mt-2 text-center font-semibold text-neutral-300 text-sm">
+						No results found
+					</h2>
+					<p className="text-center text-neutral-400 text-xs">
+						There are no items that match your current search or filters.
+					</p>
+				</Combobox.Empty>
+			</Combobox.Content>
+		</Combobox.Positioner>
+	);
+
+	return (
+		<Combobox.Root
+			value={value ? [value] : []}
+			onValueChange={(details) => {
+				setValue(details.value.at(0) ?? '');
+			}}
+			inputValue={inputValue}
+			onInputValueChange={async (details) => {
+				setInputValue(details.inputValue);
+				loadOptions(details.inputValue, value);
+			}}
+			collection={collection}
+			multiple={false}
+			disabled={props.disabled}
+			required={props.required}
+			readOnly={props.readOnly}
+			invalid={props.invalid}
+			closeOnSelect
+			selectionBehavior="replace"
+			placeholder={props.placeholder || 'Search'}
+			className={props.className}
+		>
+			<Combobox.Label />
+			<Combobox.Control>
+				<Combobox.Input />
+				<Combobox.Trigger />
+			</Combobox.Control>
+			{props.portalled ? <Portal>{content}</Portal> : content}
+		</Combobox.Root>
+	);
+}
+
+function AsyncComboboxField__multi(props: AsyncComboboxField__multiProps) {
+	const [value, setValue] = useControllableState({
+		prop: props.value,
+		defaultProp: props.defaultValue ?? [],
+		onChange: props.onChange,
+	});
+
+	const [inputValue, setInputValue] = useControllableState({
+		prop: props.inpuValue,
+		defaultProp: props.defaultInpuValue ?? '',
+		onChange: props.onInpuValueChange,
+	});
+
+	const {collection, set} = useListCollection<Option>({
+		initialItems: [],
+		itemToString: (item) => item.label,
+		itemToValue: (item) => item.value,
+		isItemDisabled: (item) => item.disabled ?? false,
+	});
+
+	const cache = useRef<Option[]>([]);
+	const loadOptions = useDebounceCallback(async (inputValue: string, value: string[]) => {
+		const l = await props.options(inputValue, value);
+		cache.current = uniqBy([...cache.current, ...l], (o) => o.value);
+		set(l);
+	}, 250);
+
+	const inited = useBoolean();
+	useTimeout(
+		() => {
+			inited.setTrue();
+			loadOptions('', value);
+		},
+		!inited.value ? 1 : null,
+	);
+
+	const content = (
+		<Combobox.Positioner>
+			<Combobox.Content>
+				{collection.items.map((item) => (
+					<Combobox.Item key={item.value} item={item}>
+						<Combobox.ItemText>{item.label}</Combobox.ItemText>
+						<Combobox.ItemIndicator />
+					</Combobox.Item>
+				))}
+				<Combobox.Empty className="p-8">
+					<div className="mx-auto grid size-10 place-items-center rounded-lg border border-neutral-700/75">
+						<SearchIcon className="size-5 text-neutral-300" />
+					</div>
+					<h2 className="mt-2 text-center font-semibold text-neutral-300 text-sm">
+						No results found
+					</h2>
+					<p className="text-center text-neutral-400 text-xs">
+						There are no items that match your current search or filters.
+					</p>
+				</Combobox.Empty>
+			</Combobox.Content>
+		</Combobox.Positioner>
+	);
+
+	return (
+		<Combobox.Root
+			value={value}
+			onValueChange={(details) => {
+				setValue(details.value);
+			}}
+			inputValue={inputValue}
+			onInputValueChange={(details) => {
+				setInputValue(details.inputValue);
+				loadOptions(details.inputValue, value);
+			}}
+			collection={collection}
+			multiple
+			disabled={props.disabled}
+			required={props.required}
+			readOnly={props.readOnly}
+			invalid={props.invalid}
+			selectionBehavior="preserve"
+			closeOnSelect={false}
+			placeholder={props.placeholder || 'Search'}
+			className={props.className}
+		>
+			<Combobox.Control>
+				<Combobox.Input />
+				<Combobox.Trigger />
+			</Combobox.Control>
+			<Combobox.Context>
+				{(api) => {
+					if (api.value.length <= 0) return null;
+					return (
+						<Tags.Root className="mt-2">
+							{api.value.map((value) => (
+								<Tags.Item key={value}>
+									<Tags.ItemText>
+										{cache.current.find((o) => o.value === value)?.label}
+									</Tags.ItemText>
+									<Tags.ItemCloseTrigger
+										onClick={() => {
+											api.clearValue(value);
+										}}
+									/>
+								</Tags.Item>
+							))}
+						</Tags.Root>
+					);
+				}}
+			</Combobox.Context>
+			{props.portalled ? <Portal>{content}</Portal> : content}
+		</Combobox.Root>
+	);
+}
