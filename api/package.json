@@ -3,7 +3,7 @@
 	"type": "commonjs",
 	"private": true,
 	"scripts": {
-		"dev": "tsx watch --include=\\\"./src/**/*\\\" --no-warnings --env-file=.env --clear-screen=false ./src/main.ts",
+		"dev": "tsx watch --include=\\\"./src/**/*\\\" --include=\\\"../types/dist/**/*\\\" --no-warnings --env-file=.env --clear-screen=false ./src/main.ts",
 		"start": "node -r dotenv/config dist/main.cjs",
 		"build": "tsdown",
 		"postinstall": "prisma generate",
