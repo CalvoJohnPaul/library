@@ -1,13 +1,17 @@
 import {
 	BookDefinition,
 	BookSortByInputDefinition,
+	CreateBookInputDefinition,
 	FailedHttpResponseDefinition,
 	PaginatedDefinition,
 	SortOrderDefinition,
 	SuccessfulHttpResponseDefinition,
+	UpdateBookDataInputDefinition,
+	VoidSuccessfulHttpResponseDefinition,
 } from '@library/types';
-import {clamp} from 'es-toolkit';
+import {clamp, isNil, omitBy} from 'es-toolkit';
 import type {FastifyPluginAsyncZod} from 'fastify-type-provider-zod';
+import * as XLSX from 'xlsx';
 import * as z from 'zod';
 import type {Prisma} from '../../prisma/.generated/client';
 import {
@@ -18,6 +22,13 @@ import {
 	QueryString__StringArrayDefinition,
 	QueryString__StringDefinition,
 } from '../types';
+
+const ExcelWorkbookDefinition = z.any();
+
+z.globalRegistry.add(ExcelWorkbookDefinition, {
+	type: 'string',
+	format: 'binary',
+});
 
 const plugin: FastifyPluginAsyncZod = async (app) => {
 	app.get(
@@ -70,6 +81,7 @@ const plugin: FastifyPluginAsyncZod = async (app) => {
 					400: FailedHttpResponseDefinition,
 					401: FailedHttpResponseDefinition,
 					403: FailedHttpResponseDefinition,
+					500: FailedHttpResponseDefinition,
 				},
 			},
 		},
@@ -261,56 +273,447 @@ const plugin: FastifyPluginAsyncZod = async (app) => {
 	app.get(
 		'/:id',
 		{
+			preHandler: [app.verifyAuth],
 			schema: {
 				tags: ['Books'],
-				response: {},
+				params: z.object({
+					id: z.coerce.number().positive(),
+				}),
+				response: {
+					200: SuccessfulHttpResponseDefinition(BookDefinition),
+					400: FailedHttpResponseDefinition,
+					401: FailedHttpResponseDefinition,
+					403: FailedHttpResponseDefinition,
+					404: FailedHttpResponseDefinition,
+					500: FailedHttpResponseDefinition,
+				},
 			},
 		},
-		async () => {},
+		async (req, reply) => {
+			const book = await app.prisma.book.findUnique({
+				where: {id: req.params.id},
+				select: {
+					id: true,
+					title: true,
+					author: true,
+					genre: true,
+					yearPublished: true,
+					dateTimeCreated: true,
+					dateTimeUpdated: true,
+					_count: {
+						select: {
+							copies: true,
+						},
+					},
+					copies: {
+						where: {status: 'AVAILABLE'},
+						select: {id: true},
+						take: 1,
+					},
+				},
+			});
+
+			if (!book) return reply.notFound();
+
+			return reply.send({
+				ok: true,
+				data: {
+					id: book.id,
+					title: book.title,
+					author: book.author,
+					genre: book.genre,
+					yearPublished: book.yearPublished,
+					dateTimeCreated: book.dateTimeCreated,
+					dateTimeUpdated: book.dateTimeUpdated,
+					totalCopies: book._count.copies,
+					available: book.copies.length > 0,
+				},
+			});
+		},
 	);
 
 	app.post(
 		'/',
 		{
+			onRequest: [app.csrfProtection],
+			preHandler: [app.verifyAuth],
 			schema: {
 				tags: ['Books'],
-				response: {},
+				body: CreateBookInputDefinition,
+				response: {
+					201: SuccessfulHttpResponseDefinition(BookDefinition),
+					400: FailedHttpResponseDefinition,
+					401: FailedHttpResponseDefinition,
+					403: FailedHttpResponseDefinition,
+					500: FailedHttpResponseDefinition,
+				},
+				headers: z.object({
+					'x-csrf-token': z.string().nullable().optional(),
+				}),
 			},
 		},
-		async () => {},
+		async (req, reply) => {
+			const book = await app.prisma.book.create({
+				data: {
+					title: req.body.title,
+					author: req.body.author,
+					genre: req.body.genre,
+					yearPublished: req.body.yearPublished,
+				},
+			});
+
+			return reply.code(201).send({
+				ok: true,
+				data: {
+					id: book.id,
+					title: book.title,
+					author: book.author,
+					genre: book.genre,
+					yearPublished: book.yearPublished,
+					dateTimeCreated: book.dateTimeCreated,
+					dateTimeUpdated: book.dateTimeUpdated,
+					totalCopies: 0,
+					available: false,
+				},
+			});
+		},
 	);
 
 	app.patch(
 		'/:id',
 		{
+			onRequest: [app.csrfProtection],
+			preHandler: [app.verifyAuth],
 			schema: {
 				tags: ['Books'],
-				response: {},
+				params: z.object({
+					id: z.coerce.number().positive(),
+				}),
+				body: UpdateBookDataInputDefinition,
+				response: {
+					200: SuccessfulHttpResponseDefinition(BookDefinition),
+					400: FailedHttpResponseDefinition,
+					401: FailedHttpResponseDefinition,
+					403: FailedHttpResponseDefinition,
+					404: FailedHttpResponseDefinition,
+					500: FailedHttpResponseDefinition,
+				},
+				headers: z.object({
+					'x-csrf-token': z.string().nullable().optional(),
+				}),
 			},
 		},
-		async () => {},
+		async (req, reply) => {
+			if (!(await app.prisma.book.exists({id: req.params.id}))) {
+				return reply.notFound();
+			}
+
+			const data = omitBy(req.body, (value) => isNil(value) || value === '');
+			const book = await app.prisma.book.update({
+				where: {id: req.params.id},
+				data,
+				select: {
+					id: true,
+					title: true,
+					author: true,
+					genre: true,
+					yearPublished: true,
+					dateTimeCreated: true,
+					dateTimeUpdated: true,
+					_count: {
+						select: {
+							copies: true,
+						},
+					},
+					copies: {
+						where: {status: 'AVAILABLE'},
+						select: {id: true},
+						take: 1,
+					},
+				},
+			});
+
+			return reply.send({
+				ok: true,
+				data: {
+					id: book.id,
+					title: book.title,
+					author: book.author,
+					genre: book.genre,
+					yearPublished: book.yearPublished,
+					dateTimeCreated: book.dateTimeCreated,
+					dateTimeUpdated: book.dateTimeUpdated,
+					totalCopies: book._count.copies,
+					available: book.copies.length > 0,
+				},
+			});
+		},
 	);
 
 	app.delete(
 		'/:id',
 		{
+			onRequest: [app.csrfProtection],
+			preHandler: [app.verifyAuth],
 			schema: {
 				tags: ['Books'],
-				response: {},
+				params: z.object({
+					id: z.coerce.number().positive(),
+				}),
+				response: {
+					200: VoidSuccessfulHttpResponseDefinition,
+					400: FailedHttpResponseDefinition,
+					401: FailedHttpResponseDefinition,
+					403: FailedHttpResponseDefinition,
+					404: FailedHttpResponseDefinition,
+					500: FailedHttpResponseDefinition,
+				},
+				headers: z.object({
+					'x-csrf-token': z.string().nullable().optional(),
+				}),
 			},
 		},
-		async () => {},
+		async (req, reply) => {
+			if (!(await app.prisma.book.exists({id: req.params.id}))) {
+				return reply.notFound();
+			}
+
+			await app.prisma.book.delete({where: {id: req.params.id}});
+
+			return reply.send({ok: true});
+		},
 	);
 
 	app.post(
 		'/export',
 		{
+			preHandler: [app.verifyAuth],
 			schema: {
 				tags: ['Books'],
-				response: {},
+				querystring: z.object({
+					id__eq: QueryString__NumberDefinition,
+					id__neq: QueryString__NumberDefinition,
+					id__in: QueryString__NumberArrayDefinition,
+					id__nin: QueryString__NumberArrayDefinition,
+					title__eq: QueryString__StringDefinition,
+					title__neq: QueryString__StringDefinition,
+					title__in: QueryString__StringArrayDefinition,
+					title__nin: QueryString__StringArrayDefinition,
+					title__contains: QueryString__StringDefinition,
+					author__eq: QueryString__StringDefinition,
+					author__neq: QueryString__StringDefinition,
+					author__in: QueryString__StringArrayDefinition,
+					author__nin: QueryString__StringArrayDefinition,
+					author__contains: QueryString__StringDefinition,
+					genre__eq: QueryString__StringDefinition,
+					genre__neq: QueryString__StringDefinition,
+					genre__in: QueryString__StringArrayDefinition,
+					genre__nin: QueryString__StringArrayDefinition,
+					genre__contains: QueryString__StringDefinition,
+					yearPublished__gt: QueryString__NumberDefinition,
+					yearPublished__gte: QueryString__NumberDefinition,
+					yearPublished__lt: QueryString__NumberDefinition,
+					yearPublished__lte: QueryString__NumberDefinition,
+					dateTimeCreated__gt: QueryString__DateDefinition,
+					dateTimeCreated__gte: QueryString__DateDefinition,
+					dateTimeCreated__lt: QueryString__DateDefinition,
+					dateTimeCreated__lte: QueryString__DateDefinition,
+					dateTimeUpdated__gt: QueryString__DateDefinition,
+					dateTimeUpdated__gte: QueryString__DateDefinition,
+					dateTimeUpdated__lt: QueryString__DateDefinition,
+					dateTimeUpdated__lte: QueryString__DateDefinition,
+					available__eq: QueryString__BooleanDefinition,
+					available__neq: QueryString__BooleanDefinition,
+					sortBy: BookSortByInputDefinition.optional().nullable(),
+					sortOrder: SortOrderDefinition.optional().nullable(),
+				}),
+				response: {
+					200: {
+						description: 'Excel file',
+						content: {
+							'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': {
+								schema: ExcelWorkbookDefinition,
+							},
+						},
+					},
+					400: FailedHttpResponseDefinition,
+					401: FailedHttpResponseDefinition,
+					403: FailedHttpResponseDefinition,
+					500: FailedHttpResponseDefinition,
+				},
 			},
 		},
-		async () => {},
+		async (req, reply) => {
+			const where: Prisma.BookWhereInput = {};
+
+			if (
+				req.query.id__eq != null ||
+				req.query.id__neq != null ||
+				req.query.id__in != null ||
+				req.query.id__nin != null
+			) {
+				where.id = {
+					...(req.query.id__eq != null && {equals: req.query.id__eq}),
+					...(req.query.id__neq != null && {not: req.query.id__neq}),
+					...(req.query.id__in != null && {in: req.query.id__in}),
+					...(req.query.id__nin != null && {notIn: req.query.id__nin}),
+				};
+			}
+
+			if (
+				req.query.title__eq != null ||
+				req.query.title__neq != null ||
+				req.query.title__in != null ||
+				req.query.title__nin != null ||
+				req.query.title__contains
+			) {
+				where.title = {
+					...(req.query.title__eq != null && {equals: req.query.title__eq}),
+					...(req.query.title__neq != null && {not: req.query.title__neq}),
+					...(req.query.title__in != null && {in: req.query.title__in}),
+					...(req.query.title__nin != null && {notIn: req.query.title__nin}),
+					...(req.query.title__contains != null && {
+						contains: req.query.title__contains,
+						mode: 'insensitive',
+					}),
+				};
+			}
+
+			if (
+				req.query.author__eq != null ||
+				req.query.author__neq != null ||
+				req.query.author__in != null ||
+				req.query.author__nin != null ||
+				req.query.author__contains
+			) {
+				where.author = {
+					...(req.query.author__eq != null && {equals: req.query.author__eq}),
+					...(req.query.author__neq != null && {not: req.query.author__neq}),
+					...(req.query.author__in != null && {in: req.query.author__in}),
+					...(req.query.author__nin != null && {notIn: req.query.author__nin}),
+					...(req.query.author__contains != null && {
+						contains: req.query.author__contains,
+						mode: 'insensitive',
+					}),
+				};
+			}
+
+			if (
+				req.query.genre__eq != null ||
+				req.query.genre__neq != null ||
+				req.query.genre__in != null ||
+				req.query.genre__nin != null ||
+				req.query.genre__contains
+			) {
+				where.genre = {
+					...(req.query.genre__eq != null && {equals: req.query.genre__eq}),
+					...(req.query.genre__neq != null && {not: req.query.genre__neq}),
+					...(req.query.genre__in != null && {in: req.query.genre__in}),
+					...(req.query.genre__nin != null && {notIn: req.query.genre__nin}),
+					...(req.query.genre__contains != null && {
+						contains: req.query.genre__contains,
+						mode: 'insensitive',
+					}),
+				};
+			}
+
+			if (req.query.available__eq != null || req.query.available__neq != null) {
+				where.copies = {
+					...(req.query.available__eq === true && {some: {status: 'AVAILABLE'}}),
+					...(req.query.available__eq === false && {none: {status: 'AVAILABLE'}}),
+					...(req.query.available__neq === true && {none: {status: 'AVAILABLE'}}),
+					...(req.query.available__neq === false && {some: {status: 'AVAILABLE'}}),
+				};
+			}
+
+			if (
+				req.query.dateTimeCreated__gt != null ||
+				req.query.dateTimeCreated__gte != null ||
+				req.query.dateTimeCreated__lt != null ||
+				req.query.dateTimeCreated__lte != null
+			) {
+				where.dateTimeCreated = {
+					...(req.query.dateTimeCreated__gt != null && {gt: req.query.dateTimeCreated__gt}),
+					...(req.query.dateTimeCreated__gte != null && {gte: req.query.dateTimeCreated__gte}),
+					...(req.query.dateTimeCreated__lt != null && {lt: req.query.dateTimeCreated__lt}),
+					...(req.query.dateTimeCreated__lte != null && {lte: req.query.dateTimeCreated__lte}),
+				};
+			}
+
+			if (
+				req.query.dateTimeUpdated__gt != null ||
+				req.query.dateTimeUpdated__gte != null ||
+				req.query.dateTimeUpdated__lt != null ||
+				req.query.dateTimeUpdated__lte != null
+			) {
+				where.dateTimeUpdated = {
+					...(req.query.dateTimeUpdated__gt != null && {gt: req.query.dateTimeUpdated__gt}),
+					...(req.query.dateTimeUpdated__gte != null && {gte: req.query.dateTimeUpdated__gte}),
+					...(req.query.dateTimeUpdated__lt != null && {lt: req.query.dateTimeUpdated__lt}),
+					...(req.query.dateTimeUpdated__lte != null && {lte: req.query.dateTimeUpdated__lte}),
+				};
+			}
+
+			const rows = await app.prisma.book.findMany({
+				where,
+				select: {
+					id: true,
+					title: true,
+					author: true,
+					genre: true,
+					yearPublished: true,
+					dateTimeCreated: true,
+					dateTimeUpdated: true,
+					_count: {
+						select: {
+							copies: true,
+						},
+					},
+					copies: {
+						where: {status: 'AVAILABLE'},
+						select: {id: true},
+						take: 1,
+					},
+				},
+				orderBy: {
+					dateTimeCreated: 'desc',
+				},
+				...(req.query.sortBy != null && {
+					orderBy: {
+						...(req.query.sortBy === 'dateTimeCreated' && {
+							dateTimeCreated: req.query.sortOrder === 'ASC' ? 'asc' : 'desc',
+						}),
+						...(req.query.sortBy === 'dateTimeUpdated' && {
+							dateTimeUpdated: req.query.sortOrder === 'ASC' ? 'asc' : 'desc',
+						}),
+					},
+				}),
+			});
+
+			const worksheet = XLSX.utils.json_to_sheet(
+				rows.map((row) => ({
+					id: row.id,
+					title: row.title,
+					author: row.author,
+					genre: row.genre,
+					yearPublished: row.yearPublished,
+					totalCopies: row._count.copies,
+					available: row.copies.length > 0,
+					dateTimeCreated: row.dateTimeCreated.toISOString(),
+					dateTimeUpdated: row.dateTimeUpdated.toISOString(),
+				})),
+			);
+
+			const workbook = XLSX.utils.book_new();
+			XLSX.utils.book_append_sheet(workbook, worksheet, 'Books');
+
+			const buffer = XLSX.write(workbook, {type: 'buffer', bookType: 'xlsx'}) as Buffer;
+
+			return reply
+				.header('content-type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+				.header('content-disposition', 'attachment; filename="books.xlsx"')
+				.send(buffer);
+		},
 	);
 };
 

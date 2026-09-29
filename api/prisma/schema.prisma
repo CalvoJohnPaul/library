@@ -34,7 +34,7 @@ model Book {
 
 model BookCopy {
   id              Int           @id @default(autoincrement())
-  isbn            String
+  isbn            String        @unique
   book            Book          @relation(fields: [bookId], references: [id], onDelete: Cascade)
   bookId          Int
   status          BookStatus    @default(AVAILABLE)

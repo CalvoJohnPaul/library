@@ -33,6 +33,8 @@ async function main() {
 		const server = fastify(options);
 
 		server.setErrorHandler((error, _req, reply) => {
+			const statusCode = get(error, 'statusCode', 500);
+
 			let name: string;
 			let message: string;
 
@@ -68,13 +70,11 @@ async function main() {
 					500: 'An unexpected error occurred.',
 				};
 
-				const code = get(error, 'code') ?? reply.statusCode ?? 500;
-
-				name = map_0[code] ?? map_0[500];
-				message = map_1[code] ?? map_1[500];
+				name = map_0[statusCode] ?? map_0[500];
+				message = map_1[statusCode] ?? map_1[500];
 			}
 
-			reply.send({
+			reply.code(statusCode).send({
 				ok: false,
 				error: {
 					name,
