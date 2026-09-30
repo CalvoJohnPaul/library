@@ -3,10 +3,11 @@ import {format} from 'date-fns';
 import {PenSquareIcon, PlusIcon, SettingsIcon, TrashIcon} from 'lucide-react';
 import {useReducer} from 'react';
 import {DataTable} from '@/components/DataTable';
-import {Button} from '@/components/ui/Button';
 import {IconButton} from '@/components/ui/IconButton';
 import {Menu} from '@/components/ui/Menu';
+import {Tooltip} from '@/components/ui/Tooltip';
 import {useBooksQuery} from '@/hooks/useBooksQuery';
+import {AddBook} from './AddBook';
 
 interface State {
 	page: number;
@@ -41,10 +42,7 @@ export function Books() {
 				<IconButton variant="outline" accent="gray">
 					<TrashIcon />
 				</IconButton>
-				<Button>
-					<PlusIcon />
-					Add Book
-				</Button>
+				<AddBook />
 			</div>
 			<DataTable
 				id="books"
@@ -176,6 +174,29 @@ export function Books() {
 				pageSize={state.pageSize}
 				onPageChange={(page) => setState({page})}
 				onPageSizeChange={(pageSize) => setState({pageSize})}
+				cta={
+					<AddBook
+						trigger={({setOpen}) => (
+							<Tooltip.Root>
+								<Tooltip.Trigger asChild>
+									<IconButton variant="outline" accent="gray" onClick={() => setOpen(true)}>
+										<PlusIcon className="size-5" />
+									</IconButton>
+								</Tooltip.Trigger>
+								<Portal>
+									<Tooltip.Positioner>
+										<Tooltip.Content>
+											<Tooltip.Arrow>
+												<Tooltip.ArrowTip />
+											</Tooltip.Arrow>
+											Add book
+										</Tooltip.Content>
+									</Tooltip.Positioner>
+								</Portal>
+							</Tooltip.Root>
+						)}
+					/>
+				}
 			/>
 		</div>
 	);

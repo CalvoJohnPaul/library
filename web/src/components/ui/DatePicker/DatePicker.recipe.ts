@@ -31,7 +31,6 @@ export const datePickerRecipe = tv({
 		positioner: 'z-dropdown',
 		content: [
 			'z-dropdown',
-			'max-h-(--available-height)',
 			'overflow-y-auto',
 			'rounded-md',
 			'border',

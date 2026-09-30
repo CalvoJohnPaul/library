@@ -21,11 +21,35 @@ enum BookStatus {
   BORROWED
 }
 
+enum BookGenre {
+  FICTION
+  NON_FICTION
+  ROMANCE
+  FANTASY
+  SCIENCE_FICTION
+  MYSTERY
+  THRILLER
+  HORROR
+  HISTORICAL_FICTION
+  BIOGRAPHY
+  SELF_HELP
+  HISTORY
+  PHILOSOPHY
+  PSYCHOLOGY
+  BUSINESS
+  SCIENCE
+  TRAVEL
+  RELIGION_SPIRITUALITY
+  YOUNG_ADULT
+  CHILDREN
+  POETRY
+}
+
 model Book {
   id              Int        @id @default(autoincrement())
   title           String
   author          String
-  genre           String
+  genre           BookGenre
   yearPublished   Int
   dateTimeCreated DateTime   @default(now())
   dateTimeUpdated DateTime   @updatedAt
