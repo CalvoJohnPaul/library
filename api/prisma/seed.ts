@@ -1,4 +1,5 @@
 import {faker} from '@faker-js/faker';
+import {BookGenreDefinition} from '@library/types';
 import {PrismaPg} from '@prisma/adapter-pg';
 import type {Prisma} from './.generated/client';
 import {PrismaClient} from './.generated/client';
@@ -19,8 +20,11 @@ async function seed() {
 	const booksData: Prisma.BookUncheckedCreateInput[] = Array.from({length: 50}, () => ({
 		title: faker.book.title(),
 		author: faker.book.author(),
-		genre: faker.book.genre(),
-		yearPublished: faker.number.int({min: 1900, max: 2026}),
+		genre: faker.helpers.arrayElement(BookGenreDefinition.options),
+		yearPublished: faker.number.int({
+			min: 1960,
+			max: new Date().getFullYear(),
+		}),
 	}));
 
 	await prisma.book.createMany({data: booksData});

@@ -7,7 +7,7 @@ import {Dialog} from '@/components/ui/Dialog';
 import {FeaturedIcon} from '@/components/ui/FeaturedIcon';
 import {Field} from '@/components/ui/Field';
 import {type UseDisclosureReturn, useDisclosure} from '@/hooks/useDisclosure';
-import {getBookGenreOptions} from '@/utils/book';
+import {getBookGenreOptions, getBookYearPublishedOptions} from '@/utils/book';
 
 export interface AddBookProps {
 	trigger?: ReactNode | ((disclosure: UseDisclosureReturn) => ReactNode);
@@ -65,7 +65,10 @@ export function AddBook({trigger}: AddBookProps) {
 								</Field.Root>
 								<Field.Root>
 									<Field.Label>Year Published</Field.Label>
-									<SelectField placeholder="Select year published" options={yearOptions} />
+									<SelectField
+										placeholder="Select year published"
+										options={getBookYearPublishedOptions()}
+									/>
 								</Field.Root>
 							</Dialog.Body>
 							<Dialog.Footer>
@@ -81,14 +84,3 @@ export function AddBook({trigger}: AddBookProps) {
 		</Dialog.Root>
 	);
 }
-
-const startYear = 1960;
-const endYear = new Date().getFullYear();
-const yearOptions = Array.from({length: endYear - startYear + 1}, (_, i) => {
-	const n = `${startYear + i}`;
-
-	return {
-		value: n,
-		label: n,
-	};
-}).toReversed();

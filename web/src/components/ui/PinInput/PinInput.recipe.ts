@@ -13,7 +13,7 @@ export const pinInputRecipe = tv({
 			'font-semibold',
 			'text-center',
 			'border',
-			'border-gray-300',
+			'border-gray-200',
 			'bg-white',
 			'outline-none',
 			'ui-invalid:border-red-400',

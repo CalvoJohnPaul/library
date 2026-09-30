@@ -14,7 +14,7 @@ export const sliderRecipe = tv({
 			'cursor-pointer',
 			'rounded-full',
 			'border-2',
-			'border-gray-300',
+			'border-gray-200',
 			'bg-white',
 		],
 		valueText: 'font-medium text-gray-600 text-sm',

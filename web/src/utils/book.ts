@@ -35,3 +35,17 @@ export function getBookGenreOptions(): Option[] {
 export function getBookGenreLabel(genre: BookGenre): string {
 	return map[genre];
 }
+
+export function getBookYearPublishedOptions(): Option[] {
+	const startYear = 1960;
+	const endYear = new Date().getFullYear();
+
+	return Array.from({length: endYear - startYear + 1}, (_, i) => {
+		const n = `${startYear + i}`;
+
+		return {
+			value: n,
+			label: n,
+		};
+	}).toReversed();
+}

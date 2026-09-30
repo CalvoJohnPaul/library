@@ -24,19 +24,6 @@ import {useColumnsControlContext, useDataTableContext} from './DataTableContext'
 
 export function ColumnsControl() {
 	const columnsControl = useColumnsControlContext();
-
-	return (
-		<Presence present={columnsControl.open} asChild>
-			<div className="shrink-0 ui-closed:animate-collapse-x-out ui-open:animate-collapse-x-in overflow-hidden rounded-md border border-gray-300 [--width:20rem]">
-				<div className="w-(--width) overflow-hidden p-4">
-					<Items />
-				</div>
-			</div>
-		</Presence>
-	);
-}
-
-function Items() {
 	const dataTable = useDataTableContext();
 	const sensors = useSensors(
 		useSensor(PointerSensor),
@@ -56,68 +43,69 @@ function Items() {
 	})();
 
 	return (
-		<DndContext
-			sensors={sensors}
-			modifiers={[restrictToVerticalAxis, restrictToParentElement]}
-			collisionDetection={closestCenter}
-			onDragEnd={async ({active, over}) => {
-				if (!over || active.id === over.id) return;
+		<Presence present={columnsControl.open} asChild>
+			<div className="shrink-0 ui-closed:animate-collapse-x-out ui-open:animate-collapse-x-in overflow-hidden rounded-lg border border-gray-200 [--width:20rem]">
+				<div className="w-(--width) overflow-hidden p-4">
+					<DndContext
+						sensors={sensors}
+						modifiers={[restrictToVerticalAxis, restrictToParentElement]}
+						collisionDetection={closestCenter}
+						onDragEnd={async ({active, over}) => {
+							if (!over || active.id === over.id) return;
 
-				dataTable.setColumnsOrder(
-					arrayMove(
-						dataTable.columnsOrder,
-						dataTable.columnsOrder.indexOf(active.id.toString()),
-						dataTable.columnsOrder.indexOf(over.id.toString()),
-					),
-				);
-			}}
-		>
-			<SortableContext items={columns} strategy={verticalListSortingStrategy}>
-				{columns.map((col) => {
-					const content = (
-						<CheckField
-							value={col.hideable ? !dataTable.hiddenColumns.includes(col.id) : true}
-							onChange={(checked) => {
-								if (checked) {
-									dataTable.setHiddenColumns((prev) => prev.filter((id) => col.id !== id));
-								} else {
-									dataTable.setHiddenColumns((prev) => [...prev, col.id]);
+							dataTable.setColumnsOrder(
+								arrayMove(
+									dataTable.columnsOrder,
+									dataTable.columnsOrder.indexOf(active.id.toString()),
+									dataTable.columnsOrder.indexOf(over.id.toString()),
+								),
+							);
+						}}
+					>
+						<SortableContext items={columns} strategy={verticalListSortingStrategy}>
+							{columns.map((col) => {
+								const content = (
+									<CheckField
+										value={col.hideable ? !dataTable.hiddenColumns.includes(col.id) : true}
+										onChange={(checked) => {
+											if (checked) {
+												dataTable.setHiddenColumns((prev) => prev.filter((id) => col.id !== id));
+											} else {
+												dataTable.setHiddenColumns((prev) => [...prev, col.id]);
+											}
+										}}
+										disabled={!col.hideable}
+									>
+										<div className="grow truncate text-base text-gray-700">{col.heading}</div>
+									</CheckField>
+								);
+
+								if (!col.orderable) {
+									return (
+										<div key={col.id} className="not-last:mb-1.5 flex items-center gap-1.5">
+											<button type="button" className="text-gray-500" disabled>
+												<GripIcon className="size-5" />
+											</button>
+											{content}
+										</div>
+									);
 								}
-							}}
-							disabled={!col.hideable}
-						>
-							<div className="grow truncate text-base text-gray-700">{col.heading}</div>
-						</CheckField>
-					);
 
-					if (!col.orderable) {
-						return (
-							<div key={col.id} className="not-last:mb-1.5 flex items-center gap-1.5">
-								<button type="button" className="text-gray-500" disabled>
-									<GripIcon className="size-5" />
-								</button>
-								{content}
-							</div>
-						);
-					}
-
-					return (
-						<SortableItem key={col.id} id={col.id}>
-							{content}
-						</SortableItem>
-					);
-				})}
-			</SortableContext>
-		</DndContext>
+								return (
+									<SortableItem key={col.id} id={col.id}>
+										{content}
+									</SortableItem>
+								);
+							})}
+						</SortableContext>
+					</DndContext>
+				</div>
+			</div>
+		</Presence>
 	);
 }
 
-interface SortableItemProps {
-	id: string;
-	children: React.ReactNode;
-}
-
-function SortableItem(props: SortableItemProps) {
+function SortableItem(props: {id: string; children: React.ReactNode}) {
 	const {attributes, listeners, setNodeRef, transform, transition, isDragging} = useSortable({
 		id: props.id,
 	});

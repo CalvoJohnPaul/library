@@ -20,7 +20,7 @@ export const iconButtonRecipe = tv({
 			],
 			gray: [
 				'[--bg:var(--color-gray-900)]',
-				'[--border:var(--color-gray-300)]',
+				'[--border:var(--color-gray-200)]',
 				'[--fg:var(--color-gray-700)]',
 			],
 		},

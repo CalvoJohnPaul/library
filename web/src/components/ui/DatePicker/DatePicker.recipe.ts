@@ -10,7 +10,7 @@ export const datePickerRecipe = tv({
 			'px-4',
 			'grow',
 			'border',
-			'border-gray-300',
+			'border-gray-200',
 			'bg-white',
 			'rounded-md',
 			'ui-invalid:border-red-400',
@@ -18,7 +18,7 @@ export const datePickerRecipe = tv({
 		trigger: [
 			'size-11',
 			'border',
-			'border-gray-300',
+			'border-gray-200',
 			'bg-white',
 			'rounded-md',
 			'shrink-0',
@@ -32,9 +32,9 @@ export const datePickerRecipe = tv({
 		content: [
 			'z-dropdown',
 			'overflow-y-auto',
-			'rounded-md',
+			'rounded-lg',
 			'border',
-			'border-gray-300',
+			'border-gray-200',
 			'bg-white',
 
 			'ui-placement-bottom:ui-open:animate-popover-in-bottom',
@@ -83,7 +83,7 @@ export const datePickerRecipe = tv({
 
 			'ui-disabled:text-gray-400',
 
-			'hover:ui-not-disabled:bg-gray-100',
+			'hover:ui-not-disabled:bg-gray-50',
 			'hover:ui-not-disabled:text-gray-900',
 
 			'ui-selected:ui-not-disabled:font-medium',
@@ -99,8 +99,8 @@ export const datePickerRecipe = tv({
 			'ui-today:after:bg-blue-600',
 
 			'ui-in-range:ui-not-disabled:font-medium',
-			'ui-in-range:ui-not-disabled:bg-blue-600/25',
-			'ui-in-range:ui-not-disabled:text-blue-700',
+			'ui-in-range:ui-not-disabled:bg-blue-50',
+			'ui-in-range:ui-not-disabled:text-blue-600',
 
 			'ui-range-start:ui-not-disabled:font-medium',
 			'ui-range-start:ui-not-disabled:bg-blue-600',
@@ -114,10 +114,10 @@ export const datePickerRecipe = tv({
 		view: 'p-4',
 		viewControl: 'flex items-center justify-between py-2',
 		prevTrigger:
-			'flex icon:size-5 size-9 items-center justify-center rounded-md text-gray-600 hover:bg-gray-100 hover:text-gray-900',
+			'flex icon:size-5 size-9 items-center justify-center rounded-md text-gray-600 hover:bg-gray-50 hover:text-gray-900',
 		nextTrigger:
-			'flex icon:size-5 size-9 items-center justify-center rounded-md text-gray-600 hover:bg-gray-100 hover:text-gray-900',
+			'flex icon:size-5 size-9 items-center justify-center rounded-md text-gray-600 hover:bg-gray-50 hover:text-gray-900',
 		rangeText:
-			'rounded-md px-1.5 py-0.5 font-semibold text-gray-700 text-sm hover:bg-gray-100 hover:text-gray-900',
+			'rounded-md px-1.5 py-0.5 font-semibold text-gray-700 text-sm hover:bg-gray-50 hover:text-gray-900',
 	}),
 });

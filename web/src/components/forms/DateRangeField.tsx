@@ -42,7 +42,7 @@ export function DateRangeField(props: DateRangeFieldProps) {
 								<DatePicker.ViewControl>
 									<DatePicker.PrevTrigger />
 									<DatePicker.ViewTrigger>
-										<span className="rounded-md px-1.5 py-0.5 font-semibold text-gray-700 text-sm hover:bg-gray-100 hover:text-gray-900">
+										<span className="rounded-md px-1.5 py-0.5 font-semibold text-gray-700 text-sm hover:bg-gray-50 hover:text-gray-900">
 											{format(api.visibleRange.start.toDate(tz), 'MMMM yyyy')}
 										</span>
 									</DatePicker.ViewTrigger>
@@ -79,7 +79,7 @@ export function DateRangeField(props: DateRangeFieldProps) {
 								<DatePicker.ViewControl>
 									<DatePicker.PrevTrigger />
 									<DatePicker.ViewTrigger>
-										<span className="rounded-md px-1.5 py-0.5 font-semibold text-gray-700 text-sm hover:bg-gray-100 hover:text-gray-900">
+										<span className="rounded-md px-1.5 py-0.5 font-semibold text-gray-700 text-sm hover:bg-gray-50 hover:text-gray-900">
 											{format(api.visibleRange.start.toDate(tz), 'MMMM yyyy')}
 										</span>
 									</DatePicker.ViewTrigger>
@@ -109,7 +109,7 @@ export function DateRangeField(props: DateRangeFieldProps) {
 								<DatePicker.ViewControl>
 									<DatePicker.PrevTrigger />
 									<DatePicker.ViewTrigger>
-										<span className="rounded-md px-1.5 py-0.5 font-semibold text-gray-700 text-sm hover:bg-gray-100 hover:text-gray-900">
+										<span className="rounded-md px-1.5 py-0.5 font-semibold text-gray-700 text-sm hover:bg-gray-50 hover:text-gray-900">
 											{format(api.visibleRange.start.toDate(tz), 'MMMM yyyy')}
 										</span>
 									</DatePicker.ViewTrigger>

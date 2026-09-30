@@ -8,7 +8,7 @@ export const dialogRecipe = tv({
 	slots: anatomyToRecipeSlots(anatomy, {
 		backdrop:
 			'fixed inset-0 z-backdrop ui-closed:animate-backdrop-out ui-open:animate-backdrop-in bg-black/50 backdrop-blur-xs',
-		positioner: 'fixed inset-0 z-dialog overflow-y-auto lg:px-8 lg:py-16',
+		positioner: 'fixed inset-0 z-dialog flex items-center overflow-y-auto p-8',
 		content: [
 			'relative z-dialog mx-auto flex size-full h-auto w-full max-w-105 ui-closed:animate-dialog-out ui-open:animate-dialog-in flex-col rounded-lg bg-white',
 		],
@@ -18,6 +18,6 @@ export const dialogRecipe = tv({
 		title: 'font-semibold text-lg leading-normal',
 		description: 'text-gray-500 text-sm leading-tight',
 		closeTrigger:
-			'absolute top-2 right-2 flex icon:size-5 size-7 items-center justify-center rounded-md text-gray-500 hover:bg-gray-100 hover:text-gray-700',
+			'absolute top-2 right-2 flex icon:size-5 size-7 items-center justify-center rounded-md text-gray-500 hover:bg-gray-50 hover:text-gray-700',
 	}),
 });

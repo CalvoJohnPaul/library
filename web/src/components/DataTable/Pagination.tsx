@@ -22,7 +22,7 @@ export function Pagination() {
 	if (!paginationEnabled) return null;
 
 	return (
-		<div className="@container flex items-center gap-2 border-gray-300 border-t p-3 pl-4 lg:gap-3 lg:p-4 lg:pl-6">
+		<div className="@container flex items-center gap-3 border-gray-200 border-t p-4 pl-6">
 			<p className="grow text-gray-500 text-sm">
 				Page {formatNumber(clamp(page, totalPages))} of {formatNumber(totalPages)}
 			</p>
@@ -37,7 +37,7 @@ export function Pagination() {
 					setPageSize(v);
 				}}
 				collection={sizeCollection}
-				className="w-18 lg:w-32"
+				className="w-32"
 			>
 				<Select.Control>
 					<Select.Trigger>

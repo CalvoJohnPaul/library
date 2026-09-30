@@ -10,7 +10,7 @@ const trigger = cx(
 	'justify-center',
 	'rounded-md',
 	'border',
-	'border-gray-300',
+	'border-gray-200',
 	'bg-white',
 	'px-2',
 	'text-center',

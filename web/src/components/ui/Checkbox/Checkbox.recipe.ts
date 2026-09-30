@@ -18,7 +18,7 @@ export const checkboxRecipe = tv({
 			'ui-disabled:opacity-50',
 			'bg-white',
 			'border',
-			'border-gray-300',
+			'border-gray-200',
 			'ui-checked:border-blue-600',
 			'ui-checked:bg-blue-600',
 		],

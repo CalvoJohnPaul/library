@@ -1,6 +1,8 @@
 import {Portal, useListCollection} from '@ark-ui/react';
 import {useControllableState} from '@radix-ui/react-use-controllable-state';
+import {XIcon} from 'lucide-react';
 import type {Option} from '@/types/index';
+import {Popover} from '../ui/Popover';
 import {Select} from '../ui/Select';
 import {Tags} from '../ui/Tags';
 
@@ -156,10 +158,20 @@ function SelectField__multi(props: SelectField__multiProps) {
 			</Select.Control>
 			<Select.Context>
 				{(api) => {
-					if (api.value.length <= 0) return null;
+					const items = api.value;
+					const itemsTotal = api.value.length;
+
+					if (itemsTotal <= 0) return null;
+
+					const maxVisibleItems = 5;
+					const shouldClamp = itemsTotal > maxVisibleItems + 1;
+					const visibleItems = shouldClamp ? items.slice(0, maxVisibleItems) : items;
+					const hiddenItems = shouldClamp ? items.slice(maxVisibleItems) : [];
+					const hiddenItemsTotal = hiddenItems.length;
+
 					return (
 						<Tags.Root className="mt-2">
-							{api.value.map((value) => (
+							{visibleItems.map((value) => (
 								<Tags.Item key={value}>
 									<Tags.ItemText>{collection.stringify(value)}</Tags.ItemText>
 									<Tags.ItemCloseTrigger
@@ -169,6 +181,39 @@ function SelectField__multi(props: SelectField__multiProps) {
 									/>
 								</Tags.Item>
 							))}
+
+							{hiddenItemsTotal > 0 && (
+								<Popover.Root>
+									<Popover.Trigger asChild>
+										<Tags.Item key="hidden">
+											<Tags.ItemText>+{hiddenItemsTotal} more</Tags.ItemText>
+										</Tags.Item>
+									</Popover.Trigger>
+									<Popover.Positioner>
+										<Popover.Content>
+											<Popover.Arrow>
+												<Popover.ArrowTip />
+											</Popover.Arrow>
+
+											<ul>
+												{hiddenItems.map((value) => (
+													<li key={value} className="flex items-center gap-2">
+														<span className="inline-block size-1.25 shrink-0 rounded-full bg-white/25"></span>
+														<span className="inline-block grow">{collection.stringify(value)}</span>
+														<button
+															className="inline-block size-4 shrink-0"
+															type="button"
+															onClick={() => api.clearValue(value)}
+														>
+															<XIcon className="size-4 text-white/50" />
+														</button>
+													</li>
+												))}
+											</ul>
+										</Popover.Content>
+									</Popover.Positioner>
+								</Popover.Root>
+							)}
 						</Tags.Root>
 					);
 				}}

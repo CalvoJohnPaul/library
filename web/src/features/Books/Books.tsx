@@ -2,11 +2,13 @@ import {createListCollection, Portal} from '@ark-ui/react';
 import {format} from 'date-fns';
 import {PenSquareIcon, PlusIcon, SettingsIcon, TrashIcon} from 'lucide-react';
 import {useReducer} from 'react';
+import {Link} from 'react-router';
 import {DataTable} from '@/components/DataTable';
 import {IconButton} from '@/components/ui/IconButton';
 import {Menu} from '@/components/ui/Menu';
 import {Tooltip} from '@/components/ui/Tooltip';
 import {useBooksQuery} from '@/hooks/useBooksQuery';
+import {getBookGenreLabel, getBookGenreOptions, getBookYearPublishedOptions} from '@/utils/book';
 import {AddBook} from './AddBook';
 
 interface State {
@@ -56,7 +58,11 @@ export function Books() {
 						id: 'title',
 						heading: 'Title',
 						cell(data) {
-							return data.title;
+							return (
+								<Link to={`/${data.id}`} className="text-blue-600">
+									{data.title}
+								</Link>
+							);
 						},
 					},
 					{
@@ -82,8 +88,10 @@ export function Books() {
 							return data.yearPublished;
 						},
 						filter: {
-							type: 'DATE_RANGE',
-							placeholder: 'Pick a year',
+							type: 'SELECT',
+							options: getBookYearPublishedOptions(),
+							multiple: true,
+							placeholder: 'Select year',
 						},
 						hideable: true,
 						orderable: true,
@@ -92,11 +100,11 @@ export function Books() {
 						id: 'genre',
 						heading: 'Genre',
 						cell(data) {
-							return data.genre;
+							return getBookGenreLabel(data.genre);
 						},
 						filter: {
 							type: 'SELECT',
-							options: [],
+							options: getBookGenreOptions(),
 							multiple: true,
 							placeholder: 'Select genre',
 						},

@@ -12,14 +12,14 @@ export const numberInputRecipe = tv({
 			'overflow-hidden',
 			'rounded-md',
 			'border',
-			'border-gray-300',
+			'border-gray-200',
 			'bg-white',
 			'ui-invalid:border-red-400',
 		],
 		input: 'row-span-2 w-full bg-transparent px-4 outline-none',
 		decrementTrigger:
-			'inline-flex icon:size-5 items-center justify-center border-t border-l border-gray-300 text-gray-500 disabled:opacity-65',
+			'inline-flex icon:size-5 items-center justify-center border-gray-200 border-t border-l text-gray-500 disabled:opacity-65',
 		incrementTrigger:
-			'inline-flex icon:size-5 items-center justify-center border-l border-gray-300 text-gray-500 disabled:opacity-65',
+			'inline-flex icon:size-5 items-center justify-center border-gray-200 border-l text-gray-500 disabled:opacity-65',
 	}),
 });

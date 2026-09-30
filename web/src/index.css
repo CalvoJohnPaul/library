@@ -373,3 +373,6 @@
 @custom-variant aria-asc (&[aria-sort="ascending"]);
 @custom-variant aria-desc (&[aria-sort="descending"]);
 @custom-variant aria-page (&[aria-current="page"]);
+@custom-variant scrollbar (&::-webkit-scrollbar);
+@custom-variant scrollbar-thumb (&::-webkit-scrollbar-thumb);
+@custom-variant scrollbar-track (&::-webkit-scrollbar-track);

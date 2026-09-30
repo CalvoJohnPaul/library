@@ -6,15 +6,15 @@ export const popoverRecipe = tv({
 	slots: anatomyToRecipeSlots(popoverAnatomy, {
 		content: [
 			'z-popover',
-			'relative',
+			'max-w-80',
 			'max-h-(--available-height)',
 			'rounded-md',
-			'border',
-			'border-gray-300',
-			'bg-white',
-			'p-3',
+			'bg-gray-900',
+			'px-3',
+			'py-2',
 			'text-sm',
-			'text-gray-700',
+			'font-medium',
+			'text-gray-100',
 
 			'ui-placement-bottom:ui-open:animate-popover-in-bottom',
 			'ui-placement-bottom-start:ui-open:animate-popover-in-bottom',
@@ -44,10 +44,6 @@ export const popoverRecipe = tv({
 			'ui-placement-right-start:ui-closed:animate-popover-out-right',
 			'ui-placement-right-end:ui-closed:animate-popover-out-right',
 		],
-		arrow: 'arrow-bg-white arrow-size-[0.875rem]',
-		title: 'font-medium',
-		description: 'text-gray-500',
-		closeTrigger:
-			'absolute top-2 right-2 icon:size-4 rounded p-0.5 text-gray-500 transition-colors duration-300 hover:bg-gray-100 hover:text-gray-700',
+		arrow: 'arrow-bg-gray-900 arrow-size-[0.875rem]',
 	}),
 });

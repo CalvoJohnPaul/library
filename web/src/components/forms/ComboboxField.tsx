@@ -1,9 +1,10 @@
 import {Portal, useFilter} from '@ark-ui/react';
 import {useListCollection} from '@ark-ui/react/collection';
 import {useControllableState} from '@radix-ui/react-use-controllable-state';
-import {SearchIcon} from 'lucide-react';
+import {SearchIcon, XIcon} from 'lucide-react';
 import type {Option} from '@/types/index';
 import {Combobox} from '../ui/Combobox';
+import {Popover} from '../ui/Popover';
 import {Tags} from '../ui/Tags';
 
 export interface ComboboxField__singleProps {
@@ -81,12 +82,10 @@ function ComboboxField__single(props: ComboboxField__singleProps) {
 					</Combobox.Item>
 				))}
 				<Combobox.Empty className="p-8">
-					<div className="mx-auto grid size-10 place-items-center rounded-md border border-gray-300">
+					<div className="mx-auto grid size-10 place-items-center rounded-md border border-gray-200">
 						<SearchIcon className="size-5 text-gray-600" />
 					</div>
-					<h2 className="mt-2 text-center font-semibold text-gray-700 text-sm">
-						No results found
-					</h2>
+					<h2 className="mt-2 text-center font-semibold text-gray-700 text-sm">No results found</h2>
 					<p className="text-center text-gray-500 text-xs">
 						There are no items that match your current search or filters.
 					</p>
@@ -162,12 +161,10 @@ function ComboboxField__multi(props: ComboboxField__multiProps) {
 					</Combobox.Item>
 				))}
 				<Combobox.Empty className="p-8">
-					<div className="mx-auto grid size-10 place-items-center rounded-md border border-gray-300">
+					<div className="mx-auto grid size-10 place-items-center rounded-md border border-gray-200">
 						<SearchIcon className="size-5 text-gray-600" />
 					</div>
-					<h2 className="mt-2 text-center font-semibold text-gray-700 text-sm">
-						No results found
-					</h2>
+					<h2 className="mt-2 text-center font-semibold text-gray-700 text-sm">No results found</h2>
 					<p className="text-center text-gray-500 text-xs">
 						There are no items that match your current search or filters.
 					</p>
@@ -206,10 +203,20 @@ function ComboboxField__multi(props: ComboboxField__multiProps) {
 			</Combobox.Control>
 			<Combobox.Context>
 				{(api) => {
-					if (api.value.length <= 0) return null;
+					const items = api.value;
+					const itemsTotal = api.value.length;
+
+					if (itemsTotal <= 0) return null;
+
+					const maxVisibleItems = 5;
+					const shouldClamp = itemsTotal > maxVisibleItems + 1;
+					const visibleItems = shouldClamp ? items.slice(0, maxVisibleItems) : items;
+					const hiddenItems = shouldClamp ? items.slice(maxVisibleItems) : [];
+					const hiddenItemsTotal = hiddenItems.length;
+
 					return (
 						<Tags.Root className="mt-2">
-							{api.value.map((value) => (
+							{visibleItems.map((value) => (
 								<Tags.Item key={value}>
 									<Tags.ItemText>{collection.stringify(value)}</Tags.ItemText>
 									<Tags.ItemCloseTrigger
@@ -219,6 +226,39 @@ function ComboboxField__multi(props: ComboboxField__multiProps) {
 									/>
 								</Tags.Item>
 							))}
+
+							{hiddenItemsTotal > 0 && (
+								<Popover.Root>
+									<Popover.Trigger asChild>
+										<Tags.Item key="hidden">
+											<Tags.ItemText>+{hiddenItemsTotal} more</Tags.ItemText>
+										</Tags.Item>
+									</Popover.Trigger>
+									<Popover.Positioner>
+										<Popover.Content>
+											<Popover.Arrow>
+												<Popover.ArrowTip />
+											</Popover.Arrow>
+
+											<ul>
+												{hiddenItems.map((value) => (
+													<li key={value} className="flex items-center gap-2">
+														<span className="inline-block size-1.25 shrink-0 rounded-full bg-white/25"></span>
+														<span className="inline-block grow">{collection.stringify(value)}</span>
+														<button
+															className="inline-block size-4 shrink-0"
+															type="button"
+															onClick={() => api.clearValue(value)}
+														>
+															<XIcon className="size-4 text-white/50" />
+														</button>
+													</li>
+												))}
+											</ul>
+										</Popover.Content>
+									</Popover.Positioner>
+								</Popover.Root>
+							)}
 						</Tags.Root>
 					);
 				}}

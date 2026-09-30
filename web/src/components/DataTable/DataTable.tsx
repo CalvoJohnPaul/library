@@ -38,14 +38,14 @@ export function DataTable<Data = any>(props: DataTableProps<Data>) {
 					<ColumnsControlProvider value={columnsControl}>
 						<div className="flex items-start gap-3">
 							<Filters />
-							<div className="grow overflow-hidden rounded-lg border border-gray-300">
+							<div className="grow overflow-hidden rounded-lg border border-gray-200">
 								<div className="grow">
 									{(dataTable.searchEnabled ||
 										dataTable.filtersEnabled ||
 										dataTable.columnsControlEnabled ||
 										dataTable.onReload != null ||
 										dataTable.onExport != null) && (
-										<div className="flex items-center gap-2 border-gray-300 border-b p-3 lg:gap-3 lg:p-4">
+										<div className="flex items-center gap-3 border-gray-200 border-b p-4">
 											<FiltersTrigger />
 											<Search />
 											<div className="grow" />

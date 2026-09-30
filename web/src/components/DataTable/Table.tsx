@@ -38,8 +38,8 @@ export function Table() {
 				'overflow-y-hidden',
 				'whitespace-nowrap',
 				'scrollbar:h-2',
-				'scrollbar-thumb:rounded-full',
 				'scrollbar-thumb:bg-gray-300',
+				'scrollbar-thumb:rounded-full',
 				'scrollbar-track:bg-gray-100',
 			)}
 		>
@@ -50,7 +50,7 @@ export function Table() {
 							<th
 								key={col.id}
 								className={twMerge(
-									'border-gray-300 not-last:border-r border-b px-4 py-3 text-left font-medium text-gray-500 text-sm',
+									'border-gray-200 not-last:border-r border-b px-4 py-3 text-left font-medium text-gray-500 text-sm',
 									normalizeClassName(col.className).heading,
 								)}
 							>
@@ -124,7 +124,7 @@ export function Table() {
 										<td
 											key={col.id}
 											className={twMerge(
-												'border-gray-300 not-last:border-r px-4 py-2.5 text-gray-700',
+												'border-gray-200 not-last:border-r px-4 py-2.5 text-gray-700',
 												normalizeClassName(col.className).cell,
 											)}
 											data-numeric={col.numeric}
@@ -164,7 +164,7 @@ export function Table() {
 									<td
 										key={col.id}
 										className={twMerge(
-											'border-gray-300 not-last:border-r px-4 py-2.5 text-gray-700',
+											'border-gray-200 not-last:border-r px-4 py-2.5 text-gray-700',
 											normalizeClassName(col.className).cell,
 										)}
 									>
@@ -181,7 +181,7 @@ export function Table() {
 
 				{columns.some((col) => col.summary != null) && (
 					<tfoot>
-						<tr className="border-gray-300 border-t">
+						<tr className="border-gray-200 border-t">
 							{columns.map((col) => (
 								<td
 									key={col.id}
