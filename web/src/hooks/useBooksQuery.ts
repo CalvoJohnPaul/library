@@ -8,7 +8,7 @@ import {
 	type SortOrder,
 } from '@library/types';
 import {type QueryKey, type UseQueryOptions, useQuery} from '@tanstack/react-query';
-import {API_BASE_URL} from '@/config/constants';
+import {API_BASE_URL} from '@/config/env';
 import type {
 	BooleanFilterInput,
 	DateFilterInput,

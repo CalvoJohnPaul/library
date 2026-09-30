@@ -5,7 +5,7 @@ import {
 	type UpdateStudentInput,
 } from '@library/types';
 import {type UseMutationOptions, useMutation} from '@tanstack/react-query';
-import {API_BASE_URL} from '@/config/constants';
+import {API_BASE_URL} from '@/config/env';
 import {useCsrfQuery} from './useCsrfQuery';
 
 export function useUpdateStudentMutation(

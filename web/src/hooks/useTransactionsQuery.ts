@@ -9,7 +9,7 @@ import {
 	type TransactionType,
 } from '@library/types';
 import {type QueryKey, type UseQueryOptions, useQuery} from '@tanstack/react-query';
-import {API_BASE_URL} from '@/config/constants';
+import {API_BASE_URL} from '@/config/env';
 import type {DateFilterInput, EnumFilterInput, IdFilterInput} from '@/types/index';
 
 export interface TransactionsInput {
