@@ -28,7 +28,7 @@ export function Book() {
 				</div>
 			</div>
 			<Tabs.Root defaultValue="copies" lazyMount>
-				<Tabs.List className="mb-8 w-96">
+				<Tabs.List className="mb-8 w-80">
 					<Tabs.Trigger value="copies">Copies</Tabs.Trigger>
 					<Tabs.Trigger value="transactions">Transactions</Tabs.Trigger>
 					<Tabs.Indicator />
