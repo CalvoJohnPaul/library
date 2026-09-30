@@ -896,7 +896,7 @@ const plugin: FastifyPluginAsyncZod = async (app) => {
 
 			return reply
 				.header('content-type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-				.header('content-disposition', 'attachment; filename="book-copies.xlsx"')
+				.header('content-disposition', `attachment; filename="book-copies-${Date.now()}.xlsx"`)
 				.send(buffer);
 		},
 	);
