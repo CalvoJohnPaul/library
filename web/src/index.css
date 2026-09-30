@@ -28,7 +28,7 @@
 
 @theme {
 	--font-*: initial;
-	--font-sans: "Google Sans", sans-serif;
+	--font-sans: "Inter", sans-serif;
 
 	--z-dropdown: 1000;
 	--z-sticky: 1100;
@@ -367,6 +367,31 @@
 @utility arrow-size-* {
 	--arrow-size: calc(var(--spacing) * --value(integer));
 	--arrow-size: --value([\*]);
+}
+
+@keyframes logo-shine {
+	0%,
+	75% {
+		background-position: 100% 0;
+	}
+	100% {
+		background-position: 0% 0;
+	}
+}
+
+@utility logo-shine {
+	background-image: linear-gradient(
+		110deg,
+		var(--color-neutral-900) 42%,
+		var(--color-neutral-400) 50%,
+		var(--color-neutral-900) 58%
+	);
+	background-size: 300% 100%;
+	background-repeat: no-repeat;
+	-webkit-background-clip: text;
+	background-clip: text;
+	color: transparent;
+	animation: logo-shine 5s linear infinite;
 }
 
 @custom-variant icon (& svg);

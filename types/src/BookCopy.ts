@@ -2,7 +2,7 @@ import * as z from 'zod';
 import {BookDefinition} from './Book.js';
 import {DateDefinition, IdDefinition} from './common.js';
 
-export const BookStatusDefinition = z.enum(['AVAILABLE', 'BORROWED']);
+export const BookCopyStatusDefinition = z.enum(['AVAILABLE', 'BORROWED']);
 export const BookCopyDefinition = z.object({
 	id: IdDefinition,
 	isbn: z.string(),
@@ -13,7 +13,7 @@ export const BookCopyDefinition = z.object({
 		author: true,
 		yearPublished: true,
 	}),
-	status: BookStatusDefinition,
+	status: BookCopyStatusDefinition,
 	dateTimeCreated: DateDefinition,
 	dateTimeUpdated: DateDefinition,
 });
@@ -44,8 +44,8 @@ export const BorrowBookCopyInputDefinition = z.object({
 
 export const BookCopySortByInputDefinition = z.enum(['dateTimeCreated', 'dateTimeUpdated']);
 
-export type BookStatus = z.infer<typeof BookStatusDefinition>;
 export type BookCopy = z.infer<typeof BookCopyDefinition>;
+export type BookCopyStatus = z.infer<typeof BookCopyStatusDefinition>;
 export type CreateBookCopyInput = z.infer<typeof CreateBookCopyInputDefinition>;
 export type UpdateBookCopyDataInput = z.infer<typeof UpdateBookCopyDataInputDefinition>;
 export type UpdateBookCopyInput = z.infer<typeof UpdateBookCopyInputDefinition>;

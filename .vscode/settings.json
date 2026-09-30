@@ -3,7 +3,8 @@
 	"editor.codeActionsOnSave": {
 		"source.biome": "always",
 		"source.fixAll.biome": "always",
-		"source.organizeImports.biome": "always"
+		"source.organizeImports.biome": "always",
+		"source.removeUnusedImports": "always"
 	},
 	"files.associations": {
 		"*.css": "tailwindcss"

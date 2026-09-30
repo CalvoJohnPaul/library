@@ -1,14 +1,15 @@
 import {createListCollection, Portal} from '@ark-ui/react';
 import {format} from 'date-fns';
-import {PenSquareIcon, PlusIcon, SettingsIcon, TrashIcon} from 'lucide-react';
+import {CheckIcon, PenSquareIcon, PlusIcon, SettingsIcon, TrashIcon, XIcon} from 'lucide-react';
 import {useReducer} from 'react';
 import {Link} from 'react-router';
 import {DataTable} from '@/components/DataTable';
+import {Badge} from '@/components/ui/Badge';
 import {IconButton} from '@/components/ui/IconButton';
 import {Menu} from '@/components/ui/Menu';
 import {Tooltip} from '@/components/ui/Tooltip';
 import {useBooksQuery} from '@/hooks/useBooksQuery';
-import {getBookGenreLabel, getBookGenreOptions, getBookYearPublishedOptions} from '@/utils/book';
+import {getBookGenreLabel, getBookGenreOptions, getBookYearPublishedOptions} from '@/utils/common';
 import {AddBook} from './AddBook';
 
 interface State {
@@ -34,7 +35,8 @@ export function Books() {
 	});
 
 	return (
-		<div>
+		<>
+			<title>Books | read.</title>
 			<div className="mb-6 flex items-center gap-3">
 				<div className="grow">
 					<h1 className="font-bold text-xl">Books</h1>
@@ -59,7 +61,7 @@ export function Books() {
 						heading: 'Title',
 						cell(data) {
 							return (
-								<Link to={`/${data.id}`} className="text-blue-600">
+								<Link to={`/books/${data.id}`} className="block max-w-64 truncate text-blue-500">
 									{data.title}
 								</Link>
 							);
@@ -69,7 +71,7 @@ export function Books() {
 						id: 'author',
 						heading: 'Author',
 						cell(data) {
-							return data.author;
+							return <span className="block max-w-48 truncate">{data.author}</span>;
 						},
 						filter: {
 							type: 'ASYNC_COMBOBOX',
@@ -95,6 +97,7 @@ export function Books() {
 						},
 						hideable: true,
 						orderable: true,
+						className: 'tabular-nums',
 					},
 					{
 						id: 'genre',
@@ -110,6 +113,40 @@ export function Books() {
 						},
 						hideable: true,
 						orderable: true,
+					},
+					{
+						id: 'totalCopies',
+						heading: 'No. of copies',
+						cell(data) {
+							return data.totalCopies.toLocaleString('en-US', {
+								minimumFractionDigits: 0,
+								maximumFractionDigits: 0,
+							});
+						},
+						numeric: true,
+						hideable: true,
+						orderable: true,
+					},
+					{
+						id: 'available',
+						heading: 'Status',
+						cell(data) {
+							return (
+								<Badge.Root accent={data.available ? 'success' : 'danger'}>
+									<Badge.Icon>{data.available ? <CheckIcon /> : <XIcon />}</Badge.Icon>
+									<Badge.Label>{data.available ? 'Available' : 'Unavailable'}</Badge.Label>
+								</Badge.Root>
+							);
+						},
+						hideable: true,
+						orderable: true,
+						filter: {
+							type: 'SELECT',
+							options: [
+								{label: 'Available', value: 'YES'},
+								{label: 'Unavailable', value: 'NO'},
+							],
+						},
 					},
 					{
 						id: 'dateTimeCreated',
@@ -206,6 +243,6 @@ export function Books() {
 					/>
 				}
 			/>
-		</div>
+		</>
 	);
 }

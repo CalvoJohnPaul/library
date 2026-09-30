@@ -96,6 +96,6 @@ export const comboboxRecipe = tv({
 			'icon:size-5',
 		],
 		itemText: 'grow',
-		itemIndicator: 'flex size-5 text-blue-600!',
+		itemIndicator: 'flex size-5 text-blue-500!',
 	}),
 });

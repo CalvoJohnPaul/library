@@ -12,13 +12,13 @@ export function Search() {
 	if (!searchEnabled) return null;
 
 	return (
-		<Field.Root className="relative w-80">
+		<Field.Root className="relative w-64">
 			<SearchIcon className="pointer-events-none absolute top-1/2 right-4 size-5 -translate-y-1/2 text-gray-400" />
 			<DebouncedTextField
-				placeholder="Search"
 				value={search}
 				onChange={setSearch}
 				className="pr-10"
+				placeholder="Search"
 			/>
 		</Field.Root>
 	);

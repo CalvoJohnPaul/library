@@ -5,6 +5,7 @@ import {DataTable} from '@/components/DataTable';
 import {Badge} from '@/components/ui/Badge';
 import {Menu} from '@/components/ui/Menu';
 import {useBookCopiesQuery} from '@/hooks/useBookCopiesQuery';
+import {getBookCopyStatusLabel, getBookCopyStatusOptions} from '@/utils/common';
 import {useBookContext} from './BookContext';
 
 export function Copies() {
@@ -26,10 +27,7 @@ export function Copies() {
 					cell(item) {
 						return item.isbn;
 					},
-					filter: {
-						type: 'TEXT',
-						placeholder: 'Enter ISBN',
-					},
+					className: 'tabular-nums',
 				},
 				{
 					id: 'status',
@@ -37,7 +35,7 @@ export function Copies() {
 					cell(item) {
 						return (
 							<Badge.Root accent={item.status === 'AVAILABLE' ? 'success' : 'danger'}>
-								<Badge.Label>{item.status}</Badge.Label>
+								<Badge.Label>{getBookCopyStatusLabel(item.status)}</Badge.Label>
 							</Badge.Root>
 						);
 					},
@@ -45,10 +43,7 @@ export function Copies() {
 						type: 'SELECT',
 						multiple: true,
 						placeholder: 'Select status',
-						options: [
-							{label: 'Available', value: 'AVAILABLE'},
-							{label: 'Borrowed', value: 'BORROWED'},
-						],
+						options: getBookCopyStatusOptions(),
 					},
 				},
 				{
@@ -62,8 +57,6 @@ export function Copies() {
 						placeholder: 'Pick a date',
 					},
 					sortable: true,
-					hideable: true,
-					orderable: true,
 				},
 				{
 					id: 'dateTimeUpdated',
@@ -76,8 +69,6 @@ export function Copies() {
 						placeholder: 'Pick a date',
 					},
 					sortable: true,
-					hideable: true,
-					orderable: true,
 				},
 				{
 					id: 'actions',
@@ -122,7 +113,10 @@ export function Copies() {
 				},
 			]}
 			checkEnabled
+			searchEnabled
 			paginationEnabled
+			total={query.data?.total ?? 0}
+			loading={query.isLoading}
 			onReload={() => {}}
 			onExport={() => {}}
 		/>

@@ -7,7 +7,7 @@ import {Dialog} from '@/components/ui/Dialog';
 import {FeaturedIcon} from '@/components/ui/FeaturedIcon';
 import {Field} from '@/components/ui/Field';
 import {type UseDisclosureReturn, useDisclosure} from '@/hooks/useDisclosure';
-import {getBookGenreOptions, getBookYearPublishedOptions} from '@/utils/book';
+import {getBookGenreOptions, getBookYearPublishedOptions} from '@/utils/common';
 
 export interface AddBookProps {
 	trigger?: ReactNode | ((disclosure: UseDisclosureReturn) => ReactNode);
@@ -72,9 +72,13 @@ export function AddBook({trigger}: AddBookProps) {
 								</Field.Root>
 							</Dialog.Body>
 							<Dialog.Footer>
-								<Button variant="outline" accent="gray">
-									Cancel
-								</Button>
+								<Dialog.Context>
+									{(api) => (
+										<Button variant="outline" accent="gray" onClick={() => api.setOpen(false)}>
+											Cancel
+										</Button>
+									)}
+								</Dialog.Context>
 								<Button type="submit">Submit</Button>
 							</Dialog.Footer>
 						</form>

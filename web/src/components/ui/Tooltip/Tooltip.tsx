@@ -7,8 +7,7 @@ const {withContext, withRootProvider} = createRecipeContext(tooltipRecipe);
 export const Root = withRootProvider(Tooltip.Root, {
 	defaultProps: {
 		lazyMount: true,
-		openDelay: 250,
-		closeDelay: 50,
+		unmountOnExit: true,
 	},
 });
 export const Arrow = withContext(Tooltip.Arrow, 'arrow');

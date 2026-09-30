@@ -1,7 +1,12 @@
-import {type BookGenre, BookGenreDefinition} from '@library/types';
+import {
+	type BookCopyStatus,
+	BookCopyStatusDefinition,
+	type BookGenre,
+	BookGenreDefinition,
+} from '@library/types';
 import type {Option} from '../types';
 
-const map: Record<BookGenre, string> = {
+const BOOK_GENRE_MAP: Record<BookGenre, string> = {
 	FICTION: 'Fiction',
 	NON_FICTION: 'Non-Fiction',
 	ROMANCE: 'Romance',
@@ -28,12 +33,12 @@ const map: Record<BookGenre, string> = {
 export function getBookGenreOptions(): Option[] {
 	return BookGenreDefinition.options.map((value) => ({
 		value,
-		label: map[value],
+		label: BOOK_GENRE_MAP[value],
 	}));
 }
 
 export function getBookGenreLabel(genre: BookGenre): string {
-	return map[genre];
+	return BOOK_GENRE_MAP[genre];
 }
 
 export function getBookYearPublishedOptions(): Option[] {
@@ -48,4 +53,20 @@ export function getBookYearPublishedOptions(): Option[] {
 			label: n,
 		};
 	}).toReversed();
+}
+
+const BOOK_COPY_STATUS_MAP: Record<BookCopyStatus, string> = {
+	AVAILABLE: 'Available',
+	BORROWED: 'Borrowed',
+};
+
+export function getBookCopyStatusOptions(): Option[] {
+	return BookCopyStatusDefinition.options.map((value) => ({
+		value,
+		label: BOOK_COPY_STATUS_MAP[value],
+	}));
+}
+
+export function getBookCopyStatusLabel(status: BookCopyStatus): string {
+	return BOOK_COPY_STATUS_MAP[status];
 }

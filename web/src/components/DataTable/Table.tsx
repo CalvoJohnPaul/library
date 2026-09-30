@@ -81,7 +81,7 @@ export function Table() {
 												'transition-all',
 												'duration-300',
 												'hover:text-gray-600',
-												sortColumn === col.id ? 'text-blue-600 hover:text-blue-600' : '',
+												sortColumn === col.id ? 'text-blue-500 hover:text-blue-500' : '',
 												sortColumn === col.id && sortOrder === 'ASC' ? 'rotate-180' : '',
 												sortColumn === col.id && sortOrder === 'DESC' ? 'rotate-0' : '',
 											)}
@@ -132,7 +132,7 @@ export function Table() {
 											<span
 												className={twMerge(
 													'flex items-center gap-1',
-													col.numeric && 'justify-end font-mono',
+													col.numeric && 'justify-end tabular-nums',
 												)}
 											>
 												{checkEnabled && idx === 0 && (

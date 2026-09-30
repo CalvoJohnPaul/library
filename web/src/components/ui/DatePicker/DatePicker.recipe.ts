@@ -100,7 +100,7 @@ export const datePickerRecipe = tv({
 
 			'ui-in-range:ui-not-disabled:font-medium',
 			'ui-in-range:ui-not-disabled:bg-blue-50',
-			'ui-in-range:ui-not-disabled:text-blue-600',
+			'ui-in-range:ui-not-disabled:text-blue-500',
 
 			'ui-range-start:ui-not-disabled:font-medium',
 			'ui-range-start:ui-not-disabled:bg-blue-600',

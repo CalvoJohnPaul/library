@@ -1,5 +1,6 @@
 import {
 	BookDefinition,
+	BookGenreDefinition,
 	BookSortByInputDefinition,
 	CreateBookInputDefinition,
 	FailedHttpResponseDefinition,
@@ -18,6 +19,8 @@ import {
 	ExcelWorkbookDefinition,
 	QueryString__BooleanDefinition,
 	QueryString__DateDefinition,
+	QueryString__EnumArrayDefinition,
+	QueryString__EnumDefinition,
 	QueryString__NumberArrayDefinition,
 	QueryString__NumberDefinition,
 	QueryString__StringArrayDefinition,
@@ -48,11 +51,10 @@ const plugin: FastifyPluginAsyncZod = async (app) => {
 					author__in: QueryString__StringArrayDefinition,
 					author__nin: QueryString__StringArrayDefinition,
 					author__contains: QueryString__StringDefinition,
-					genre__eq: QueryString__StringDefinition,
-					genre__neq: QueryString__StringDefinition,
-					genre__in: QueryString__StringArrayDefinition,
-					genre__nin: QueryString__StringArrayDefinition,
-					genre__contains: QueryString__StringDefinition,
+					genre__eq: QueryString__EnumDefinition(BookGenreDefinition),
+					genre__neq: QueryString__EnumDefinition(BookGenreDefinition),
+					genre__in: QueryString__EnumArrayDefinition(BookGenreDefinition),
+					genre__nin: QueryString__EnumArrayDefinition(BookGenreDefinition),
 					yearPublished__gt: QueryString__NumberDefinition,
 					yearPublished__gte: QueryString__NumberDefinition,
 					yearPublished__lt: QueryString__NumberDefinition,
@@ -138,18 +140,13 @@ const plugin: FastifyPluginAsyncZod = async (app) => {
 				req.query.genre__eq != null ||
 				req.query.genre__neq != null ||
 				req.query.genre__in != null ||
-				req.query.genre__nin != null ||
-				req.query.genre__contains
+				req.query.genre__nin != null
 			) {
 				where.genre = {
 					...(req.query.genre__eq != null && {equals: req.query.genre__eq}),
 					...(req.query.genre__neq != null && {not: req.query.genre__neq}),
 					...(req.query.genre__in != null && {in: req.query.genre__in}),
 					...(req.query.genre__nin != null && {notIn: req.query.genre__nin}),
-					...(req.query.genre__contains != null && {
-						contains: req.query.genre__contains,
-						mode: 'insensitive',
-					}),
 				};
 			}
 
@@ -494,11 +491,10 @@ const plugin: FastifyPluginAsyncZod = async (app) => {
 					author__in: QueryString__StringArrayDefinition,
 					author__nin: QueryString__StringArrayDefinition,
 					author__contains: QueryString__StringDefinition,
-					genre__eq: QueryString__StringDefinition,
-					genre__neq: QueryString__StringDefinition,
-					genre__in: QueryString__StringArrayDefinition,
-					genre__nin: QueryString__StringArrayDefinition,
-					genre__contains: QueryString__StringDefinition,
+					genre__eq: QueryString__EnumDefinition(BookGenreDefinition),
+					genre__neq: QueryString__EnumDefinition(BookGenreDefinition),
+					genre__in: QueryString__EnumArrayDefinition(BookGenreDefinition),
+					genre__nin: QueryString__EnumArrayDefinition(BookGenreDefinition),
 					yearPublished__gt: QueryString__NumberDefinition,
 					yearPublished__gte: QueryString__NumberDefinition,
 					yearPublished__lt: QueryString__NumberDefinition,
@@ -591,18 +587,13 @@ const plugin: FastifyPluginAsyncZod = async (app) => {
 				req.query.genre__eq != null ||
 				req.query.genre__neq != null ||
 				req.query.genre__in != null ||
-				req.query.genre__nin != null ||
-				req.query.genre__contains
+				req.query.genre__nin != null
 			) {
 				where.genre = {
 					...(req.query.genre__eq != null && {equals: req.query.genre__eq}),
 					...(req.query.genre__neq != null && {not: req.query.genre__neq}),
 					...(req.query.genre__in != null && {in: req.query.genre__in}),
 					...(req.query.genre__nin != null && {notIn: req.query.genre__nin}),
-					...(req.query.genre__contains != null && {
-						contains: req.query.genre__contains,
-						mode: 'insensitive',
-					}),
 				};
 			}
 

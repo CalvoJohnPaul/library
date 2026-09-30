@@ -1,3 +1,8 @@
 export function Transactions() {
-	return null;
+	return (
+		<>
+			<title>Transactions | read.</title>
+			<div></div>
+		</>
+	);
 }

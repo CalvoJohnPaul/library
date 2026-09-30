@@ -47,7 +47,7 @@ export function Login() {
 					form.handleSubmit();
 				}}
 				noValidate
-				className="mx-auto mt-12 max-w-96"
+				className="mx-auto mt-12 max-w-88"
 			>
 				<form.Field
 					name="email"
