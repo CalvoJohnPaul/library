@@ -19,7 +19,7 @@ const trigger = cx(
 	'ui-selected:bg-blue-600',
 	'ui-selected:text-white',
 	'disabled:opacity-50',
-	'icon:size-6',
+	'icon:size-5',
 );
 
 export const paginationRecipe = tv({

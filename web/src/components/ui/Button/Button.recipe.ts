@@ -1,7 +1,7 @@
 import {tv, type VariantProps} from 'tailwind-variants';
 
 export const buttonRecipe = tv({
-	base: 'inline-flex h-11 items-center justify-center gap-2 rounded-md px-4 font-semibold disabled:opacity-65',
+	base: 'inline-flex icon:size-5 h-11 items-center justify-center gap-2 rounded-md px-4 font-semibold disabled:opacity-65',
 	variants: {
 		variant: {
 			solid: 'border-none bg-(--bg) text-white',

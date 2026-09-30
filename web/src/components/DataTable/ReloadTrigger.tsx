@@ -14,7 +14,7 @@ export function ReloadTrigger() {
 	if (onReload == null) return null;
 
 	return (
-		<Tooltip.Root>
+		<Tooltip.Root disabled={loading}>
 			<Tooltip.Trigger asChild>
 				<IconButton
 					variant="outline"

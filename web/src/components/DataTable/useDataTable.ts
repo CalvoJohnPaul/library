@@ -86,6 +86,8 @@ export interface UseDataTableProps<Data = any> {
 
 	loading?: boolean;
 	onReload?: (() => void | Promise<void>) | null;
+	exporting?: boolean;
+	onExport?: (() => void | Promise<void>) | null;
 	cta?: ReactNode;
 }
 
@@ -124,6 +126,8 @@ export interface UseDataTableReturn<Data = any> {
 
 	loading: boolean;
 	onReload: (() => void | Promise<void>) | null;
+	exporting: boolean;
+	onExport: (() => void | Promise<void>) | null;
 	cta: ReactNode;
 }
 
@@ -242,6 +246,8 @@ export function useDataTable<Data = any>({
 	const total = props.total ?? 0;
 	const loading = props.loading ?? false;
 	const onReload = props.onReload ?? null;
+	const exporting = props.exporting ?? false;
+	const onExport = props.onExport ?? null;
 	const cta = props.cta ?? null;
 
 	return {
@@ -274,6 +280,8 @@ export function useDataTable<Data = any>({
 
 		loading,
 		onReload,
+		exporting,
+		onExport,
 		cta,
 	};
 }
@@ -310,6 +318,8 @@ useDataTable.splitProps = <T extends UseDataTableProps>(props: T) => {
 		'sortColumn',
 		'sortOrder',
 		'total',
+		'exporting',
+		'onExport',
 	] as const satisfies (keyof UseDataTableProps)[];
 
 	return splitProps(props, ...keys);

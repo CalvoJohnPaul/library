@@ -4,6 +4,7 @@ import {PenSquareIcon, PlusIcon, SettingsIcon, TrashIcon} from 'lucide-react';
 import {useReducer} from 'react';
 import {DataTable} from '@/components/DataTable';
 import {Button} from '@/components/ui/Button';
+import {IconButton} from '@/components/ui/IconButton';
 import {Menu} from '@/components/ui/Menu';
 import {useBooksQuery} from '@/hooks/useBooksQuery';
 
@@ -31,13 +32,17 @@ export function Books() {
 
 	return (
 		<div>
-			<div className="mb-6 flex items-center">
+			<div className="mb-6 flex items-center gap-3">
 				<div className="grow">
 					<h1 className="font-bold text-xl">Books</h1>
 					<p className="text-gray-600 text-sm">Manage your book collection below.</p>
 				</div>
+
+				<IconButton variant="outline" accent="gray">
+					<TrashIcon />
+				</IconButton>
 				<Button>
-					<PlusIcon className="size-5" />
+					<PlusIcon />
 					Add Book
 				</Button>
 			</div>
@@ -161,6 +166,8 @@ export function Books() {
 				onReload={() => {
 					query.refetch();
 				}}
+				exporting={false}
+				onExport={() => {}}
 				checkEnabled
 				searchEnabled
 				paginationEnabled

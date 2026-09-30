@@ -4,6 +4,7 @@ import {useDisclosure} from '@/hooks/useDisclosure';
 import {ColumnsControl, ColumnsControlTrigger} from './ColumnsControl';
 import {ColumnsControlProvider, DataTableProvider, FiltersProvider} from './DataTableContext';
 import {Empty} from './Empty';
+import {ExportTrigger} from './ExportTrigger';
 import {Filters, FiltersTrigger} from './Filters';
 import {Pagination} from './Pagination';
 import {ReloadTrigger} from './ReloadTrigger';
@@ -42,11 +43,13 @@ export function DataTable<Data = any>(props: DataTableProps<Data>) {
 									{(dataTable.searchEnabled ||
 										dataTable.filtersEnabled ||
 										dataTable.columnsControlEnabled ||
-										dataTable.onReload != null) && (
+										dataTable.onReload != null ||
+										dataTable.onExport != null) && (
 										<div className="flex items-center gap-2 border-gray-300 border-b p-3 lg:gap-3 lg:p-4">
 											<FiltersTrigger />
 											<Search />
 											<div className="grow" />
+											<ExportTrigger />
 											<ColumnsControlTrigger />
 											<ReloadTrigger />
 										</div>
