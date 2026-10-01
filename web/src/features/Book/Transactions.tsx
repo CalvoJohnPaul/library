@@ -18,17 +18,17 @@ export function Transactions() {
 			id="book-transactions"
 			collection={createListCollection({
 				items: query.data?.rows ?? [],
-				itemToString: (item) => item.id.toString(),
-				itemToValue: (item) => item.id.toString(),
+				itemToString: (transaction) => transaction.id.toString(),
+				itemToValue: (transaction) => transaction.id.toString(),
 			})}
 			columns={[
 				{
 					id: 'type',
 					heading: 'Type',
-					cell(item) {
+					cell(transaction) {
 						return (
-							<Badge.Root accent={item.type === 'BORROW' ? 'danger' : 'success'}>
-								<Badge.Label>{item.type}</Badge.Label>
+							<Badge.Root accent={transaction.type === 'BORROW' ? 'danger' : 'success'}>
+								<Badge.Label>{transaction.type}</Badge.Label>
 							</Badge.Root>
 						);
 					},
@@ -45,8 +45,8 @@ export function Transactions() {
 				{
 					id: 'isbn',
 					heading: 'ISBN',
-					cell(item) {
-						return item.bookCopy.isbn;
+					cell(transaction) {
+						return transaction.bookCopy.isbn;
 					},
 					filter: {
 						type: 'TEXT',
@@ -57,9 +57,9 @@ export function Transactions() {
 				{
 					id: 'student',
 					heading: 'Student',
-					cell(item) {
+					cell(transaction) {
 						return (
-							<span className="block max-w-48 truncate">{`${item.student.firstName} ${item.student.lastName}`}</span>
+							<span className="block max-w-48 truncate">{`${transaction.student.firstName} ${transaction.student.lastName}`}</span>
 						);
 					},
 					filter: {
@@ -73,8 +73,8 @@ export function Transactions() {
 				{
 					id: 'dateTimeCreated',
 					heading: 'Transaction date',
-					cell(item) {
-						return format(item.dateTimeCreated, 'MMM dd, yyyy hh:mm a');
+					cell(transaction) {
+						return format(transaction.dateTimeCreated, 'MMM dd, yyyy hh:mm a');
 					},
 					sortable: true,
 				},

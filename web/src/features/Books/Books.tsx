@@ -11,6 +11,7 @@ import {Tooltip} from '@/components/ui/Tooltip';
 import {useBooksQuery} from '@/hooks/useBooksQuery';
 import {getBookGenreLabel, getBookGenreOptions, getBookYearPublishedOptions} from '@/utils/common';
 import {AddBook} from './AddBook';
+import {BookProvider} from './BookContext';
 
 interface State {
 	page: number;
@@ -42,27 +43,23 @@ export function Books() {
 					<h1 className="font-bold text-xl">Books</h1>
 					<p className="text-gray-600 text-sm">Manage your book collection below.</p>
 				</div>
-
-				<IconButton variant="outline" accent="gray">
-					<TrashIcon />
-				</IconButton>
 				<AddBook />
 			</div>
 			<DataTable
 				id="books"
 				collection={createListCollection({
 					items: query.data?.rows ?? [],
-					itemToValue: (item) => item.id.toString(),
-					itemToString: (item) => item.title,
+					itemToValue: (book) => book.id.toString(),
+					itemToString: (book) => book.title,
 				})}
 				columns={[
 					{
 						id: 'title',
 						heading: 'Title',
-						cell(data) {
+						cell(book) {
 							return (
-								<Link to={`/books/${data.id}`} className="block max-w-64 truncate text-blue-500">
-									{data.title}
+								<Link to={`/books/${book.id}`} className="block max-w-64 truncate text-blue-500">
+									{book.title}
 								</Link>
 							);
 						},
@@ -70,8 +67,8 @@ export function Books() {
 					{
 						id: 'author',
 						heading: 'Author',
-						cell(data) {
-							return <span className="block max-w-48 truncate">{data.author}</span>;
+						cell(book) {
+							return <span className="block max-w-48 truncate">{book.author}</span>;
 						},
 						filter: {
 							type: 'ASYNC_COMBOBOX',
@@ -86,8 +83,8 @@ export function Books() {
 					{
 						id: 'yearPublished',
 						heading: 'Year published',
-						cell(data) {
-							return data.yearPublished;
+						cell(book) {
+							return book.yearPublished;
 						},
 						filter: {
 							type: 'SELECT',
@@ -102,8 +99,8 @@ export function Books() {
 					{
 						id: 'genre',
 						heading: 'Genre',
-						cell(data) {
-							return getBookGenreLabel(data.genre);
+						cell(book) {
+							return getBookGenreLabel(book.genre);
 						},
 						filter: {
 							type: 'SELECT',
@@ -117,8 +114,8 @@ export function Books() {
 					{
 						id: 'totalCopies',
 						heading: 'No. of copies',
-						cell(data) {
-							return data.totalCopies.toLocaleString('en-US', {
+						cell(book) {
+							return book.totalCopies.toLocaleString('en-US', {
 								minimumFractionDigits: 0,
 								maximumFractionDigits: 0,
 							});
@@ -130,11 +127,11 @@ export function Books() {
 					{
 						id: 'available',
 						heading: 'Status',
-						cell(data) {
+						cell(book) {
 							return (
-								<Badge.Root accent={data.available ? 'success' : 'danger'}>
-									<Badge.Icon>{data.available ? <CheckIcon /> : <XIcon />}</Badge.Icon>
-									<Badge.Label>{data.available ? 'Available' : 'Unavailable'}</Badge.Label>
+								<Badge.Root accent={book.available ? 'success' : 'danger'}>
+									<Badge.Icon>{book.available ? <CheckIcon /> : <XIcon />}</Badge.Icon>
+									<Badge.Label>{book.available ? 'Available' : 'Unavailable'}</Badge.Label>
 								</Badge.Root>
 							);
 						},
@@ -151,8 +148,8 @@ export function Books() {
 					{
 						id: 'dateTimeCreated',
 						heading: 'Date added',
-						cell(data) {
-							return format(data.dateTimeCreated, 'MMM dd, yyyy hh:mm a');
+						cell(book) {
+							return format(book.dateTimeCreated, 'MMM dd, yyyy hh:mm a');
 						},
 						filter: {
 							type: 'DATE_RANGE',
@@ -165,8 +162,8 @@ export function Books() {
 					{
 						id: 'dateTimeUpdated',
 						heading: 'Date updated',
-						cell(data) {
-							return format(data.dateTimeUpdated, 'MMM dd, yyyy hh:mm a');
+						cell(book) {
+							return format(book.dateTimeUpdated, 'MMM dd, yyyy hh:mm a');
 						},
 						filter: {
 							type: 'DATE_RANGE',
@@ -179,7 +176,7 @@ export function Books() {
 					{
 						id: 'actions',
 						heading: <SettingsIcon className="size-5" />,
-						cell() {
+						cell(book) {
 							return (
 								<Menu.Root>
 									<Menu.Trigger>
@@ -188,14 +185,16 @@ export function Books() {
 									<Portal>
 										<Menu.Positioner>
 											<Menu.Content>
-												<Menu.Item value="edit">
-													<PenSquareIcon />
-													Edit
-												</Menu.Item>
-												<Menu.Item value="delete">
-													<TrashIcon />
-													Delete
-												</Menu.Item>
+												<BookProvider value={book}>
+													<Menu.Item value="edit">
+														<PenSquareIcon />
+														Edit
+													</Menu.Item>
+													<Menu.Item value="delete">
+														<TrashIcon />
+														Delete
+													</Menu.Item>
+												</BookProvider>
 											</Menu.Content>
 										</Menu.Positioner>
 									</Portal>
@@ -211,7 +210,6 @@ export function Books() {
 				}}
 				exporting={false}
 				onExport={() => {}}
-				checkEnabled
 				searchEnabled
 				paginationEnabled
 				total={query.data?.total ?? 0}

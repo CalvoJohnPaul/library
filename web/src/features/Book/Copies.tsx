@@ -7,6 +7,7 @@ import {Menu} from '@/components/ui/Menu';
 import {useBookCopiesQuery} from '@/hooks/useBookCopiesQuery';
 import {getBookCopyStatusLabel, getBookCopyStatusOptions} from '@/utils/common';
 import {useBookContext} from './BookContext';
+import {CopyProvider} from './CopyContext';
 
 export function Copies() {
 	const book = useBookContext();
@@ -17,25 +18,25 @@ export function Copies() {
 			id="book-copies"
 			collection={createListCollection({
 				items: query.data?.rows ?? [],
-				itemToValue: (item) => item.id.toString(),
-				itemToString: (item) => item.isbn,
+				itemToValue: (copy) => copy.id.toString(),
+				itemToString: (copy) => copy.isbn,
 			})}
 			columns={[
 				{
 					id: 'isbn',
 					heading: 'ISBN',
-					cell(item) {
-						return item.isbn;
+					cell(copy) {
+						return copy.isbn;
 					},
 					className: 'tabular-nums',
 				},
 				{
 					id: 'status',
 					heading: 'Status',
-					cell(item) {
+					cell(copy) {
 						return (
-							<Badge.Root accent={item.status === 'AVAILABLE' ? 'success' : 'danger'}>
-								<Badge.Label>{getBookCopyStatusLabel(item.status)}</Badge.Label>
+							<Badge.Root accent={copy.status === 'AVAILABLE' ? 'success' : 'danger'}>
+								<Badge.Label>{getBookCopyStatusLabel(copy.status)}</Badge.Label>
 							</Badge.Root>
 						);
 					},
@@ -49,8 +50,8 @@ export function Copies() {
 				{
 					id: 'dateTimeCreated',
 					heading: 'Date added',
-					cell(data) {
-						return format(data.dateTimeCreated, 'MMM dd, yyyy hh:mm a');
+					cell(copy) {
+						return format(copy.dateTimeCreated, 'MMM dd, yyyy hh:mm a');
 					},
 					filter: {
 						type: 'DATE_RANGE',
@@ -61,8 +62,8 @@ export function Copies() {
 				{
 					id: 'dateTimeUpdated',
 					heading: 'Date updated',
-					cell(data) {
-						return format(data.dateTimeUpdated, 'MMM dd, yyyy hh:mm a');
+					cell(copy) {
+						return format(copy.dateTimeUpdated, 'MMM dd, yyyy hh:mm a');
 					},
 					filter: {
 						type: 'DATE_RANGE',
@@ -73,7 +74,7 @@ export function Copies() {
 				{
 					id: 'actions',
 					heading: <SettingsIcon className="size-5" />,
-					cell(item) {
+					cell(copy) {
 						return (
 							<Menu.Root>
 								<Menu.Trigger>
@@ -82,27 +83,29 @@ export function Copies() {
 								<Portal>
 									<Menu.Positioner>
 										<Menu.Content>
-											<Menu.Item value="edit">
-												<PenSquareIcon />
-												Edit
-											</Menu.Item>
-											{item.status === 'AVAILABLE' && (
-												<Menu.Item value="borrow">
-													<RepeatIcon />
-													Borrow
+											<CopyProvider value={copy}>
+												<Menu.Item value="edit">
+													<PenSquareIcon />
+													Edit
 												</Menu.Item>
-											)}
-											{item.status === 'BORROWED' && (
-												<Menu.Item value="return">
-													<RepeatIcon />
-													Return
+												{copy.status === 'AVAILABLE' && (
+													<Menu.Item value="borrow">
+														<RepeatIcon />
+														Borrow
+													</Menu.Item>
+												)}
+												{copy.status === 'BORROWED' && (
+													<Menu.Item value="return">
+														<RepeatIcon />
+														Return
+													</Menu.Item>
+												)}
+												<Menu.Separator />
+												<Menu.Item value="delete">
+													<TrashIcon />
+													Delete
 												</Menu.Item>
-											)}
-											<Menu.Separator />
-											<Menu.Item value="delete">
-												<TrashIcon />
-												Delete
-											</Menu.Item>
+											</CopyProvider>
 										</Menu.Content>
 									</Menu.Positioner>
 								</Portal>
@@ -112,7 +115,6 @@ export function Copies() {
 					className: 'w-0 text-center',
 				},
 			]}
-			checkEnabled
 			searchEnabled
 			paginationEnabled
 			total={query.data?.total ?? 0}
