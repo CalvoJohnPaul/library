@@ -7,12 +7,14 @@ import {
 	FailedHttpResponseDefinition,
 	PaginatedDefinition,
 	SortOrderDefinition,
+	ReturnBookCopyDataInputDefinition,
 	SuccessfulHttpResponseDefinition,
 	UpdateBookCopyDataInputDefinition,
 	VoidSuccessfulHttpResponseDefinition,
 } from '@library/types';
 import {clamp, isNil, omitBy} from 'es-toolkit';
 import type {FastifyPluginAsyncZod} from 'fastify-type-provider-zod';
+import {uid} from 'uid';
 import * as XLSX from 'xlsx';
 import * as z from 'zod';
 import type {Prisma} from '../../prisma/.generated/client';
@@ -537,9 +539,21 @@ const plugin: FastifyPluginAsyncZod = async (app) => {
 
 				if (count === 0) return null;
 
+				const date = new Date();
+				const ticketSegment0 = req.account.id.toString().padStart(4, '0');
+				const ticketSegment1 = uid(4).toUpperCase();
+				const ticketSegment2 =
+					(date.getMonth() + 1).toString().padStart(2, '0') +
+					date.getDate().toString().padStart(2, '0') +
+					date.getFullYear();
+				const ticket = `${ticketSegment0}-${ticketSegment1}-${ticketSegment2}`;
+
 				await tx.transaction.create({
 					data: {
 						type: 'BORROW',
+						status: 'PENDING',
+						ticket,
+						remarks: req.body.remarks,
 						bookCopyId: req.params.id,
 						studentId: req.body.studentId,
 					},
@@ -600,6 +614,7 @@ const plugin: FastifyPluginAsyncZod = async (app) => {
 				params: z.object({
 					id: z.coerce.number().positive(),
 				}),
+				body: ReturnBookCopyDataInputDefinition,
 				response: {
 					200: SuccessfulHttpResponseDefinition(BookCopyDefinition),
 					400: FailedHttpResponseDefinition,
@@ -619,10 +634,14 @@ const plugin: FastifyPluginAsyncZod = async (app) => {
 				select: {
 					status: true,
 					transactions: {
-						where: {type: 'BORROW'},
+						where: {type: 'BORROW', status: 'PENDING'},
 						orderBy: {dateTimeCreated: 'desc'},
 						take: 1,
-						select: {studentId: true},
+						select: {
+							id: true,
+							ticket: true,
+							studentId: true,
+						},
 					},
 				},
 			});
@@ -652,9 +671,17 @@ const plugin: FastifyPluginAsyncZod = async (app) => {
 				await tx.transaction.create({
 					data: {
 						type: 'RETURN',
+						status: 'COMPLETED',
+						ticket: borrow.ticket,
+						remarks: req.body?.remarks,
 						bookCopyId: req.params.id,
 						studentId: borrow.studentId,
 					},
+				});
+
+				await tx.transaction.update({
+					where: {id: borrow.id},
+					data: {status: 'COMPLETED'},
 				});
 
 				return tx.bookCopy.findUnique({

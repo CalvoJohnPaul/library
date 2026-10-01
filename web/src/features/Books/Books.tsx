@@ -72,10 +72,11 @@ export function Books() {
 						},
 						filter: {
 							type: 'ASYNC_COMBOBOX',
-							placeholder: 'Search author',
 							options: async () => {
 								return [];
 							},
+							multiple: true,
+							placeholder: 'Search author',
 						},
 						hideable: true,
 						orderable: true,
@@ -94,7 +95,6 @@ export function Books() {
 						},
 						hideable: true,
 						orderable: true,
-						className: 'tabular-nums',
 					},
 					{
 						id: 'genre',

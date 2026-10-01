@@ -1,0 +1,139 @@
+import {createListCollection, Portal} from '@ark-ui/react';
+import {differenceInDays, format} from 'date-fns';
+import {AlertTriangleIcon} from 'lucide-react';
+import {Link} from 'react-router';
+import {DataTable} from '@/components/DataTable';
+import {Badge} from '@/components/ui/Badge';
+import {Tooltip} from '@/components/ui/Tooltip';
+import {useTransactionsQuery} from '@/hooks/useTransactionsQuery';
+import {getTransactionTypeLabel, getTransactionTypeOptions} from '@/utils/common';
+import {useStudentContext} from './StudentContext';
+
+export function Transactions() {
+	const student = useStudentContext();
+	const query = useTransactionsQuery({
+		studentId: {
+			eq: student.id.toString(),
+		},
+	});
+
+	return (
+		<DataTable
+			id="student-transactions"
+			collection={createListCollection({
+				items: query.data?.rows ?? [],
+				itemToString: (transaction) => transaction.id.toString(),
+				itemToValue: (transaction) => transaction.id.toString(),
+			})}
+			columns={[
+				{
+					id: 'type',
+					heading: 'Type',
+					cell(transaction) {
+						return (
+							<Badge.Root accent={transaction.type === 'BORROW' ? 'warning' : 'success'}>
+								<Badge.Label>{getTransactionTypeLabel(transaction.type)}</Badge.Label>
+							</Badge.Root>
+						);
+					},
+					filter: {
+						type: 'SELECT',
+						options: getTransactionTypeOptions(),
+						multiple: true,
+						placeholder: 'Select type',
+					},
+				},
+				{
+					id: 'ticket',
+					heading: 'Ticket',
+					cell: (transaction) => transaction.ticket,
+					filter: {
+						type: 'TEXT',
+						placeholder: 'Enter ticket',
+					},
+				},
+				{
+					id: 'book',
+					heading: 'Book',
+					cell(transaction) {
+						return (
+							<Link
+								to={`/books/${transaction.bookCopy.book.id}`}
+								className="block max-w-64 truncate text-blue-500"
+							>
+								{transaction.bookCopy.book.title}
+							</Link>
+						);
+					},
+					filter: {
+						type: 'ASYNC_COMBOBOX',
+						options: async () => [],
+						multiple: true,
+						placeholder: 'Search book',
+					},
+				},
+				{
+					id: 'isbn',
+					heading: 'ISBN',
+					cell(transaction) {
+						return transaction.bookCopy.isbn;
+					},
+					filter: {
+						type: 'TEXT',
+						placeholder: 'Enter ISBN',
+					},
+				},
+				{
+					id: 'remarks',
+					heading: 'Remarks',
+					cell(transaction) {
+						return transaction.remarks;
+					},
+				},
+				{
+					id: 'dateTimeCreated',
+					heading: 'Transaction date',
+					cell: (transaction) => {
+						const overdue =
+							transaction.type === 'BORROW' &&
+							transaction.status === 'PENDING' &&
+							differenceInDays(new Date(), transaction.dateTimeCreated) >= 3;
+
+						return (
+							<div className="flex items-center gap-1">
+								{format(transaction.dateTimeCreated, 'MMM dd, yyyy hh:mm a')}
+								{overdue && (
+									<Tooltip.Root>
+										<Tooltip.Trigger>
+											<AlertTriangleIcon className="size-4 text-red-500" />
+										</Tooltip.Trigger>
+										<Portal>
+											<Tooltip.Positioner>
+												<Tooltip.Content>
+													<Tooltip.Arrow>
+														<Tooltip.ArrowTip />
+													</Tooltip.Arrow>
+													Overdue
+												</Tooltip.Content>
+											</Tooltip.Positioner>
+										</Portal>
+									</Tooltip.Root>
+								)}
+							</div>
+						);
+					},
+					filter: {
+						type: 'DATE_RANGE',
+						placeholder: 'Select date',
+					},
+					sortable: true,
+				},
+			]}
+			paginationEnabled
+			onReload={() => {}}
+			onExport={() => {}}
+			total={query.data?.total ?? 0}
+			loading={query.isLoading}
+		/>
+	);
+}

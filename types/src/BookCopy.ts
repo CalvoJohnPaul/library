@@ -35,11 +35,21 @@ export const UpdateBookCopyInputDefinition = z.object({
 
 export const BorrowBookCopyDataInputDefinition = z.object({
 	studentId: IdDefinition,
+	remarks: z.string().optional().nullable(),
 });
 
 export const BorrowBookCopyInputDefinition = z.object({
 	id: IdDefinition,
 	data: BorrowBookCopyDataInputDefinition,
+});
+
+export const ReturnBookCopyDataInputDefinition = z.object({
+	remarks: z.string().optional().nullable(),
+});
+
+export const ReturnBookCopyInputDefinition = z.object({
+	id: IdDefinition,
+	data: ReturnBookCopyDataInputDefinition,
 });
 
 export const BookCopySortByInputDefinition = z.enum(['dateTimeCreated', 'dateTimeUpdated']);
@@ -51,4 +61,6 @@ export type UpdateBookCopyDataInput = z.infer<typeof UpdateBookCopyDataInputDefi
 export type UpdateBookCopyInput = z.infer<typeof UpdateBookCopyInputDefinition>;
 export type BorrowBookCopyDataInput = z.infer<typeof BorrowBookCopyDataInputDefinition>;
 export type BorrowBookCopyInput = z.infer<typeof BorrowBookCopyInputDefinition>;
+export type ReturnBookCopyDataInput = z.infer<typeof ReturnBookCopyDataInputDefinition>;
+export type ReturnBookCopyInput = z.infer<typeof ReturnBookCopyInputDefinition>;
 export type BookCopySortByInput = z.infer<typeof BookCopySortByInputDefinition>;

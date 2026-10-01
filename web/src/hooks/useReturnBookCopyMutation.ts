@@ -1,11 +1,16 @@
-import {type BookCopy, BookCopyDefinition, HttpResponseDefinition} from '@library/types';
+import {
+	type BookCopy,
+	BookCopyDefinition,
+	HttpResponseDefinition,
+	type ReturnBookCopyInput,
+} from '@library/types';
 import {type UseMutationOptions, useMutation} from '@tanstack/react-query';
 import {API_BASE_URL} from '@/config/env';
 import {useCsrfQuery} from './useCsrfQuery';
 
 export function useReturnBookCopyMutation(
 	options?: Pick<
-		UseMutationOptions<BookCopy, Error, number>,
+		UseMutationOptions<BookCopy, Error, ReturnBookCopyInput>,
 		| 'gcTime'
 		| 'onMutate'
 		| 'onSettled'
@@ -19,13 +24,15 @@ export function useReturnBookCopyMutation(
 	return useMutation({
 		...options,
 		mutationKey: ['ReturnBookCopy'],
-		mutationFn: async (id) => {
+		mutationFn: async (input) => {
 			const csrf = await useCsrfQuery.getQueryFn()();
-			const res = await fetch(`${API_BASE_URL}/book-copies/${id}/return`, {
+			const res = await fetch(`${API_BASE_URL}/book-copies/${input.id}/return`, {
 				method: 'POST',
+				body: JSON.stringify(input.data),
 				credentials: 'include',
 				headers: {
 					'X-CSRF-Token': csrf.token,
+					'Content-Type': 'application/json',
 				},
 			});
 

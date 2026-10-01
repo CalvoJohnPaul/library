@@ -6,17 +6,25 @@ import {
 	type Transaction,
 	TransactionDefinition,
 	type TransactionSortByInput,
+	type TransactionStatus,
 	type TransactionType,
 } from '@library/types';
 import {type QueryKey, type UseQueryOptions, useQuery} from '@tanstack/react-query';
 import {API_BASE_URL} from '@/config/env';
-import type {DateFilterInput, EnumFilterInput, IdFilterInput} from '@/types/index';
+import type {
+	DateFilterInput,
+	EnumFilterInput,
+	IdFilterInput,
+	StringFilterInput,
+} from '@/types/index';
 
 export interface TransactionsInput {
 	page?: number;
 	pageSize?: number;
 	id?: IdFilterInput;
 	type?: EnumFilterInput<TransactionType>;
+	status?: EnumFilterInput<TransactionStatus>;
+	ticket?: StringFilterInput;
 	studentId?: IdFilterInput;
 	bookCopyId?: IdFilterInput;
 	bookId?: IdFilterInput;
@@ -47,6 +55,21 @@ const getQueryFn = (input?: TransactionsInput) => {
 			input.type.in.forEach((type) => void params.append('type__in', type.toString()));
 		if (input?.type?.nin != null)
 			input.type.nin.forEach((type) => void params.append('type__nin', type.toString()));
+
+		if (input?.status?.eq != null) params.append('status__eq', input.status.eq);
+		if (input?.status?.neq != null) params.append('status__neq', input.status.neq);
+		if (input?.status?.in != null)
+			input.status.in.forEach((status) => void params.append('status__in', status.toString()));
+		if (input?.status?.nin != null)
+			input.status.nin.forEach((status) => void params.append('status__nin', status.toString()));
+
+		if (input?.ticket?.eq != null) params.append('ticket__eq', input.ticket.eq);
+		if (input?.ticket?.neq != null) params.append('ticket__neq', input.ticket.neq);
+		if (input?.ticket?.in != null)
+			input.ticket.in.forEach((ticket) => void params.append('ticket__in', ticket));
+		if (input?.ticket?.nin != null)
+			input.ticket.nin.forEach((ticket) => void params.append('ticket__nin', ticket));
+		if (input?.ticket?.contains != null) params.append('ticket__contains', input.ticket.contains);
 
 		if (input?.studentId?.eq != null) params.append('studentId__eq', input.studentId.eq.toString());
 		if (input?.studentId?.neq != null)

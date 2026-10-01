@@ -37,77 +37,80 @@ export function Login() {
 	});
 
 	return (
-		<main className="px-12 py-32">
-			<h1 className="text-center font-bold text-2xl">Log in</h1>
+		<>
+			<title>Log in | read.</title>
+			<main className="px-12 py-32">
+				<h1 className="text-center font-bold text-2xl">Log in</h1>
 
-			<form
-				onSubmit={(e) => {
-					e.preventDefault();
-					e.stopPropagation();
-					form.handleSubmit();
-				}}
-				noValidate
-				className="mx-auto mt-12 max-w-88"
-			>
-				<form.Field
-					name="email"
-					validators={{
-						onChange: CreateSessionInputDefinition.shape.email,
+				<form
+					onSubmit={(e) => {
+						e.preventDefault();
+						e.stopPropagation();
+						form.handleSubmit();
 					}}
+					noValidate
+					className="mx-auto mt-12 max-w-88"
 				>
-					{(field) => (
-						<Field.Root invalid={field.state.meta.errors.length > 0}>
-							<Field.Label>Email</Field.Label>
-							<Field.Input
-								type="email"
-								value={field.state.value}
-								onChange={(e) => {
-									field.handleChange(e.target.value);
-								}}
-								required
-								placeholder="Enter your email"
-							/>
-							<Field.ErrorText>{field.state.meta.errors.at(0)?.message}</Field.ErrorText>
-						</Field.Root>
-					)}
-				</form.Field>
-				<form.Field
-					name="password"
-					validators={{
-						onChange: CreateSessionInputDefinition.shape.password,
-					}}
-				>
-					{(field) => (
-						<Field.Root className="mt-4" invalid={field.state.meta.errors.length > 0}>
-							<Field.Label>Password</Field.Label>
-							<PasswordInput.Root>
-								<PasswordInput.Control>
-									<PasswordInput.Input
-										value={field.state.value}
-										onChange={(e) => {
-											field.handleChange(e.target.value);
-										}}
-										required
-										placeholder="Enter your password"
-									/>
-									<PasswordInput.VisibilityTrigger>
-										<PasswordInput.Indicator />
-									</PasswordInput.VisibilityTrigger>
-								</PasswordInput.Control>
-							</PasswordInput.Root>
-							<Field.ErrorText>{field.state.meta.errors.at(0)?.message}</Field.ErrorText>
-						</Field.Root>
-					)}
-				</form.Field>
+					<form.Field
+						name="email"
+						validators={{
+							onChange: CreateSessionInputDefinition.shape.email,
+						}}
+					>
+						{(field) => (
+							<Field.Root invalid={field.state.meta.errors.length > 0}>
+								<Field.Label>Email</Field.Label>
+								<Field.Input
+									type="email"
+									value={field.state.value}
+									onChange={(e) => {
+										field.handleChange(e.target.value);
+									}}
+									required
+									placeholder="Enter your email"
+								/>
+								<Field.ErrorText>{field.state.meta.errors.at(0)?.message}</Field.ErrorText>
+							</Field.Root>
+						)}
+					</form.Field>
+					<form.Field
+						name="password"
+						validators={{
+							onChange: CreateSessionInputDefinition.shape.password,
+						}}
+					>
+						{(field) => (
+							<Field.Root className="mt-4" invalid={field.state.meta.errors.length > 0}>
+								<Field.Label>Password</Field.Label>
+								<PasswordInput.Root>
+									<PasswordInput.Control>
+										<PasswordInput.Input
+											value={field.state.value}
+											onChange={(e) => {
+												field.handleChange(e.target.value);
+											}}
+											required
+											placeholder="Enter your password"
+										/>
+										<PasswordInput.VisibilityTrigger>
+											<PasswordInput.Indicator />
+										</PasswordInput.VisibilityTrigger>
+									</PasswordInput.Control>
+								</PasswordInput.Root>
+								<Field.ErrorText>{field.state.meta.errors.at(0)?.message}</Field.ErrorText>
+							</Field.Root>
+						)}
+					</form.Field>
 
-				<form.Subscribe>
-					{({canSubmit, isSubmitting}) => (
-						<Button type="submit" disabled={!canSubmit} className="mt-8 w-full">
-							{isSubmitting ? <SpinnerIcon className="size-5" /> : 'Log in'}
-						</Button>
-					)}
-				</form.Subscribe>
-			</form>
-		</main>
+					<form.Subscribe>
+						{({canSubmit, isSubmitting}) => (
+							<Button type="submit" disabled={!canSubmit} className="mt-8 w-full">
+								{isSubmitting ? <SpinnerIcon className="size-5" /> : 'Log in'}
+							</Button>
+						)}
+					</form.Subscribe>
+				</form>
+			</main>
+		</>
 	);
 }

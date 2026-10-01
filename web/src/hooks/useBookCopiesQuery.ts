@@ -2,7 +2,7 @@ import {
 	type BookCopy,
 	BookCopyDefinition,
 	type BookCopySortByInput,
-	type BookStatus,
+	type BookCopyStatus,
 	HttpResponseDefinition,
 	type Paginated,
 	PaginatedDefinition,
@@ -22,7 +22,7 @@ export interface BookCopiesInput {
 	pageSize?: number;
 	id?: IdFilterInput;
 	isbn?: StringFilterInput;
-	status?: EnumFilterInput<BookStatus>;
+	status?: EnumFilterInput<BookCopyStatus>;
 	bookId?: IdFilterInput;
 	dateTimeCreated?: DateFilterInput;
 	dateTimeUpdated?: DateFilterInput;

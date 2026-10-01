@@ -132,7 +132,7 @@ export function Table() {
 											<span
 												className={twMerge(
 													'flex items-center gap-1',
-													col.numeric && 'justify-end tabular-nums',
+													col.numeric && 'justify-end font-mono',
 												)}
 											>
 												{checkEnabled && idx === 0 && (

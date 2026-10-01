@@ -8,7 +8,7 @@ import {
 	SquarePenIcon,
 	UsersIcon,
 } from 'lucide-react';
-import {NavLink} from 'react-router';
+import {NavLink, useNavigate} from 'react-router';
 import {cx} from 'tailwind-variants';
 import {Avatar} from '@/components/ui/Avatar';
 import {Menu} from '@/components/ui/Menu';
@@ -115,14 +115,8 @@ export function Navbar() {
 											</div>
 										</div>
 										<Menu.Separator />
-										<Menu.Item value="edit-account">
-											<SquarePenIcon />
-											Edit account
-										</Menu.Item>
-										<Menu.Item value="change-password">
-											<LockKeyholeIcon />
-											Change password
-										</Menu.Item>
+										<EditAccount />
+										<ChangePassword />
 										<Menu.Separator />
 										<Logout />
 									</Menu.Content>
@@ -136,12 +130,38 @@ export function Navbar() {
 	);
 }
 
+function EditAccount() {
+	return (
+		<Menu.Item value="edit-account">
+			<SquarePenIcon />
+			Edit account
+		</Menu.Item>
+	);
+}
+
+function ChangePassword() {
+	return (
+		<Menu.Item value="change-password">
+			<LockKeyholeIcon />
+			Change password
+		</Menu.Item>
+	);
+}
+
 function Logout() {
+	const navigate = useNavigate();
 	const mutation = useDestroySessionMutation({
 		onSuccess() {
-			client.invalidateQueries({
-				queryKey: useMeQuery.getQueryKey(),
-			});
+			client
+				.invalidateQueries({
+					queryKey: useMeQuery.getQueryKey(),
+					exact: false,
+					type: 'all',
+				})
+				.then(() => {
+					navigate('/');
+				})
+				.catch(console.error);
 		},
 	});
 

@@ -29,6 +29,7 @@
 @theme {
 	--font-*: initial;
 	--font-sans: "Inter", sans-serif;
+	--font-mono: "Fira Code", monospace;
 
 	--z-dropdown: 1000;
 	--z-sticky: 1100;

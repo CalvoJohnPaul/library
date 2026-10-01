@@ -28,7 +28,6 @@ export function Copies() {
 					cell(copy) {
 						return copy.isbn;
 					},
-					className: 'tabular-nums',
 				},
 				{
 					id: 'status',
@@ -55,7 +54,7 @@ export function Copies() {
 					},
 					filter: {
 						type: 'DATE_RANGE',
-						placeholder: 'Pick a date',
+						placeholder: 'Select date',
 					},
 					sortable: true,
 				},
@@ -67,7 +66,7 @@ export function Copies() {
 					},
 					filter: {
 						type: 'DATE_RANGE',
-						placeholder: 'Pick a date',
+						placeholder: 'Select date',
 					},
 					sortable: true,
 				},

@@ -5,6 +5,7 @@ import {
 	SuccessfulHttpResponseDefinition,
 	TransactionDefinition,
 	TransactionSortByInputDefinition,
+	TransactionStatusDefinition,
 	TransactionTypeDefinition,
 } from '@library/types';
 import {clamp} from 'es-toolkit';
@@ -19,6 +20,8 @@ import {
 	QueryString__EnumDefinition,
 	QueryString__NumberArrayDefinition,
 	QueryString__NumberDefinition,
+	QueryString__StringArrayDefinition,
+	QueryString__StringDefinition,
 } from '../types';
 
 const plugin: FastifyPluginAsyncZod = async (app) => {
@@ -39,6 +42,15 @@ const plugin: FastifyPluginAsyncZod = async (app) => {
 					type__neq: QueryString__EnumDefinition(TransactionTypeDefinition),
 					type__in: QueryString__EnumArrayDefinition(TransactionTypeDefinition),
 					type__nin: QueryString__EnumArrayDefinition(TransactionTypeDefinition),
+					status__eq: QueryString__EnumDefinition(TransactionStatusDefinition),
+					status__neq: QueryString__EnumDefinition(TransactionStatusDefinition),
+					status__in: QueryString__EnumArrayDefinition(TransactionStatusDefinition),
+					status__nin: QueryString__EnumArrayDefinition(TransactionStatusDefinition),
+					ticket__eq: QueryString__StringDefinition,
+					ticket__neq: QueryString__StringDefinition,
+					ticket__in: QueryString__StringArrayDefinition,
+					ticket__nin: QueryString__StringArrayDefinition,
+					ticket__contains: QueryString__StringDefinition,
 					studentId__eq: QueryString__NumberDefinition,
 					studentId__neq: QueryString__NumberDefinition,
 					studentId__in: QueryString__NumberArrayDefinition,
@@ -98,6 +110,39 @@ const plugin: FastifyPluginAsyncZod = async (app) => {
 					...(req.query.type__neq != null && {not: req.query.type__neq}),
 					...(req.query.type__in != null && {in: req.query.type__in}),
 					...(req.query.type__nin != null && {notIn: req.query.type__nin}),
+				};
+			}
+
+			if (
+				req.query.status__eq != null ||
+				req.query.status__neq != null ||
+				req.query.status__in != null ||
+				req.query.status__nin != null
+			) {
+				where.status = {
+					...(req.query.status__eq != null && {equals: req.query.status__eq}),
+					...(req.query.status__neq != null && {not: req.query.status__neq}),
+					...(req.query.status__in != null && {in: req.query.status__in}),
+					...(req.query.status__nin != null && {notIn: req.query.status__nin}),
+				};
+			}
+
+			if (
+				req.query.ticket__eq != null ||
+				req.query.ticket__neq != null ||
+				req.query.ticket__in != null ||
+				req.query.ticket__nin != null ||
+				req.query.ticket__contains != null
+			) {
+				where.ticket = {
+					...(req.query.ticket__eq != null && {equals: req.query.ticket__eq}),
+					...(req.query.ticket__neq != null && {not: req.query.ticket__neq}),
+					...(req.query.ticket__in != null && {in: req.query.ticket__in}),
+					...(req.query.ticket__nin != null && {notIn: req.query.ticket__nin}),
+					...(req.query.ticket__contains != null && {
+						contains: req.query.ticket__contains,
+						mode: 'insensitive',
+					}),
 				};
 			}
 
@@ -186,6 +231,9 @@ const plugin: FastifyPluginAsyncZod = async (app) => {
 					select: {
 						id: true,
 						type: true,
+						status: true,
+						ticket: true,
+						remarks: true,
 						dateTimeCreated: true,
 						dateTimeUpdated: true,
 						student: {
@@ -242,6 +290,9 @@ const plugin: FastifyPluginAsyncZod = async (app) => {
 					rows: rows.map((transaction) => ({
 						id: transaction.id,
 						type: transaction.type,
+						status: transaction.status,
+						ticket: transaction.ticket,
+						remarks: transaction.remarks,
 						student: {
 							id: transaction.student.id,
 							externalId: transaction.student.externalId,
@@ -299,6 +350,9 @@ const plugin: FastifyPluginAsyncZod = async (app) => {
 				select: {
 					id: true,
 					type: true,
+					status: true,
+					ticket: true,
+					remarks: true,
 					dateTimeCreated: true,
 					dateTimeUpdated: true,
 					student: {
@@ -337,6 +391,9 @@ const plugin: FastifyPluginAsyncZod = async (app) => {
 				data: {
 					id: transaction.id,
 					type: transaction.type,
+					status: transaction.status,
+					ticket: transaction.ticket,
+					remarks: transaction.remarks,
 					student: {
 						id: transaction.student.id,
 						externalId: transaction.student.externalId,
@@ -379,6 +436,15 @@ const plugin: FastifyPluginAsyncZod = async (app) => {
 					type__neq: QueryString__EnumDefinition(TransactionTypeDefinition),
 					type__in: QueryString__EnumArrayDefinition(TransactionTypeDefinition),
 					type__nin: QueryString__EnumArrayDefinition(TransactionTypeDefinition),
+					status__eq: QueryString__EnumDefinition(TransactionStatusDefinition),
+					status__neq: QueryString__EnumDefinition(TransactionStatusDefinition),
+					status__in: QueryString__EnumArrayDefinition(TransactionStatusDefinition),
+					status__nin: QueryString__EnumArrayDefinition(TransactionStatusDefinition),
+					ticket__eq: QueryString__StringDefinition,
+					ticket__neq: QueryString__StringDefinition,
+					ticket__in: QueryString__StringArrayDefinition,
+					ticket__nin: QueryString__StringArrayDefinition,
+					ticket__contains: QueryString__StringDefinition,
 					studentId__eq: QueryString__NumberDefinition,
 					studentId__neq: QueryString__NumberDefinition,
 					studentId__in: QueryString__NumberArrayDefinition,
@@ -442,6 +508,39 @@ const plugin: FastifyPluginAsyncZod = async (app) => {
 					...(req.query.type__neq != null && {not: req.query.type__neq}),
 					...(req.query.type__in != null && {in: req.query.type__in}),
 					...(req.query.type__nin != null && {notIn: req.query.type__nin}),
+				};
+			}
+
+			if (
+				req.query.status__eq != null ||
+				req.query.status__neq != null ||
+				req.query.status__in != null ||
+				req.query.status__nin != null
+			) {
+				where.status = {
+					...(req.query.status__eq != null && {equals: req.query.status__eq}),
+					...(req.query.status__neq != null && {not: req.query.status__neq}),
+					...(req.query.status__in != null && {in: req.query.status__in}),
+					...(req.query.status__nin != null && {notIn: req.query.status__nin}),
+				};
+			}
+
+			if (
+				req.query.ticket__eq != null ||
+				req.query.ticket__neq != null ||
+				req.query.ticket__in != null ||
+				req.query.ticket__nin != null ||
+				req.query.ticket__contains != null
+			) {
+				where.ticket = {
+					...(req.query.ticket__eq != null && {equals: req.query.ticket__eq}),
+					...(req.query.ticket__neq != null && {not: req.query.ticket__neq}),
+					...(req.query.ticket__in != null && {in: req.query.ticket__in}),
+					...(req.query.ticket__nin != null && {notIn: req.query.ticket__nin}),
+					...(req.query.ticket__contains != null && {
+						contains: req.query.ticket__contains,
+						mode: 'insensitive',
+					}),
 				};
 			}
 
@@ -522,6 +621,9 @@ const plugin: FastifyPluginAsyncZod = async (app) => {
 				select: {
 					id: true,
 					type: true,
+					status: true,
+					ticket: true,
+					remarks: true,
 					dateTimeCreated: true,
 					dateTimeUpdated: true,
 					student: {
@@ -570,6 +672,9 @@ const plugin: FastifyPluginAsyncZod = async (app) => {
 				rows.map((transaction) => ({
 					id: transaction.id,
 					type: transaction.type,
+					status: transaction.status,
+					ticket: transaction.ticket,
+					remarks: transaction.remarks,
 					studentId: transaction.student.id,
 					externalId: transaction.student.externalId,
 					firstName: transaction.student.firstName,
@@ -582,7 +687,7 @@ const plugin: FastifyPluginAsyncZod = async (app) => {
 					author: transaction.bookCopy.book.author,
 					genre: transaction.bookCopy.book.genre,
 					yearPublished: transaction.bookCopy.book.yearPublished,
-					status: transaction.bookCopy.status,
+					bookStatus: transaction.bookCopy.status,
 					dateTimeCreated: transaction.dateTimeCreated.toISOString(),
 					dateTimeUpdated: transaction.dateTimeUpdated.toISOString(),
 				})),

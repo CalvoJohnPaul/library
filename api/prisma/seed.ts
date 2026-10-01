@@ -57,16 +57,46 @@ async function seed() {
 	const students = await prisma.student.findMany({select: {id: true}});
 	const bookCopies = await prisma.bookCopy.findMany({select: {id: true, status: true}});
 
+	const date = new Date();
+	let hasThreeDayGap = false;
 	const transactionsData: Prisma.TransactionUncheckedCreateInput[] = bookCopies.flatMap((copy) => {
+		const ticketSegment0 = faker.number.int({min: 0, max: 9999}).toString().padStart(4, '0');
+		const ticketSegment1 = faker.string.alphanumeric(6).toUpperCase();
+		const ticketSegment2 =
+			(date.getMonth() + 1).toString().padStart(2, '0') +
+			date.getDate().toString().padStart(2, '0') +
+			date.getFullYear();
+		const ticket = `${ticketSegment0}-${ticketSegment1}-${ticketSegment2}`;
+
+		const borrowedAt = faker.date.recent({days: 365});
+		const gapDays = hasThreeDayGap ? faker.number.int({min: 1, max: 14}) : 3;
+		const returnedAt = new Date(borrowedAt.getTime() + gapDays * 24 * 60 * 60 * 1000);
+
 		const borrowed: Prisma.TransactionUncheckedCreateInput = {
 			type: 'BORROW',
+			status: copy.status === 'BORROWED' ? 'PENDING' : 'COMPLETED',
+			ticket,
+			remarks: faker.datatype.boolean(0.3) ? faker.lorem.sentence() : null,
 			bookCopyId: copy.id,
 			studentId: faker.helpers.arrayElement(students).id,
+			dateTimeCreated: borrowedAt,
+			dateTimeUpdated: copy.status === 'BORROWED' ? borrowedAt : returnedAt,
 		};
 
 		if (copy.status === 'BORROWED') return [borrowed];
 
-		return faker.datatype.boolean(0.3) ? [borrowed, {...borrowed, type: 'RETURN'}] : [borrowed];
+		hasThreeDayGap = true;
+
+		return [
+			borrowed,
+			{
+				...borrowed,
+				type: 'RETURN',
+				remarks: faker.datatype.boolean(0.3) ? faker.lorem.sentence() : null,
+				dateTimeCreated: returnedAt,
+				dateTimeUpdated: returnedAt,
+			},
+		];
 	});
 
 	await prisma.transaction.createMany({data: transactionsData});

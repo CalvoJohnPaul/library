@@ -3,8 +3,16 @@ import {
 	BookCopyStatusDefinition,
 	type BookGenre,
 	BookGenreDefinition,
+	type TransactionType,
+	TransactionTypeDefinition,
 } from '@library/types';
 import type {Option} from '../types';
+
+/*
+ *--------------------------------------------
+ *	BOOK
+ *--------------------------------------------
+ */
 
 const BOOK_GENRE_MAP: Record<BookGenre, string> = {
 	FICTION: 'Fiction',
@@ -55,6 +63,12 @@ export function getBookYearPublishedOptions(): Option[] {
 	}).toReversed();
 }
 
+/*
+ *--------------------------------------------
+ *	BOOK COPY
+ *--------------------------------------------
+ */
+
 const BOOK_COPY_STATUS_MAP: Record<BookCopyStatus, string> = {
 	AVAILABLE: 'Available',
 	BORROWED: 'Borrowed',
@@ -69,4 +83,26 @@ export function getBookCopyStatusOptions(): Option[] {
 
 export function getBookCopyStatusLabel(status: BookCopyStatus): string {
 	return BOOK_COPY_STATUS_MAP[status];
+}
+
+/*
+ *--------------------------------------------
+ *	TRANSACTION
+ *--------------------------------------------
+ */
+
+const TRANSACTION_TYPE_MAP: Record<TransactionType, string> = {
+	BORROW: 'Borrow',
+	RETURN: 'Return',
+};
+
+export function getTransactionTypeOptions(): Option[] {
+	return TransactionTypeDefinition.options.map((value) => ({
+		value,
+		label: TRANSACTION_TYPE_MAP[value],
+	}));
+}
+
+export function getTransactionTypeLabel(type: TransactionType): string {
+	return TRANSACTION_TYPE_MAP[type];
 }
