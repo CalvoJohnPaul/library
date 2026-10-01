@@ -145,7 +145,7 @@ export function EditBook() {
 												options={getBookGenreOptions()}
 												value={field.value ?? ''}
 												onChange={(value) => {
-													field.onChange(value);
+													field.onChange(value || null);
 												}}
 											/>
 											<Field.ErrorText>{fieldState.error?.message}</Field.ErrorText>
@@ -163,7 +163,7 @@ export function EditBook() {
 												options={getBookYearPublishedOptions()}
 												value={field.value?.toString() ?? ''}
 												onChange={(value) => {
-													const n = Number.parseInt(value, 10);
+													const n = value ? Number.parseInt(value, 10) : null;
 													field.onChange(Number.isNaN(n) ? '' : n);
 												}}
 											/>

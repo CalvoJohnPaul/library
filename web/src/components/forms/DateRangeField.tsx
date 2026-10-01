@@ -196,6 +196,7 @@ export function DateRangeField(props: DateRangeFieldProps) {
 						</DatePicker.Trigger>
 					)}
 				</DatePicker.Context>
+				<DatePicker.ClearTrigger />
 			</DatePicker.Control>
 			{props.portalled ? <Portal>{content}</Portal> : content}
 		</DatePicker.Root>

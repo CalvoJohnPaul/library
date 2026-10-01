@@ -1,10 +1,10 @@
 import * as z from 'zod';
 import {BookDefinition} from './Book.js';
-import {DateDefinition, IdDefinition} from './common.js';
+import {DateDefinition} from './common.js';
 
 export const BookCopyStatusDefinition = z.enum(['AVAILABLE', 'BORROWED']);
 export const BookCopyDefinition = z.object({
-	id: IdDefinition,
+	id: z.number(),
 	isbn: z.string(),
 	book: BookDefinition.pick({
 		id: true,
@@ -19,36 +19,36 @@ export const BookCopyDefinition = z.object({
 });
 
 export const CreateBookCopyInputDefinition = z.object({
-	isbn: z.string(),
-	bookId: IdDefinition,
+	isbn: z.string({error: 'ISBN is required'}),
+	bookId: z.number({error: 'Book ID is required'}),
 });
 
 export const UpdateBookCopyDataInputDefinition = z.object({
-	isbn: z.string().optional(),
-	bookId: IdDefinition.optional(),
+	isbn: z.string().optional().nullable(),
+	bookId: z.number().optional().nullable(),
 });
 
 export const UpdateBookCopyInputDefinition = z.object({
-	id: IdDefinition,
+	id: z.number(),
 	data: UpdateBookCopyDataInputDefinition,
 });
 
 export const BorrowBookCopyDataInputDefinition = z.object({
-	studentId: IdDefinition,
-	remarks: z.string().optional().nullable(),
+	studentId: z.number({error: 'Student ID is required'}),
+	remarks: z.string({error: 'Remarks is required'}).optional().nullable(),
 });
 
 export const BorrowBookCopyInputDefinition = z.object({
-	id: IdDefinition,
+	id: z.number(),
 	data: BorrowBookCopyDataInputDefinition,
 });
 
 export const ReturnBookCopyDataInputDefinition = z.object({
-	remarks: z.string().optional().nullable(),
+	remarks: z.string({error: 'Remarks is required'}).optional().nullable(),
 });
 
 export const ReturnBookCopyInputDefinition = z.object({
-	id: IdDefinition,
+	id: z.number(),
 	data: ReturnBookCopyDataInputDefinition,
 });
 

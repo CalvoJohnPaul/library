@@ -28,6 +28,8 @@ export const datePickerRecipe = tv({
 			'icon:size-5',
 			'icon:text-gray-600',
 		],
+		clearTrigger:
+			'flex icon:size-5 size-11 items-center justify-center rounded-md border border-gray-200 bg-white icon:text-gray-600',
 		positioner: 'z-dropdown',
 		content: [
 			'z-dropdown',

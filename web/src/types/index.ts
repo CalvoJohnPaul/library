@@ -36,6 +36,13 @@ export interface NumberFilterInput {
 	lte?: number | null;
 }
 
+export interface NumberLiteralFilterInput {
+	eq?: number | null;
+	neq?: number | null;
+	in?: number[] | null;
+	nin?: number[] | null;
+}
+
 export interface BooleanFilterInput {
 	eq?: boolean | null;
 	neq?: boolean | null;

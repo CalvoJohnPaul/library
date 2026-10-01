@@ -90,6 +90,7 @@ function SelectField__single(props: SelectField__singleProps) {
 					<Select.ValueText placeholder={props.placeholder || 'Select'} />
 					<Select.Indicator />
 				</Select.Trigger>
+				<Select.ClearTrigger />
 			</Select.Control>
 			<Select.HiddenSelect />
 			{props.portalled ? <Portal>{content}</Portal> : content}
@@ -155,6 +156,7 @@ function SelectField__multi(props: SelectField__multiProps) {
 					</Select.Context>
 					<Select.Indicator />
 				</Select.Trigger>
+				<Select.ClearTrigger />
 			</Select.Control>
 			<Select.Context>
 				{(api) => {

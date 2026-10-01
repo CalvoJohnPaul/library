@@ -1,7 +1,5 @@
 import * as z from 'zod';
 
-export const IdDefinition = z.number().positive().min(1, 'Invalid ID');
-
 export const DateDefinition = z.codec(
 	z.union([
 		z.date(),

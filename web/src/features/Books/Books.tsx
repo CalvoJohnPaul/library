@@ -1,4 +1,5 @@
 import {createListCollection, Portal} from '@ark-ui/react';
+import {type BookGenre, BookGenreDefinition} from '@library/types';
 import {format} from 'date-fns';
 import {CheckIcon, PlusIcon, SettingsIcon, XIcon} from 'lucide-react';
 import {useReducer} from 'react';
@@ -9,6 +10,7 @@ import {IconButton} from '@/components/ui/IconButton';
 import {Menu} from '@/components/ui/Menu';
 import {Tooltip} from '@/components/ui/Tooltip';
 import {useBooksQuery} from '@/hooks/useBooksQuery';
+import type {DateRange} from '@/types/index';
 import {getBookGenreLabel, getBookGenreOptions, getBookYearPublishedOptions} from '@/utils/common';
 import {AddBook} from './AddBook';
 import {BookProvider} from './BookContext';
@@ -18,6 +20,13 @@ import {EditBook} from './EditBook';
 interface State {
 	page: number;
 	pageSize: number;
+	title?: string | null;
+	author?: string | null;
+	genre?: BookGenre[] | null;
+	yearPublished?: number[] | null;
+	available?: boolean | null;
+	dateTimeCreated?: DateRange | null;
+	dateTimeUpdated?: DateRange | null;
 }
 
 export function Books() {
@@ -35,6 +44,43 @@ export function Books() {
 	const query = useBooksQuery({
 		page: state.page,
 		pageSize: state.pageSize,
+		...(state.title && {
+			title: {
+				contains: state.title,
+			},
+		}),
+		...(state.author && {
+			author: {
+				contains: state.author,
+			},
+		}),
+		...(state.yearPublished?.length && {
+			yearPublished: {
+				in: state.yearPublished,
+			},
+		}),
+		...(state.genre?.length && {
+			genre: {
+				in: state.genre,
+			},
+		}),
+		...(state.available != null && {
+			available: {
+				eq: state.available,
+			},
+		}),
+		...((state.dateTimeCreated?.from != null || state.dateTimeCreated?.to != null) && {
+			dateTimeCreated: {
+				gte: state.dateTimeCreated?.from ?? null,
+				lte: state.dateTimeCreated?.to ?? null,
+			},
+		}),
+		...((state.dateTimeUpdated?.from != null || state.dateTimeUpdated?.to != null) && {
+			dateTimeUpdated: {
+				gte: state.dateTimeUpdated?.from ?? null,
+				lte: state.dateTimeUpdated?.to ?? null,
+			},
+		}),
 	});
 
 	return (
@@ -73,12 +119,12 @@ export function Books() {
 							return <span className="block max-w-48 truncate">{book.author}</span>;
 						},
 						filter: {
-							type: 'ASYNC_COMBOBOX',
-							options: async () => {
-								return [];
+							type: 'TEXT',
+							placeholder: 'Enter author',
+							value: state.author ?? '',
+							onChange(value) {
+								setState({author: value ?? null});
 							},
-							multiple: true,
-							placeholder: 'Search author',
 						},
 						hideable: true,
 						orderable: true,
@@ -94,6 +140,12 @@ export function Books() {
 							options: getBookYearPublishedOptions(),
 							multiple: true,
 							placeholder: 'Select year',
+							value: state.yearPublished?.map(String) ?? [],
+							onChange(value) {
+								setState({
+									yearPublished: value.map(Number) ?? null,
+								});
+							},
 						},
 						hideable: true,
 						orderable: true,
@@ -109,6 +161,13 @@ export function Books() {
 							options: getBookGenreOptions(),
 							multiple: true,
 							placeholder: 'Select genre',
+							value: state.genre ?? [],
+							onChange(value) {
+								setState({
+									genre:
+										value.map((v) => BookGenreDefinition.safeParse(v).data).filter(Boolean) ?? null,
+								});
+							},
 						},
 						hideable: true,
 						orderable: true,
@@ -145,6 +204,13 @@ export function Books() {
 								{label: 'Available', value: 'YES'},
 								{label: 'Unavailable', value: 'NO'},
 							],
+							multiple: false,
+							value: state.available == null ? '' : state.available ? 'YES' : 'NO',
+							onChange: (value) => {
+								setState({
+									available: value === 'YES' ? true : value === 'NO' ? false : null,
+								});
+							},
 						},
 					},
 					{
@@ -156,6 +222,10 @@ export function Books() {
 						filter: {
 							type: 'DATE_RANGE',
 							placeholder: 'Pick a date',
+							value: state.dateTimeCreated ?? null,
+							onChange: (dateTimeCreated) => {
+								setState({dateTimeCreated});
+							},
 						},
 						sortable: true,
 						hideable: true,
@@ -170,6 +240,10 @@ export function Books() {
 						filter: {
 							type: 'DATE_RANGE',
 							placeholder: 'Pick a date',
+							value: state.dateTimeUpdated ?? null,
+							onChange: (dateTimeUpdated) => {
+								setState({dateTimeUpdated});
+							},
 						},
 						sortable: true,
 						hideable: true,
@@ -207,6 +281,10 @@ export function Books() {
 				exporting={false}
 				onExport={() => {}}
 				searchEnabled
+				search={state.title ?? ''}
+				onSearchChange={(title) => {
+					setState({title});
+				}}
 				paginationEnabled
 				total={query.data?.total ?? 0}
 				page={state.page}

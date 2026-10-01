@@ -1,12 +1,12 @@
 import * as z from 'zod';
 import {BookCopyDefinition} from './BookCopy.js';
-import {DateDefinition, IdDefinition} from './common.js';
+import {DateDefinition} from './common.js';
 import {StudentDefinition} from './Student.js';
 
 export const TransactionTypeDefinition = z.enum(['BORROW', 'RETURN']);
 export const TransactionStatusDefinition = z.enum(['PENDING', 'COMPLETED']);
 export const TransactionDefinition = z.object({
-	id: IdDefinition,
+	id: z.number(),
 	type: TransactionTypeDefinition,
 	status: TransactionStatusDefinition,
 	ticket: z.string(),

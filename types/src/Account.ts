@@ -1,8 +1,8 @@
 import * as z from 'zod';
-import {DateDefinition, IdDefinition} from './common.js';
+import {DateDefinition} from './common.js';
 
 export const AccountDefinition = z.object({
-	id: IdDefinition,
+	id: z.number(),
 	name: z.string(),
 	email: z.string(),
 	dateTimeCreated: DateDefinition,

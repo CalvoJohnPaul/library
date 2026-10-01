@@ -18,6 +18,8 @@ export const selectRecipe = tv({
 			'ui-invalid:border-red-400',
 			'ui-open:ui-invalid:border-red-400',
 		],
+		clearTrigger:
+			'flex icon:size-5 size-11 items-center justify-center rounded-md border border-gray-200 bg-white icon:text-gray-600',
 		valueText: 'grow text-left',
 		indicator: [
 			'size-5',

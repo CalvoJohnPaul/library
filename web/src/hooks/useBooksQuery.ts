@@ -1,6 +1,7 @@
 import {
 	type Book,
 	BookDefinition,
+	type BookGenre,
 	type BookSortByInput,
 	HttpResponseDefinition,
 	type Paginated,
@@ -12,8 +13,9 @@ import {API_BASE_URL} from '@/config/env';
 import type {
 	BooleanFilterInput,
 	DateFilterInput,
+	EnumFilterInput,
 	IdFilterInput,
-	NumberFilterInput,
+	NumberLiteralFilterInput,
 	StringFilterInput,
 } from '@/types/index';
 
@@ -23,8 +25,8 @@ export interface BooksInput {
 	id?: IdFilterInput;
 	title?: StringFilterInput;
 	author?: StringFilterInput;
-	genre?: StringFilterInput;
-	yearPublished?: NumberFilterInput;
+	genre?: EnumFilterInput<BookGenre>;
+	yearPublished?: NumberLiteralFilterInput;
 	dateTimeCreated?: DateFilterInput;
 	dateTimeUpdated?: DateFilterInput;
 	available?: BooleanFilterInput;
@@ -61,6 +63,7 @@ const getQueryFn = (input?: BooksInput) => {
 			input.author.in.forEach((author) => void params.append('author__in', author.toString()));
 		if (input?.author?.nin != null)
 			input.author.nin.forEach((author) => void params.append('author__nin', author.toString()));
+		if (input?.author?.contains != null) params.append('author__contains', input.author.contains);
 
 		if (input?.genre?.eq != null) params.append('genre__eq', input.genre.eq);
 		if (input?.genre?.neq != null) params.append('genre__neq', input.genre.neq);
@@ -69,14 +72,18 @@ const getQueryFn = (input?: BooksInput) => {
 		if (input?.genre?.nin != null)
 			input.genre.nin.forEach((genre) => void params.append('genre__nin', genre.toString()));
 
-		if (input?.yearPublished?.gt != null)
-			params.append('yearPublished__gt', input.yearPublished.gt.toString());
-		if (input?.yearPublished?.gte != null)
-			params.append('yearPublished__gte', input.yearPublished.gte.toString());
-		if (input?.yearPublished?.lt != null)
-			params.append('yearPublished__lt', input.yearPublished.lt.toString());
-		if (input?.yearPublished?.lte != null)
-			params.append('yearPublished__lte', input.yearPublished.lte.toString());
+		if (input?.yearPublished?.eq != null)
+			params.append('yearPublished__eq', input.yearPublished.eq.toString());
+		if (input?.yearPublished?.neq != null)
+			params.append('yearPublished__neq', input.yearPublished.neq.toString());
+		if (input?.yearPublished?.in != null)
+			input.yearPublished.in.forEach(
+				(year) => void params.append('yearPublished__in', year.toString()),
+			);
+		if (input?.yearPublished?.nin != null)
+			input.yearPublished.nin.forEach(
+				(year) => void params.append('yearPublished__nin', year.toString()),
+			);
 
 		if (input?.dateTimeCreated?.gt != null)
 			params.append('dateTimeCreated__gt', input.dateTimeCreated.gt.toISOString());
