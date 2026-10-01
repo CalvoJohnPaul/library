@@ -2,6 +2,7 @@ import {ArrowLeftIcon} from 'lucide-react';
 import {Link, useParams} from 'react-router';
 import {Tabs} from '@/components/ui/Tabs';
 import {useStudentQuery} from '@/hooks/useStudentQuery';
+import {Settings} from './Settings';
 import {StudentProvider} from './StudentContext';
 import {Transactions} from './Transactions';
 
@@ -40,7 +41,9 @@ export function Student() {
 					<Tabs.Content value="transactions">
 						<Transactions />
 					</Tabs.Content>
-					<Tabs.Content value="settings"></Tabs.Content>
+					<Tabs.Content value="settings">
+						<Settings />
+					</Tabs.Content>
 				</Tabs.Root>
 			</StudentProvider>
 		</>

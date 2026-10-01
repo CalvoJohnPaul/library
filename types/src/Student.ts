@@ -20,6 +20,7 @@ export const CreateStudentInputDefinition = z.object({
 });
 
 export const UpdateStudentDataInputDefinition = z.object({
+	externalId: z.string().optional().nullable(),
 	name: z.string().optional().nullable(),
 	course: z.string().optional().nullable(),
 	yearAndSection: z.string().optional().nullable(),

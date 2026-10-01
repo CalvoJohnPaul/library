@@ -1,6 +1,6 @@
 import {createListCollection, Portal} from '@ark-ui/react';
 import {format} from 'date-fns';
-import {PenSquareIcon, RepeatIcon, SettingsIcon, TrashIcon} from 'lucide-react';
+import {RepeatIcon, SettingsIcon} from 'lucide-react';
 import {DataTable} from '@/components/DataTable';
 import {Badge} from '@/components/ui/Badge';
 import {Menu} from '@/components/ui/Menu';
@@ -8,6 +8,8 @@ import {useBookCopiesQuery} from '@/hooks/useBookCopiesQuery';
 import {getBookCopyStatusLabel, getBookCopyStatusOptions} from '@/utils/common';
 import {useBookContext} from './BookContext';
 import {CopyProvider} from './CopyContext';
+import {DeleteCopy} from './DeleteCopy';
+import {EditCopy} from './EditCopy';
 
 export function Copies() {
 	const book = useBookContext();
@@ -83,10 +85,7 @@ export function Copies() {
 									<Menu.Positioner>
 										<Menu.Content>
 											<CopyProvider value={copy}>
-												<Menu.Item value="edit">
-													<PenSquareIcon />
-													Edit
-												</Menu.Item>
+												<EditCopy />
 												{copy.status === 'AVAILABLE' && (
 													<Menu.Item value="borrow">
 														<RepeatIcon />
@@ -100,10 +99,7 @@ export function Copies() {
 													</Menu.Item>
 												)}
 												<Menu.Separator />
-												<Menu.Item value="delete">
-													<TrashIcon />
-													Delete
-												</Menu.Item>
+												<DeleteCopy />
 											</CopyProvider>
 										</Menu.Content>
 									</Menu.Positioner>

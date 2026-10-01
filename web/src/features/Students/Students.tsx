@@ -6,16 +6,20 @@ import {
 } from '@library/types';
 import {format} from 'date-fns';
 import {uniq} from 'es-toolkit/compat';
-import {PenSquareIcon, PlusIcon, SettingsIcon, TrashIcon} from 'lucide-react';
+import {PlusIcon, SettingsIcon} from 'lucide-react';
 import {useReducer} from 'react';
 import {Link} from 'react-router';
 import {DataTable} from '@/components/DataTable';
-import {Button} from '@/components/ui/Button';
+import {IconButton} from '@/components/ui/IconButton';
 import {Menu} from '@/components/ui/Menu';
+import {Tooltip} from '@/components/ui/Tooltip';
 import {type StudentsInput, useStudentsQuery} from '@/hooks/useStudentsQuery';
 import type {DateRange} from '@/types/index';
 import {client} from '@/utils/client';
 import {getStudentCourseOptions, getStudentYearAndSectionOptions} from '@/utils/common';
+import {AddStudent} from './AddStudent';
+import {DeleteStudent} from './DeleteStudent';
+import {EditStudent} from './EditStudent';
 import {StudentProvider} from './StudentContext';
 
 interface State {
@@ -96,10 +100,7 @@ export function Students() {
 					<p className="text-gray-600 text-sm">Manage student information below.</p>
 				</div>
 
-				<Button>
-					<PlusIcon />
-					Add student
-				</Button>
+				<AddStudent />
 			</div>
 			<DataTable
 				id="students"
@@ -168,6 +169,8 @@ export function Students() {
 									return [];
 								}
 							},
+							value: state.name ?? [],
+							onChange: (name) => setState({name}),
 							placeholder: 'Search name',
 						},
 					},
@@ -258,14 +261,8 @@ export function Students() {
 									<Menu.Positioner>
 										<Menu.Content>
 											<StudentProvider value={student}>
-												<Menu.Item value="edit">
-													<PenSquareIcon />
-													Edit
-												</Menu.Item>
-												<Menu.Item value="delete">
-													<TrashIcon />
-													Delete
-												</Menu.Item>
+												<EditStudent />
+												<DeleteStudent />
 											</StudentProvider>
 										</Menu.Content>
 									</Menu.Positioner>
@@ -292,6 +289,29 @@ export function Students() {
 				sortOrder={state.sortOrder ?? null}
 				onSortOrderChange={(sortOrder) => setState({sortOrder})}
 				onExport={() => {}}
+				cta={
+					<AddStudent
+						trigger={({setOpen}) => (
+							<Tooltip.Root>
+								<Tooltip.Trigger asChild>
+									<IconButton variant="outline" accent="gray" onClick={() => setOpen(true)}>
+										<PlusIcon className="size-5" />
+									</IconButton>
+								</Tooltip.Trigger>
+								<Portal>
+									<Tooltip.Positioner>
+										<Tooltip.Content>
+											<Tooltip.Arrow>
+												<Tooltip.ArrowTip />
+											</Tooltip.Arrow>
+											Add student
+										</Tooltip.Content>
+									</Tooltip.Positioner>
+								</Portal>
+							</Tooltip.Root>
+						)}
+					/>
+				}
 			/>
 		</>
 	);

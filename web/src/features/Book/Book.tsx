@@ -1,9 +1,9 @@
-import {ArrowLeftIcon, PlusIcon} from 'lucide-react';
+import {ArrowLeftIcon} from 'lucide-react';
 import {useState} from 'react';
 import {Link, useParams} from 'react-router';
-import {Button} from '@/components/ui/Button';
 import {Tabs} from '@/components/ui/Tabs';
 import {useBookQuery} from '@/hooks/useBookQuery';
+import {AddCopy} from './AddCopy';
 import {BookProvider} from './BookContext';
 import {Copies} from './Copies';
 import {Settings} from './Settings';
@@ -35,12 +35,7 @@ export function Book() {
 						<p className="text-gray-600 text-sm">Manage the details of your book below.</p>
 					</div>
 
-					{tab === 'copies' && (
-						<Button>
-							<PlusIcon />
-							Add copy
-						</Button>
-					)}
+					{tab === 'copies' && <AddCopy />}
 				</div>
 
 				<Tabs.Root

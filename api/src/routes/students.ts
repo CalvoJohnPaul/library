@@ -7,6 +7,7 @@ import {
 	StudentSortByInputDefinition,
 	SuccessfulHttpResponseDefinition,
 	UpdateStudentDataInputDefinition,
+	VoidSuccessfulHttpResponseDefinition,
 } from '@library/types';
 import {clamp} from 'es-toolkit';
 import type {FastifyPluginAsyncZod} from 'fastify-type-provider-zod';
@@ -228,7 +229,6 @@ const plugin: FastifyPluginAsyncZod = async (app) => {
 								dateTimeUpdated: sortOrder,
 							}),
 							...(req.query.sortBy === 'dateTimeLastBorrowedBook' && {
-								// Students who never borrowed a book sort last.
 								dateTimeLastBorrowedBook: {sort: sortOrder, nulls: 'last'},
 							}),
 						},
@@ -392,6 +392,7 @@ const plugin: FastifyPluginAsyncZod = async (app) => {
 					401: FailedHttpResponseDefinition,
 					403: FailedHttpResponseDefinition,
 					404: FailedHttpResponseDefinition,
+					409: FailedHttpResponseDefinition,
 					500: FailedHttpResponseDefinition,
 				},
 				headers: z.object({
@@ -405,6 +406,17 @@ const plugin: FastifyPluginAsyncZod = async (app) => {
 			}
 
 			const data = clean(req.body);
+
+			if (
+				data.externalId != null &&
+				(await app.prisma.student.exists({
+					externalId: data.externalId,
+					NOT: {id: req.params.id},
+				}))
+			) {
+				return reply.conflict('Student ID already exists');
+			}
+
 			const student = await app.prisma.student.update({
 				where: {id: req.params.id},
 				data,
@@ -433,6 +445,35 @@ const plugin: FastifyPluginAsyncZod = async (app) => {
 					dateTimeLastBorrowedBook: student.dateTimeLastBorrowedBook,
 				},
 			});
+		},
+	);
+
+	app.delete(
+		'/:id',
+		{
+			onRequest: [app.csrfProtection],
+			preHandler: [app.verifyAuth],
+			schema: {
+				tags: ['Students'],
+				params: z.object({
+					id: z.coerce.number().positive(),
+				}),
+				response: {
+					200: VoidSuccessfulHttpResponseDefinition,
+					400: FailedHttpResponseDefinition,
+					401: FailedHttpResponseDefinition,
+					403: FailedHttpResponseDefinition,
+					500: FailedHttpResponseDefinition,
+				},
+				headers: z.object({
+					'x-csrf-token': z.string().nullable().optional(),
+				}),
+			},
+		},
+		async (req, reply) => {
+			await app.prisma.student.deleteMany({where: {id: req.params.id}});
+
+			return reply.send({ok: true});
 		},
 	);
 };

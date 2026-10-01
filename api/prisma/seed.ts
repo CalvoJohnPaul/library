@@ -46,8 +46,17 @@ async function seed() {
 		(_, index) => ({
 			externalId: `${faker.string.alphanumeric(6)}-${index}`,
 			name: faker.person.fullName(),
-			course: faker.helpers.arrayElement(['BSIT', 'BSCS', 'BSIS', 'BSEM', 'BSPSY']),
-			yearAndSection: `${faker.number.int({min: 1, max: 4})}-${faker.helpers.arrayElement(['A', 'B', 'C', 'D'])}`,
+			course: faker.helpers.arrayElement(['BSTM', 'BSIS', 'BSEE']),
+			yearAndSection: faker.helpers.arrayElement([
+				'1-A',
+				'1-B',
+				'2-A',
+				'2-B',
+				'3-A',
+				'3-B',
+				'4-A',
+				'4-B',
+			]),
 		}),
 	);
 
