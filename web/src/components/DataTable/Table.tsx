@@ -1,4 +1,4 @@
-import {isNil, isString} from 'es-toolkit';
+import {isFunction, isNil, isString} from 'es-toolkit';
 import {ArrowDownIcon} from 'lucide-react';
 import {twMerge} from 'tailwind-merge';
 import {CheckField} from '../forms/CheckField';
@@ -191,7 +191,7 @@ export function Table() {
 										normalizeClassName(col.className).summary,
 									)}
 								>
-									{typeof col.summary === 'function' ? col.summary() : col.summary}
+									{isFunction(col.summary) ? col.summary() : col.summary}
 								</td>
 							))}
 						</tr>

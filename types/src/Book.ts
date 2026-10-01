@@ -1,29 +1,32 @@
 import * as z from 'zod';
 import {DateDefinition, IdDefinition} from './common.js';
 
-export const BookGenreDefinition = z.enum([
-	'FICTION',
-	'NON_FICTION',
-	'ROMANCE',
-	'FANTASY',
-	'SCIENCE_FICTION',
-	'MYSTERY',
-	'THRILLER',
-	'HORROR',
-	'HISTORICAL_FICTION',
-	'BIOGRAPHY',
-	'SELF_HELP',
-	'HISTORY',
-	'PHILOSOPHY',
-	'PSYCHOLOGY',
-	'BUSINESS',
-	'SCIENCE',
-	'TRAVEL',
-	'RELIGION_SPIRITUALITY',
-	'YOUNG_ADULT',
-	'CHILDREN',
-	'POETRY',
-]);
+export const BookGenreDefinition = z.enum(
+	[
+		'FICTION',
+		'NON_FICTION',
+		'ROMANCE',
+		'FANTASY',
+		'SCIENCE_FICTION',
+		'MYSTERY',
+		'THRILLER',
+		'HORROR',
+		'HISTORICAL_FICTION',
+		'BIOGRAPHY',
+		'SELF_HELP',
+		'HISTORY',
+		'PHILOSOPHY',
+		'PSYCHOLOGY',
+		'BUSINESS',
+		'SCIENCE',
+		'TRAVEL',
+		'RELIGION_SPIRITUALITY',
+		'YOUNG_ADULT',
+		'CHILDREN',
+		'POETRY',
+	],
+	{error: 'Genre is required'},
+);
 
 export const BookDefinition = z.object({
 	id: IdDefinition,
@@ -38,10 +41,10 @@ export const BookDefinition = z.object({
 });
 
 export const CreateBookInputDefinition = z.object({
-	title: z.string(),
-	author: z.string(),
+	title: z.string({error: 'Title is required'}).trim().min(1, 'Title is required'),
+	author: z.string({error: 'Author is required'}).trim().min(1, 'Author is required'),
 	genre: BookGenreDefinition,
-	yearPublished: z.number().positive(),
+	yearPublished: z.number({error: 'Year published is required'}).positive('Invalid year published'),
 });
 
 export const UpdateBookDataInputDefinition = z.object({

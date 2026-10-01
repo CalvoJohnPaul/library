@@ -1,6 +1,6 @@
 import {createListCollection, Portal} from '@ark-ui/react';
 import {format} from 'date-fns';
-import {CheckIcon, PenSquareIcon, PlusIcon, SettingsIcon, TrashIcon, XIcon} from 'lucide-react';
+import {CheckIcon, PlusIcon, SettingsIcon, XIcon} from 'lucide-react';
 import {useReducer} from 'react';
 import {Link} from 'react-router';
 import {DataTable} from '@/components/DataTable';
@@ -12,6 +12,8 @@ import {useBooksQuery} from '@/hooks/useBooksQuery';
 import {getBookGenreLabel, getBookGenreOptions, getBookYearPublishedOptions} from '@/utils/common';
 import {AddBook} from './AddBook';
 import {BookProvider} from './BookContext';
+import {DeleteBook} from './DeleteBook';
+import {EditBook} from './EditBook';
 
 interface State {
 	page: number;
@@ -186,14 +188,8 @@ export function Books() {
 										<Menu.Positioner>
 											<Menu.Content>
 												<BookProvider value={book}>
-													<Menu.Item value="edit">
-														<PenSquareIcon />
-														Edit
-													</Menu.Item>
-													<Menu.Item value="delete">
-														<TrashIcon />
-														Delete
-													</Menu.Item>
+													<EditBook />
+													<DeleteBook />
 												</BookProvider>
 											</Menu.Content>
 										</Menu.Positioner>

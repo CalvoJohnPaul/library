@@ -3,11 +3,9 @@ import {type UseMutationOptions, useMutation} from '@tanstack/react-query';
 import {API_BASE_URL} from '@/config/env';
 import {useCsrfQuery} from './useCsrfQuery';
 
-export type DeleteBookInput = {id: number};
-
 export function useDeleteBookMutation(
 	options?: Pick<
-		UseMutationOptions<void, Error, DeleteBookInput>,
+		UseMutationOptions<void, Error, number>,
 		| 'gcTime'
 		| 'onMutate'
 		| 'onSettled'
@@ -21,9 +19,9 @@ export function useDeleteBookMutation(
 	return useMutation({
 		...options,
 		mutationKey: ['DeleteBook'],
-		mutationFn: async (input) => {
+		mutationFn: async (id) => {
 			const csrf = await useCsrfQuery.getQueryFn()();
-			const res = await fetch(`${API_BASE_URL}/books/${input.id}`, {
+			const res = await fetch(`${API_BASE_URL}/books/${id}`, {
 				method: 'DELETE',
 				credentials: 'include',
 				headers: {
