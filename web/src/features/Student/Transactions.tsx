@@ -1,5 +1,5 @@
 import {createListCollection, Portal} from '@ark-ui/react';
-import {differenceInDays, format} from 'date-fns';
+import {addDays, differenceInDays, format} from 'date-fns';
 import {AlertTriangleIcon} from 'lucide-react';
 import {Link} from 'react-router';
 import {DataTable} from '@/components/DataTable';
@@ -71,6 +71,8 @@ export function Transactions() {
 						multiple: true,
 						placeholder: 'Search book',
 					},
+					hideable: true,
+					orderable: true,
 				},
 				{
 					id: 'isbn',
@@ -82,6 +84,8 @@ export function Transactions() {
 						type: 'TEXT',
 						placeholder: 'Enter ISBN',
 					},
+					hideable: true,
+					orderable: true,
 				},
 				{
 					id: 'remarks',
@@ -89,6 +93,9 @@ export function Transactions() {
 					cell(transaction) {
 						return transaction.remarks;
 					},
+					hideable: true,
+					orderable: true,
+					defaultHidden: true,
 				},
 				{
 					id: 'dateTimeCreated',
@@ -98,6 +105,10 @@ export function Transactions() {
 							transaction.type === 'BORROW' &&
 							transaction.status === 'PENDING' &&
 							differenceInDays(new Date(), transaction.dateTimeCreated) >= 3;
+						const overdueDaysCount =
+							transaction.type === 'BORROW' && transaction.status === 'PENDING'
+								? differenceInDays(new Date(), addDays(transaction.dateTimeCreated, 3))
+								: 0;
 
 						return (
 							<div className="flex items-center gap-1">
@@ -113,7 +124,8 @@ export function Transactions() {
 													<Tooltip.Arrow>
 														<Tooltip.ArrowTip />
 													</Tooltip.Arrow>
-													Overdue
+													{overdueDaysCount}
+													{overdueDaysCount > 1 ? ' days overdue' : ' day overdue'}
 												</Tooltip.Content>
 											</Tooltip.Positioner>
 										</Portal>
@@ -127,6 +139,8 @@ export function Transactions() {
 						placeholder: 'Select date',
 					},
 					sortable: true,
+					hideable: true,
+					orderable: true,
 				},
 			]}
 			paginationEnabled

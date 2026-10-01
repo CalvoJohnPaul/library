@@ -40,6 +40,7 @@ export interface DataTableColumn<Data = any> {
 	sortable?: boolean;
 	orderable?: boolean;
 	hideable?: boolean;
+	defaultHidden?: boolean;
 	numeric?: boolean;
 	filter?: DataTableFilter | null;
 	className?:
@@ -95,7 +96,10 @@ export interface UseDataTableProps<Data = any> {
 export interface UseDataTableReturn<Data = any> {
 	id: string;
 	collection: ListCollection<Data>;
-	columns: Omit<{[K in keyof DataTableColumn<Data>]-?: DataTableColumn<Data>[K]}, 'enabled'>[];
+	columns: Omit<
+		{[K in keyof DataTableColumn<Data>]-?: DataTableColumn<Data>[K]},
+		'enabled' | 'defaultHidden'
+	>[];
 	hiddenColumns: string[];
 	setHiddenColumns: Dispatch<SetStateAction<string[]>>;
 	columnsOrder: string[];
@@ -199,7 +203,7 @@ export function useDataTable<Data = any>({
 
 	const [hiddenColumns, setHiddenColumns] = useLocalStorage<string[]>(
 		'expense-tracker/data-table/hidden-columns',
-		[],
+		props.columns.filter((col) => col.defaultHidden).map((col) => col.id),
 		{
 			serializer(value) {
 				return JSON.stringify(uniq(value));
