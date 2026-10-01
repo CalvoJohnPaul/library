@@ -1,10 +1,9 @@
-import babel from '@rolldown/plugin-babel';
 import tailwind from '@tailwindcss/vite';
-import react, {reactCompilerPreset} from '@vitejs/plugin-react';
+import react from '@vitejs/plugin-react';
 import {defineConfig} from 'vite';
 
 export default defineConfig({
-	plugins: [react(), babel({presets: [reactCompilerPreset()]}), tailwind()],
+	plugins: [react(), tailwind()],
 	resolve: {
 		tsconfigPaths: true,
 	},
@@ -14,5 +13,6 @@ export default defineConfig({
 	},
 	preview: {
 		port: 80,
+		open: true,
 	},
 });

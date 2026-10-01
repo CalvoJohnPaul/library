@@ -106,3 +106,38 @@ export function getTransactionTypeOptions(): Option[] {
 export function getTransactionTypeLabel(type: TransactionType): string {
 	return TRANSACTION_TYPE_MAP[type];
 }
+
+/*
+ *--------------------------------------------
+ *	STUDENT
+ *--------------------------------------------
+ */
+
+export function getStudentCourseOptions(): Option[] {
+	return [
+		/**/
+		'BSTM',
+		'BSIS',
+		'BSEE',
+	].map((value) => ({
+		value,
+		label: value,
+	}));
+}
+
+export function getStudentYearAndSectionOptions(): Option[] {
+	return [
+		/**/
+		'1-A',
+		'1-B',
+		'2-A',
+		'2-B',
+		'3-A',
+		'3-B',
+		'4-A',
+		'4-B',
+	].map((value) => ({
+		value,
+		label: value,
+	}));
+}

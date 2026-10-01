@@ -28,6 +28,7 @@ export interface TransactionsInput {
 	studentId?: IdFilterInput;
 	bookCopyId?: IdFilterInput;
 	bookId?: IdFilterInput;
+	isbn?: StringFilterInput;
 	dateTimeCreated?: DateFilterInput;
 	dateTimeUpdated?: DateFilterInput;
 	sortBy?: TransactionSortByInput;
@@ -102,6 +103,14 @@ const getQueryFn = (input?: TransactionsInput) => {
 			input.bookId.in.forEach((bookId) => void params.append('bookId__in', bookId.toString()));
 		if (input?.bookId?.nin != null)
 			input.bookId.nin.forEach((bookId) => void params.append('bookId__nin', bookId.toString()));
+
+		if (input?.isbn?.eq != null) params.append('isbn__eq', input.isbn.eq);
+		if (input?.isbn?.neq != null) params.append('isbn__neq', input.isbn.neq);
+		if (input?.isbn?.in != null)
+			input.isbn.in.forEach((isbn) => void params.append('isbn__in', isbn));
+		if (input?.isbn?.nin != null)
+			input.isbn.nin.forEach((isbn) => void params.append('isbn__nin', isbn));
+		if (input?.isbn?.contains != null) params.append('isbn__contains', input.isbn.contains);
 
 		if (input?.dateTimeCreated?.gt != null)
 			params.append('dateTimeCreated__gt', input.dateTimeCreated.gt.toISOString());

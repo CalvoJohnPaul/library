@@ -16,8 +16,7 @@ export interface StudentsInput {
 	pageSize?: number;
 	id?: IdFilterInput;
 	externalId?: StringFilterInput;
-	firstName?: StringFilterInput;
-	lastName?: StringFilterInput;
+	name?: StringFilterInput;
 	course?: StringFilterInput;
 	yearAndSection?: StringFilterInput;
 	dateTimeCreated?: DateFilterInput;
@@ -54,31 +53,13 @@ const getQueryFn = (input?: StudentsInput) => {
 		if (input?.externalId?.contains != null)
 			params.append('externalId__contains', input.externalId.contains);
 
-		if (input?.firstName?.eq != null) params.append('firstName__eq', input.firstName.eq);
-		if (input?.firstName?.neq != null) params.append('firstName__neq', input.firstName.neq);
-		if (input?.firstName?.in != null)
-			input.firstName.in.forEach(
-				(firstName) => void params.append('firstName__in', firstName.toString()),
-			);
-		if (input?.firstName?.nin != null)
-			input.firstName.nin.forEach(
-				(firstName) => void params.append('firstName__nin', firstName.toString()),
-			);
-		if (input?.firstName?.contains != null)
-			params.append('firstName__contains', input.firstName.contains);
-
-		if (input?.lastName?.eq != null) params.append('lastName__eq', input.lastName.eq);
-		if (input?.lastName?.neq != null) params.append('lastName__neq', input.lastName.neq);
-		if (input?.lastName?.in != null)
-			input.lastName.in.forEach(
-				(lastName) => void params.append('lastName__in', lastName.toString()),
-			);
-		if (input?.lastName?.nin != null)
-			input.lastName.nin.forEach(
-				(lastName) => void params.append('lastName__nin', lastName.toString()),
-			);
-		if (input?.lastName?.contains != null)
-			params.append('lastName__contains', input.lastName.contains);
+		if (input?.name?.eq != null) params.append('name__eq', input.name.eq);
+		if (input?.name?.neq != null) params.append('name__neq', input.name.neq);
+		if (input?.name?.in != null)
+			input.name.in.forEach((name) => void params.append('name__in', name.toString()));
+		if (input?.name?.nin != null)
+			input.name.nin.forEach((name) => void params.append('name__nin', name.toString()));
+		if (input?.name?.contains != null) params.append('name__contains', input.name.contains);
 
 		if (input?.course?.eq != null) params.append('course__eq', input.course.eq);
 		if (input?.course?.neq != null) params.append('course__neq', input.course.neq);

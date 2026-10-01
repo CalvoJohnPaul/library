@@ -557,7 +557,14 @@ const plugin: FastifyPluginAsyncZod = async (app) => {
 						remarks: req.body.remarks,
 						bookCopyId: req.params.id,
 						studentId: req.body.studentId,
+						dateTimeCreated: date,
+						dateTimeUpdated: date,
 					},
+				});
+
+				await tx.student.update({
+					where: {id: req.body.studentId},
+					data: {dateTimeLastBorrowedBook: date},
 				});
 
 				return tx.bookCopy.findUnique({

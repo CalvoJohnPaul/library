@@ -68,15 +68,15 @@ model BookCopy {
 }
 
 model Student {
-  id              Int           @id @default(autoincrement())
-  externalId      String        @unique
-  firstName       String
-  lastName        String
-  course          String
-  yearAndSection  String
-  dateTimeCreated DateTime      @default(now())
-  dateTimeUpdated DateTime      @updatedAt
-  transactions    Transaction[]
+  id                       Int          @id @default(autoincrement())
+  externalId               String       @unique
+  name                     String
+  course                   String
+  yearAndSection           String
+  dateTimeLastBorrowedBook DateTime?
+  dateTimeCreated          DateTime     @default(now())
+  dateTimeUpdated          DateTime     @updatedAt
+  transactions             Transaction[]
 }
 
 enum TransactionType {

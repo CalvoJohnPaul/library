@@ -31,16 +31,12 @@
 		"zod": "catalog:"
 	},
 	"devDependencies": {
-		"@babel/core": "^7.29.7",
-		"@rolldown/plugin-babel": "^0.2.3",
 		"@tailwindcss/vite": "^4.3.3",
 		"@total-typescript/ts-reset": "^0.6.1",
-		"@types/babel__core": "^7.20.5",
 		"@types/node": "^24.13.3",
 		"@types/react": "^19.2.18",
 		"@types/react-dom": "^19.2.7",
 		"@vitejs/plugin-react": "^6.1.1",
-		"babel-plugin-react-compiler": "^1.0.0",
 		"tailwind-zag": "^1.1.0",
 		"tailwindcss": "^4.3.3",
 		"type-fest": "^5.10.0",

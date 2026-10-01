@@ -4,42 +4,12 @@ import {anatomyToRecipeSlots} from '@/utils/anatomyToRecipeSlots';
 
 export const comboboxRecipe = tv({
 	slots: anatomyToRecipeSlots(comboboxAnatomy, {
-		control: [
-			'flex',
-			'h-11',
-			'border',
-			'border-gray-200',
-			'grow',
-			'bg-white',
-			'rounded-md',
-			'ui-invalid:border-red-400',
-		],
-		input: 'h-11 grow pl-4 outline-none',
-		trigger: [
-			'size-11',
-			'shrink-0',
-			'flex',
-			'items-center',
-			'justify-center',
-			'icon:size-5',
-			'icon:text-gray-600',
-			'icon:transition-transform',
-			'icon:duration-300',
-			'ui-open:icon:rotate-180',
-			'ui-closed:icon:rotate-0',
-		],
-		clearTrigger: [
-			'size-11',
-			'border',
-			'border-gray-200',
-			'rounded-md',
-			'shrink-0',
-			'flex',
-			'items-center',
-			'justify-center',
-			'icon:size-5',
-			'icon:text-gray-600',
-		],
+		control: ['flex', 'h-11', 'grow', 'bg-white', 'ui-invalid:border-red-400'],
+		input: 'h-11 grow rounded-l-md border border-gray-200 border-r-0 bg-white pl-4 outline-none',
+		trigger:
+			'flex icon:size-5 size-11 shrink-0 ui-closed:icon:rotate-0 ui-open:icon:rotate-180 items-center justify-center rounded-r-md border border-gray-200 border-l-0 bg-white icon:text-gray-600 icon:transition-transform icon:duration-300',
+		clearTrigger:
+			'ml-2 flex icon:size-5 size-11 shrink-0 items-center justify-center rounded-md border border-gray-200 icon:text-gray-600',
 		positioner: 'z-dropdown',
 		content: [
 			'z-dropdown',

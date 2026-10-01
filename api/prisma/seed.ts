@@ -45,8 +45,7 @@ async function seed() {
 		{length: 20},
 		(_, index) => ({
 			externalId: `${faker.string.alphanumeric(6)}-${index}`,
-			firstName: faker.person.firstName(),
-			lastName: faker.person.lastName(),
+			name: faker.person.fullName(),
 			course: faker.helpers.arrayElement(['BSIT', 'BSCS', 'BSIS', 'BSEM', 'BSPSY']),
 			yearAndSection: `${faker.number.int({min: 1, max: 4})}-${faker.helpers.arrayElement(['A', 'B', 'C', 'D'])}`,
 		}),
@@ -100,6 +99,21 @@ async function seed() {
 	});
 
 	await prisma.transaction.createMany({data: transactionsData});
+
+	const lastBorrows = await prisma.transaction.groupBy({
+		by: ['studentId'],
+		where: {type: 'BORROW'},
+		_max: {dateTimeCreated: true},
+	});
+
+	await prisma.$transaction(
+		lastBorrows.map((lastBorrow) =>
+			prisma.student.update({
+				where: {id: lastBorrow.studentId},
+				data: {dateTimeLastBorrowedBook: lastBorrow._max.dateTimeCreated},
+			}),
+		),
+	);
 
 	console.log(
 		`Seeded ${booksData.length} books, ${bookCopiesData.length} copies, ${studentsData.length} students, ${transactionsData.length} transactions.`,

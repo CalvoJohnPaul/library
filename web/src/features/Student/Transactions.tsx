@@ -1,9 +1,10 @@
 import {createListCollection, Portal} from '@ark-ui/react';
 import {addDays, differenceInDays, format} from 'date-fns';
-import {AlertTriangleIcon} from 'lucide-react';
+import {AlertTriangleIcon, CornerDownLeftIcon, SettingsIcon} from 'lucide-react';
 import {Link} from 'react-router';
 import {DataTable} from '@/components/DataTable';
 import {Badge} from '@/components/ui/Badge';
+import {Menu} from '@/components/ui/Menu';
 import {Tooltip} from '@/components/ui/Tooltip';
 import {useTransactionsQuery} from '@/hooks/useTransactionsQuery';
 import {getTransactionTypeLabel, getTransactionTypeOptions} from '@/utils/common';
@@ -80,10 +81,6 @@ export function Transactions() {
 					cell(transaction) {
 						return transaction.bookCopy.isbn;
 					},
-					filter: {
-						type: 'TEXT',
-						placeholder: 'Enter ISBN',
-					},
 					hideable: true,
 					orderable: true,
 				},
@@ -141,6 +138,33 @@ export function Transactions() {
 					sortable: true,
 					hideable: true,
 					orderable: true,
+				},
+				{
+					id: 'actions',
+					heading: <SettingsIcon className="size-5" />,
+					cell(transaction) {
+						return (
+							<Menu.Root>
+								<Menu.Trigger
+									disabled={transaction.status !== 'PENDING' || transaction.type !== 'BORROW'}
+									className="disabled:opacity-50"
+								>
+									<SettingsIcon className="size-5" />
+								</Menu.Trigger>
+								<Portal>
+									<Menu.Positioner>
+										<Menu.Content>
+											<Menu.Item value="return">
+												<CornerDownLeftIcon />
+												Return
+											</Menu.Item>
+										</Menu.Content>
+									</Menu.Positioner>
+								</Portal>
+							</Menu.Root>
+						);
+					},
+					className: 'w-0 text-center',
 				},
 			]}
 			paginationEnabled

@@ -8,7 +8,6 @@ import {ExportTrigger} from './ExportTrigger';
 import {Filters, FiltersTrigger} from './Filters';
 import {Pagination} from './Pagination';
 import {ReloadTrigger} from './ReloadTrigger';
-import {Search} from './Search';
 import {Table} from './Table';
 import {type UseDataTableProps, useDataTable} from './useDataTable';
 
@@ -40,14 +39,12 @@ export function DataTable<Data = any>(props: DataTableProps<Data>) {
 							<Filters />
 							<div className="grow overflow-hidden rounded-lg border border-gray-200">
 								<div className="grow">
-									{(dataTable.searchEnabled ||
-										dataTable.filtersEnabled ||
+									{(dataTable.filtersEnabled ||
 										dataTable.columnsControlEnabled ||
 										dataTable.onReload != null ||
 										dataTable.onExport != null) && (
 										<div className="flex items-center gap-3 border-gray-200 border-b p-4">
 											<FiltersTrigger />
-											<Search />
 											<div className="grow" />
 											<ExportTrigger />
 											<ColumnsControlTrigger />

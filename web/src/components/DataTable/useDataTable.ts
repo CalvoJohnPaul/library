@@ -79,11 +79,6 @@ export interface UseDataTableProps<Data = any> {
 	checked?: string[];
 	defaultChecked?: string[];
 	onCheckedChange?: (value: string[]) => void;
-	/* search */
-	searchEnabled?: boolean;
-	search?: string;
-	defaultSearch?: string;
-	onSearchChange?: (value: string) => void;
 
 	loading?: boolean;
 	onReload?: (() => void | Promise<void>) | null;
@@ -118,12 +113,8 @@ export interface UseDataTableReturn<Data = any> {
 	/* check */
 	checked: string[];
 	setChecked: Dispatch<SetStateAction<string[]>>;
-	/* search */
-	search: string;
-	setSearch: Dispatch<SetStateAction<string>>;
 
 	checkEnabled: boolean;
-	searchEnabled: boolean;
 	columnsControlEnabled: boolean;
 	paginationEnabled: boolean;
 	filtersEnabled: boolean;
@@ -142,8 +133,6 @@ export function useDataTable<Data = any>({
 	...props
 }: UseDataTableProps<Data>): UseDataTableReturn<Data> {
 	const checkEnabled = props.checkEnabled ?? false;
-	const searchEnabled = props.searchEnabled ?? false;
-
 	const paginationEnabled = props.paginationEnabled ?? false;
 	const columnsControlEnabled = props.columns.some((col) => col.orderable || col.hideable);
 	const filtersEnabled = props.columns.some((col) => col.filter != null);
@@ -176,12 +165,6 @@ export function useDataTable<Data = any>({
 		prop: props.checked,
 		defaultProp: props.defaultChecked ?? [],
 		onChange: props.onCheckedChange,
-	});
-
-	const [search, setSearch] = useControllableState({
-		prop: props.search,
-		defaultProp: props.defaultSearch ?? '',
-		onChange: props.onSearchChange,
 	});
 
 	const [columnsOrder, setColumnsOrder] = useLocalStorage<string[]>(
@@ -273,11 +256,8 @@ export function useDataTable<Data = any>({
 		setSortOrder,
 		checked,
 		setChecked,
-		search,
-		setSearch,
 
 		checkEnabled,
-		searchEnabled,
 		paginationEnabled,
 		columnsControlEnabled,
 		filtersEnabled,
@@ -311,14 +291,11 @@ useDataTable.splitProps = <T extends UseDataTableProps>(props: T) => {
 		'onPageChange',
 		'onPageSizeChange',
 		'onReload',
-		'onSearchChange',
 		'onSortColumnChange',
 		'onSortOrderChange',
 		'page',
 		'pageSize',
 		'paginationEnabled',
-		'search',
-		'searchEnabled',
 		'sortColumn',
 		'sortOrder',
 		'total',

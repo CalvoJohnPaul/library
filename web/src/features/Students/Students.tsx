@@ -1,15 +1,91 @@
 import {createListCollection, Portal} from '@ark-ui/react';
+import {
+	type SortOrder,
+	type StudentSortByInput,
+	StudentSortByInputDefinition,
+} from '@library/types';
 import {format} from 'date-fns';
+import {uniq} from 'es-toolkit/compat';
 import {PenSquareIcon, PlusIcon, SettingsIcon, TrashIcon} from 'lucide-react';
+import {useReducer} from 'react';
 import {Link} from 'react-router';
 import {DataTable} from '@/components/DataTable';
 import {Button} from '@/components/ui/Button';
 import {Menu} from '@/components/ui/Menu';
-import {useStudentsQuery} from '@/hooks/useStudentsQuery';
+import {type StudentsInput, useStudentsQuery} from '@/hooks/useStudentsQuery';
+import type {DateRange} from '@/types/index';
+import {client} from '@/utils/client';
+import {getStudentCourseOptions, getStudentYearAndSectionOptions} from '@/utils/common';
 import {StudentProvider} from './StudentContext';
 
+interface State {
+	page: number;
+	pageSize: number;
+	externalId?: string[] | null;
+	name?: string[] | null;
+	course?: string[] | null;
+	yearAndSection?: string[] | null;
+	dateTimeLastBorrowedBook?: DateRange | null;
+	dateTimeCreated?: DateRange | null;
+	dateTimeUpdated?: DateRange | null;
+	sortBy?: StudentSortByInput | null;
+	sortOrder?: SortOrder | null;
+}
+
 export function Students() {
-	const query = useStudentsQuery();
+	const [state, setState] = useReducer(
+		(prev: State, next: Partial<State>) => ({...prev, ...next}),
+		{
+			page: 1,
+			pageSize: 10,
+		},
+	);
+
+	const id = uniq([...(state.name ?? []), ...(state.externalId ?? [])]);
+
+	const query = useStudentsQuery({
+		page: state.page,
+		pageSize: state.pageSize,
+		...(id.length && {
+			id: {
+				in: id,
+			},
+		}),
+		...(state.course && {
+			course: {
+				in: state.course,
+			},
+		}),
+		...(state.yearAndSection && {
+			yearAndSection: {
+				in: state.yearAndSection,
+			},
+		}),
+		...((state.dateTimeLastBorrowedBook?.from || state.dateTimeLastBorrowedBook?.to) && {
+			dateTimeLastBorrowedBook: {
+				gte: state.dateTimeLastBorrowedBook?.from,
+				lte: state.dateTimeLastBorrowedBook?.to,
+			},
+		}),
+		...((state.dateTimeCreated?.from || state.dateTimeCreated?.to) && {
+			dateTimeCreated: {
+				gte: state.dateTimeCreated?.from,
+				lte: state.dateTimeCreated?.to,
+			},
+		}),
+		...((state.dateTimeUpdated?.from || state.dateTimeUpdated?.to) && {
+			dateTimeUpdated: {
+				gte: state.dateTimeUpdated?.from,
+				lte: state.dateTimeUpdated?.to,
+			},
+		}),
+		...(state.sortBy && {
+			sortBy: state.sortBy,
+		}),
+		...(state.sortOrder && {
+			sortOrder: state.sortOrder,
+		}),
+	});
 
 	return (
 		<>
@@ -29,7 +105,7 @@ export function Students() {
 				id="students"
 				collection={createListCollection({
 					items: query.data?.rows ?? [],
-					itemToString: (student) => `${student.firstName} ${student.lastName}`,
+					itemToString: (student) => student.name,
 					itemToValue: (student) => student.id.toString(),
 				})}
 				columns={[
@@ -41,11 +117,59 @@ export function Students() {
 								{student.externalId}
 							</Link>
 						),
+						filter: {
+							type: 'ASYNC_COMBOBOX',
+							multiple: true,
+							placeholder: 'Enter ID',
+							value: state.externalId ?? [],
+							onChange: (externalId) => setState({externalId}),
+							options: async (search) => {
+								try {
+									const input: StudentsInput = {externalId: {contains: search}};
+									const data = await client.query({
+										queryKey: useStudentsQuery.getQueryKey(input),
+										queryFn: useStudentsQuery.getQueryFn(input),
+									});
+
+									return (
+										data.rows.map((student) => ({
+											label: student.name,
+											value: student.id.toString(),
+										})) ?? []
+									);
+								} catch {
+									return [];
+								}
+							},
+						},
 					},
 					{
 						id: 'name',
 						heading: 'Name',
-						cell: (student) => `${student.firstName} ${student.lastName}`,
+						cell: (student) => student.name,
+						filter: {
+							type: 'ASYNC_COMBOBOX',
+							multiple: true,
+							options: async (search) => {
+								try {
+									const input: StudentsInput = {name: {contains: search}};
+									const data = await client.query({
+										queryKey: useStudentsQuery.getQueryKey(input),
+										queryFn: useStudentsQuery.getQueryFn(input),
+									});
+
+									return (
+										data.rows.map((student) => ({
+											label: student.name,
+											value: student.id.toString(),
+										})) ?? []
+									);
+								} catch {
+									return [];
+								}
+							},
+							placeholder: 'Search name',
+						},
 					},
 					{
 						id: 'course',
@@ -53,21 +177,46 @@ export function Students() {
 						cell: (student) => student.course,
 						filter: {
 							type: 'SELECT',
-							options: [],
+							options: getStudentCourseOptions(),
 							multiple: true,
 							placeholder: 'Select course',
+							value: state.course ?? [],
+							onChange: (course) => setState({course}),
 						},
+						hideable: true,
+						orderable: true,
 					},
 					{
 						id: 'yearAndSection',
-						heading: 'Year & Section',
+						heading: 'Year and section',
 						cell: (student) => student.yearAndSection,
 						filter: {
 							type: 'SELECT',
-							options: [],
+							options: getStudentYearAndSectionOptions(),
 							multiple: true,
-							placeholder: 'Select year & section',
+							placeholder: 'Select year and section',
+							value: state.yearAndSection ?? [],
+							onChange: (yearAndSection) => setState({yearAndSection}),
 						},
+						hideable: true,
+						orderable: true,
+					},
+					{
+						id: 'dateTimeLastBorrowedBook',
+						heading: 'Date last borrowed book',
+						cell: (student) =>
+							student.dateTimeLastBorrowedBook
+								? format(student.dateTimeLastBorrowedBook, 'MMM dd, yyyy hh:mm a')
+								: null,
+						filter: {
+							type: 'DATE_RANGE',
+							placeholder: 'Select date',
+							value: state.dateTimeLastBorrowedBook ?? null,
+							onChange: (dateTimeLastBorrowedBook) => setState({dateTimeLastBorrowedBook}),
+						},
+						sortable: true,
+						hideable: true,
+						orderable: true,
 					},
 					{
 						id: 'dateTimeCreated',
@@ -76,8 +225,12 @@ export function Students() {
 						filter: {
 							type: 'DATE_RANGE',
 							placeholder: 'Select date',
+							value: state.dateTimeCreated ?? null,
+							onChange: (dateTimeCreated) => setState({dateTimeCreated}),
 						},
 						sortable: true,
+						hideable: true,
+						orderable: true,
 					},
 					{
 						id: 'dateTimeUpdated',
@@ -86,8 +239,12 @@ export function Students() {
 						filter: {
 							type: 'DATE_RANGE',
 							placeholder: 'Select date',
+							value: state.dateTimeUpdated ?? null,
+							onChange: (dateTimeUpdated) => setState({dateTimeUpdated}),
 						},
 						sortable: true,
+						hideable: true,
+						orderable: true,
 					},
 					{
 						id: 'actions',
@@ -118,9 +275,22 @@ export function Students() {
 						className: 'w-0 text-center',
 					},
 				]}
-				searchEnabled
 				paginationEnabled
-				onReload={() => {}}
+				page={state.page}
+				pageSize={state.pageSize}
+				onPageChange={(page) => setState({page})}
+				onPageSizeChange={(pageSize) => setState({pageSize})}
+				total={query.data?.total ?? 0}
+				loading={query.isLoading}
+				onReload={() => {
+					query.refetch();
+				}}
+				sortColumn={state.sortBy ?? null}
+				onSortColumnChange={(value) =>
+					setState({sortBy: StudentSortByInputDefinition.nullable().optional().parse(value)})
+				}
+				sortOrder={state.sortOrder ?? null}
+				onSortOrderChange={(sortOrder) => setState({sortOrder})}
 				onExport={() => {}}
 			/>
 		</>

@@ -24,12 +24,7 @@ export function EditBook() {
 	const book = useBookContext();
 	const form = useForm({
 		resolver: zodResolver(UpdateBookDataInputDefinition),
-		defaultValues: {
-			author: book.author,
-			title: book.title,
-			genre: book.genre,
-			yearPublished: book.yearPublished,
-		},
+		defaultValues: book,
 	});
 
 	const disclosure = useDisclosure();
@@ -45,15 +40,7 @@ export function EditBook() {
 					if (!data) return data;
 					return {
 						...data,
-						rows: data.rows.map((prev) =>
-							prev.id === book.id
-								? {
-										...prev,
-										...next,
-										dateTimeUpdated: new Date(),
-									}
-								: prev,
-						),
+						rows: data.rows.map((prev) => (prev.id === next.id ? next : prev)),
 					};
 				},
 			);
@@ -75,7 +62,7 @@ export function EditBook() {
 			open={disclosure.open}
 			onOpenChange={(details) => disclosure.setOpen(details.open)}
 			onExitComplete={() => {
-				form.reset({});
+				form.reset(book);
 			}}
 		>
 			<Dialog.Context>

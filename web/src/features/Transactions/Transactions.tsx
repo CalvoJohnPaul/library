@@ -1,15 +1,73 @@
 import {createListCollection, Portal} from '@ark-ui/react';
+import {type TransactionType, TransactionTypeDefinition} from '@library/types';
 import {addDays, differenceInDays, format} from 'date-fns';
-import {AlertTriangleIcon} from 'lucide-react';
+import {AlertTriangleIcon, CornerDownLeftIcon, SettingsIcon} from 'lucide-react';
+import {useReducer} from 'react';
 import {Link} from 'react-router';
 import {DataTable} from '@/components/DataTable';
 import {Badge} from '@/components/ui/Badge';
+import {Menu} from '@/components/ui/Menu';
 import {Tooltip} from '@/components/ui/Tooltip';
 import {useTransactionsQuery} from '@/hooks/useTransactionsQuery';
+import type {DateRange} from '@/types/index';
 import {getTransactionTypeLabel, getTransactionTypeOptions} from '@/utils/common';
 
+interface State {
+	page: number;
+	pageSize: number;
+	search?: string | null;
+	ticket?: string | null;
+	type?: TransactionType[] | null;
+	bookId?: string[] | null;
+	isbn?: string | null;
+	studentId?: string[] | null;
+	dateTimeCreated?: DateRange | null;
+}
+
 export function Transactions() {
-	const query = useTransactionsQuery();
+	const [state, setState] = useReducer(
+		(prev: State, next: Partial<State>) => ({...prev, ...next}),
+		{
+			page: 1,
+			pageSize: 10,
+		},
+	);
+
+	const query = useTransactionsQuery({
+		page: state.page,
+		pageSize: state.pageSize,
+		...(state.ticket && {
+			ticket: {
+				contains: state.ticket,
+			},
+		}),
+		...(state.type?.length && {
+			type: {
+				in: state.type,
+			},
+		}),
+		...(state.bookId?.length && {
+			bookId: {
+				in: state.bookId,
+			},
+		}),
+		...(state.isbn && {
+			isbn: {
+				contains: state.isbn,
+			},
+		}),
+		...(state.studentId?.length && {
+			studentId: {
+				in: state.studentId,
+			},
+		}),
+		...((state.dateTimeCreated?.from || state.dateTimeCreated?.to) && {
+			dateTimeCreated: {
+				gte: state.dateTimeCreated?.from,
+				lte: state.dateTimeCreated?.to,
+			},
+		}),
+	});
 
 	return (
 		<>
@@ -43,6 +101,13 @@ export function Transactions() {
 							options: getTransactionTypeOptions(),
 							multiple: true,
 							placeholder: 'Select type',
+							value: state.type ?? [],
+							onChange: (value) =>
+								setState({
+									type: value
+										.map((v) => TransactionTypeDefinition.safeParse(v).data)
+										.filter(Boolean),
+								}),
 						},
 					},
 					{
@@ -52,6 +117,8 @@ export function Transactions() {
 						filter: {
 							type: 'TEXT',
 							placeholder: 'Enter ticket',
+							value: state.ticket ?? '',
+							onChange: (value) => setState({ticket: value}),
 						},
 					},
 					{
@@ -83,6 +150,8 @@ export function Transactions() {
 						filter: {
 							type: 'TEXT',
 							placeholder: 'Enter ISBN',
+							value: state.isbn ?? '',
+							onChange: (value) => setState({isbn: value}),
 						},
 						hideable: true,
 						orderable: true,
@@ -95,7 +164,7 @@ export function Transactions() {
 								to={`/students/${transaction.student.id}`}
 								className="block max-w-48 truncate text-blue-500"
 							>
-								{`${transaction.student.firstName} ${transaction.student.lastName}`}
+								{transaction.student.name}
 							</Link>
 						),
 						filter: {
@@ -159,16 +228,51 @@ export function Transactions() {
 						filter: {
 							type: 'DATE_RANGE',
 							placeholder: 'Select date',
+							value: state.dateTimeCreated ?? null,
+							onChange: (dateTimeCreated) => setState({dateTimeCreated}),
 						},
 						sortable: true,
 						hideable: true,
 						orderable: true,
 					},
+					{
+						id: 'actions',
+						heading: <SettingsIcon className="size-5" />,
+						cell(transaction) {
+							return (
+								<Menu.Root>
+									<Menu.Trigger
+										disabled={transaction.status !== 'PENDING' || transaction.type !== 'BORROW'}
+										className="disabled:opacity-50"
+									>
+										<SettingsIcon className="size-5" />
+									</Menu.Trigger>
+									<Portal>
+										<Menu.Positioner>
+											<Menu.Content>
+												<Menu.Item value="return">
+													<CornerDownLeftIcon />
+													Return
+												</Menu.Item>
+											</Menu.Content>
+										</Menu.Positioner>
+									</Portal>
+								</Menu.Root>
+							);
+						},
+						className: 'w-0 text-center',
+					},
 				]}
 				paginationEnabled
+				page={state.page}
+				pageSize={state.pageSize}
+				onPageChange={(page) => setState({page})}
+				onPageSizeChange={(pageSize) => setState({pageSize})}
 				total={query.data?.total ?? 0}
 				loading={query.isLoading}
-				onReload={() => {}}
+				onReload={() => {
+					query.refetch();
+				}}
 				onExport={() => {}}
 			/>
 		</>

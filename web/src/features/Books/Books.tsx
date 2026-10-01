@@ -1,6 +1,13 @@
 import {createListCollection, Portal} from '@ark-ui/react';
-import {type BookGenre, BookGenreDefinition} from '@library/types';
+import {
+	type BookGenre,
+	BookGenreDefinition,
+	type BookSortByInput,
+	BookSortByInputDefinition,
+	type SortOrder,
+} from '@library/types';
 import {format} from 'date-fns';
+import {uniq} from 'es-toolkit';
 import {CheckIcon, PlusIcon, SettingsIcon, XIcon} from 'lucide-react';
 import {useReducer} from 'react';
 import {Link} from 'react-router';
@@ -9,8 +16,9 @@ import {Badge} from '@/components/ui/Badge';
 import {IconButton} from '@/components/ui/IconButton';
 import {Menu} from '@/components/ui/Menu';
 import {Tooltip} from '@/components/ui/Tooltip';
-import {useBooksQuery} from '@/hooks/useBooksQuery';
+import {type BooksInput, useBooksQuery} from '@/hooks/useBooksQuery';
 import type {DateRange} from '@/types/index';
+import {client} from '@/utils/client';
 import {getBookGenreLabel, getBookGenreOptions, getBookYearPublishedOptions} from '@/utils/common';
 import {AddBook} from './AddBook';
 import {BookProvider} from './BookContext';
@@ -20,13 +28,15 @@ import {EditBook} from './EditBook';
 interface State {
 	page: number;
 	pageSize: number;
-	title?: string | null;
+	title?: string[] | null;
 	author?: string | null;
 	genre?: BookGenre[] | null;
 	yearPublished?: number[] | null;
 	available?: boolean | null;
 	dateTimeCreated?: DateRange | null;
 	dateTimeUpdated?: DateRange | null;
+	sortBy?: BookSortByInput | null;
+	sortOrder?: SortOrder | null;
 }
 
 export function Books() {
@@ -41,12 +51,13 @@ export function Books() {
 		},
 	);
 
+	const id = uniq([...(state.title ?? []) /* merge ids here */]);
 	const query = useBooksQuery({
 		page: state.page,
 		pageSize: state.pageSize,
-		...(state.title && {
-			title: {
-				contains: state.title,
+		...(id.length && {
+			id: {
+				in: id,
 			},
 		}),
 		...(state.author && {
@@ -81,6 +92,12 @@ export function Books() {
 				lte: state.dateTimeUpdated?.to ?? null,
 			},
 		}),
+		...(state.sortBy && {
+			sortBy: state.sortBy,
+		}),
+		...(state.sortOrder && {
+			sortOrder: state.sortOrder,
+		}),
 	});
 
 	return (
@@ -111,6 +128,31 @@ export function Books() {
 								</Link>
 							);
 						},
+						filter: {
+							type: 'ASYNC_COMBOBOX',
+							placeholder: 'Search title',
+							multiple: true,
+							value: state.title ?? [],
+							onChange(title) {
+								setState({title});
+							},
+							options: async (search) => {
+								try {
+									const input: BooksInput = {title: {contains: search}};
+									const data = await client.query({
+										queryKey: useBooksQuery.getQueryKey(input),
+										queryFn: useBooksQuery.getQueryFn(input),
+									});
+
+									return data.rows.map((book) => ({
+										label: book.title,
+										value: book.id.toString(),
+									}));
+								} catch {
+									return [];
+								}
+							},
+						},
 					},
 					{
 						id: 'author',
@@ -122,8 +164,8 @@ export function Books() {
 							type: 'TEXT',
 							placeholder: 'Enter author',
 							value: state.author ?? '',
-							onChange(value) {
-								setState({author: value ?? null});
+							onChange(author) {
+								setState({author});
 							},
 						},
 						hideable: true,
@@ -280,17 +322,20 @@ export function Books() {
 				}}
 				exporting={false}
 				onExport={() => {}}
-				searchEnabled
-				search={state.title ?? ''}
-				onSearchChange={(title) => {
-					setState({title});
-				}}
 				paginationEnabled
 				total={query.data?.total ?? 0}
 				page={state.page}
 				pageSize={state.pageSize}
 				onPageChange={(page) => setState({page})}
 				onPageSizeChange={(pageSize) => setState({pageSize})}
+				sortColumn={state.sortBy ?? null}
+				onSortColumnChange={(value) =>
+					setState({
+						sortBy: BookSortByInputDefinition.nullable().optional().parse(value),
+					})
+				}
+				sortOrder={state.sortOrder ?? null}
+				onSortOrderChange={(sortOrder) => setState({sortOrder})}
 				cta={
 					<AddBook
 						trigger={({setOpen}) => (

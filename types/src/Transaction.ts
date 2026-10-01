@@ -14,8 +14,7 @@ export const TransactionDefinition = z.object({
 	student: StudentDefinition.pick({
 		id: true,
 		externalId: true,
-		firstName: true,
-		lastName: true,
+		name: true,
 		course: true,
 		yearAndSection: true,
 	}),

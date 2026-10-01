@@ -1,9 +1,8 @@
 import {Portal} from '@ark-ui/react';
 import {useListCollection} from '@ark-ui/react/collection';
 import {useControllableState} from '@radix-ui/react-use-controllable-state';
-import {uniqBy} from 'es-toolkit';
 import {SearchIcon, XIcon} from 'lucide-react';
-import {useRef} from 'react';
+import {useState} from 'react';
 import {useBoolean, useDebounceCallback, useTimeout} from 'usehooks-ts';
 import type {Option} from '@/types/index';
 import {Combobox} from '../ui/Combobox';
@@ -138,6 +137,7 @@ function AsyncComboboxField__single(props: AsyncComboboxField__singleProps) {
 			<Combobox.Control>
 				<Combobox.Input />
 				<Combobox.Trigger />
+				<Combobox.ClearTrigger />
 			</Combobox.Control>
 			{props.portalled ? <Portal>{content}</Portal> : content}
 		</Combobox.Root>
@@ -164,14 +164,31 @@ function AsyncComboboxField__multi(props: AsyncComboboxField__multiProps) {
 		isItemDisabled: (item) => item.disabled ?? false,
 	});
 
-	const cache = useRef<Option[]>([]);
+	/* the collection only holds the latest search results, so selected values can fall out of
+	 * it (e.g. after typing a new search, or before the initial options load). Remember the
+	 * label of every option ever loaded or selected so tags never render empty text. */
+	const [labels, setLabels] = useState<Record<string, string>>({});
+
+	const rememberLabels = (options: Option[]) => {
+		setLabels((prev) => {
+			const hasNew = options.some((option) => prev[option.value] !== option.label);
+			if (!hasNew) return prev;
+			const next = {...prev};
+			for (const option of options) next[option.value] = option.label;
+			return next;
+		});
+	};
+
+	const labelOf = (value: string) => labels[value] ?? collection.stringify(value) ?? value;
+
 	const loadOptions = useDebounceCallback(async (inputValue: string, value: string[]) => {
 		const l = await props.options(inputValue, value);
-		cache.current = uniqBy([...cache.current, ...l], (o) => o.value);
+		rememberLabels(l);
 		set(l);
 	}, 250);
 
 	const inited = useBoolean();
+
 	useTimeout(
 		() => {
 			inited.setTrue();
@@ -206,6 +223,7 @@ function AsyncComboboxField__multi(props: AsyncComboboxField__multiProps) {
 		<Combobox.Root
 			value={value}
 			onValueChange={(details) => {
+				rememberLabels(collection.items.filter((item) => details.value.includes(item.value)));
 				setValue(details.value);
 			}}
 			inputValue={inputValue}
@@ -227,6 +245,7 @@ function AsyncComboboxField__multi(props: AsyncComboboxField__multiProps) {
 			<Combobox.Control>
 				<Combobox.Input />
 				<Combobox.Trigger />
+				<Combobox.ClearTrigger />
 			</Combobox.Control>
 			<Combobox.Context>
 				{(api) => {
@@ -245,7 +264,7 @@ function AsyncComboboxField__multi(props: AsyncComboboxField__multiProps) {
 						<Tags.Root className="mt-2">
 							{visibleItems.map((value) => (
 								<Tags.Item key={value}>
-									<Tags.ItemText>{collection.stringify(value)}</Tags.ItemText>
+									<Tags.ItemText>{labelOf(value)}</Tags.ItemText>
 									<Tags.ItemCloseTrigger
 										onClick={() => {
 											api.clearValue(value);
@@ -271,7 +290,7 @@ function AsyncComboboxField__multi(props: AsyncComboboxField__multiProps) {
 												{hiddenItems.map((value) => (
 													<li key={value} className="flex items-center gap-2">
 														<span className="inline-block size-1.25 shrink-0 rounded-full bg-white/25"></span>
-														<span className="inline-block grow">{collection.stringify(value)}</span>
+														<span className="inline-block grow">{labelOf(value)}</span>
 														<button
 															className="inline-block size-4 shrink-0"
 															type="button"

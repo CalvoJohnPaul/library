@@ -9,6 +9,7 @@ import {
 	TransactionTypeDefinition,
 } from '@library/types';
 import {clamp} from 'es-toolkit';
+import {assign} from 'es-toolkit/compat';
 import type {FastifyPluginAsyncZod} from 'fastify-type-provider-zod';
 import * as XLSX from 'xlsx';
 import * as z from 'zod';
@@ -63,6 +64,11 @@ const plugin: FastifyPluginAsyncZod = async (app) => {
 					bookId__neq: QueryString__NumberDefinition,
 					bookId__in: QueryString__NumberArrayDefinition,
 					bookId__nin: QueryString__NumberArrayDefinition,
+					isbn__eq: QueryString__StringDefinition,
+					isbn__neq: QueryString__StringDefinition,
+					isbn__in: QueryString__StringArrayDefinition,
+					isbn__nin: QueryString__StringArrayDefinition,
+					isbn__contains: QueryString__StringDefinition,
 					dateTimeCreated__gt: QueryString__DateDefinition,
 					dateTimeCreated__gte: QueryString__DateDefinition,
 					dateTimeCreated__lt: QueryString__DateDefinition,
@@ -175,6 +181,27 @@ const plugin: FastifyPluginAsyncZod = async (app) => {
 			}
 
 			if (
+				req.query.isbn__eq != null ||
+				req.query.isbn__neq != null ||
+				req.query.isbn__in != null ||
+				req.query.isbn__nin != null ||
+				req.query.isbn__contains != null
+			) {
+				where.bookCopy = assign(where.bookCopy || {}, {
+					isbn: {
+						...(req.query.isbn__eq != null && {equals: req.query.isbn__eq}),
+						...(req.query.isbn__neq != null && {not: req.query.isbn__neq}),
+						...(req.query.isbn__in != null && {in: req.query.isbn__in}),
+						...(req.query.isbn__nin != null && {notIn: req.query.isbn__nin}),
+						...(req.query.isbn__contains != null && {
+							contains: req.query.isbn__contains,
+							mode: 'insensitive',
+						}),
+					},
+				});
+			}
+
+			if (
 				req.query.bookId__eq != null ||
 				req.query.bookId__neq != null ||
 				req.query.bookId__in != null ||
@@ -240,8 +267,7 @@ const plugin: FastifyPluginAsyncZod = async (app) => {
 							select: {
 								id: true,
 								externalId: true,
-								firstName: true,
-								lastName: true,
+								name: true,
 								course: true,
 								yearAndSection: true,
 							},
@@ -296,8 +322,7 @@ const plugin: FastifyPluginAsyncZod = async (app) => {
 						student: {
 							id: transaction.student.id,
 							externalId: transaction.student.externalId,
-							firstName: transaction.student.firstName,
-							lastName: transaction.student.lastName,
+							name: transaction.student.name,
 							course: transaction.student.course,
 							yearAndSection: transaction.student.yearAndSection,
 						},
@@ -359,8 +384,7 @@ const plugin: FastifyPluginAsyncZod = async (app) => {
 						select: {
 							id: true,
 							externalId: true,
-							firstName: true,
-							lastName: true,
+							name: true,
 							course: true,
 							yearAndSection: true,
 						},
@@ -397,8 +421,7 @@ const plugin: FastifyPluginAsyncZod = async (app) => {
 					student: {
 						id: transaction.student.id,
 						externalId: transaction.student.externalId,
-						firstName: transaction.student.firstName,
-						lastName: transaction.student.lastName,
+						name: transaction.student.name,
 						course: transaction.student.course,
 						yearAndSection: transaction.student.yearAndSection,
 					},
@@ -630,8 +653,7 @@ const plugin: FastifyPluginAsyncZod = async (app) => {
 						select: {
 							id: true,
 							externalId: true,
-							firstName: true,
-							lastName: true,
+							name: true,
 							course: true,
 							yearAndSection: true,
 						},
@@ -677,8 +699,7 @@ const plugin: FastifyPluginAsyncZod = async (app) => {
 					remarks: transaction.remarks,
 					studentId: transaction.student.id,
 					externalId: transaction.student.externalId,
-					firstName: transaction.student.firstName,
-					lastName: transaction.student.lastName,
+					name: transaction.student.name,
 					course: transaction.student.course,
 					yearAndSection: transaction.student.yearAndSection,
 					bookCopyId: transaction.bookCopy.id,

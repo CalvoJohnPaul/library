@@ -40,16 +40,11 @@ const plugin: FastifyPluginAsyncZod = async (app) => {
 					externalId__in: QueryString__StringArrayDefinition,
 					externalId__nin: QueryString__StringArrayDefinition,
 					externalId__contains: QueryString__StringDefinition,
-					firstName__eq: QueryString__StringDefinition,
-					firstName__neq: QueryString__StringDefinition,
-					firstName__in: QueryString__StringArrayDefinition,
-					firstName__nin: QueryString__StringArrayDefinition,
-					firstName__contains: QueryString__StringDefinition,
-					lastName__eq: QueryString__StringDefinition,
-					lastName__neq: QueryString__StringDefinition,
-					lastName__in: QueryString__StringArrayDefinition,
-					lastName__nin: QueryString__StringArrayDefinition,
-					lastName__contains: QueryString__StringDefinition,
+					name__eq: QueryString__StringDefinition,
+					name__neq: QueryString__StringDefinition,
+					name__in: QueryString__StringArrayDefinition,
+					name__nin: QueryString__StringArrayDefinition,
+					name__contains: QueryString__StringDefinition,
 					course__eq: QueryString__StringDefinition,
 					course__neq: QueryString__StringDefinition,
 					course__in: QueryString__StringArrayDefinition,
@@ -116,38 +111,19 @@ const plugin: FastifyPluginAsyncZod = async (app) => {
 			}
 
 			if (
-				req.query.firstName__eq != null ||
-				req.query.firstName__neq != null ||
-				req.query.firstName__in != null ||
-				req.query.firstName__nin != null ||
-				req.query.firstName__contains
+				req.query.name__eq != null ||
+				req.query.name__neq != null ||
+				req.query.name__in != null ||
+				req.query.name__nin != null ||
+				req.query.name__contains != null
 			) {
-				where.firstName = {
-					...(req.query.firstName__eq != null && {equals: req.query.firstName__eq}),
-					...(req.query.firstName__neq != null && {not: req.query.firstName__neq}),
-					...(req.query.firstName__in != null && {in: req.query.firstName__in}),
-					...(req.query.firstName__nin != null && {notIn: req.query.firstName__nin}),
-					...(req.query.firstName__contains != null && {
-						contains: req.query.firstName__contains,
-						mode: 'insensitive',
-					}),
-				};
-			}
-
-			if (
-				req.query.lastName__eq != null ||
-				req.query.lastName__neq != null ||
-				req.query.lastName__in != null ||
-				req.query.lastName__nin != null ||
-				req.query.lastName__contains
-			) {
-				where.lastName = {
-					...(req.query.lastName__eq != null && {equals: req.query.lastName__eq}),
-					...(req.query.lastName__neq != null && {not: req.query.lastName__neq}),
-					...(req.query.lastName__in != null && {in: req.query.lastName__in}),
-					...(req.query.lastName__nin != null && {notIn: req.query.lastName__nin}),
-					...(req.query.lastName__contains != null && {
-						contains: req.query.lastName__contains,
+				where.name = {
+					...(req.query.name__eq != null && {equals: req.query.name__eq}),
+					...(req.query.name__neq != null && {not: req.query.name__neq}),
+					...(req.query.name__in != null && {in: req.query.name__in}),
+					...(req.query.name__nin != null && {notIn: req.query.name__nin}),
+					...(req.query.name__contains != null && {
+						contains: req.query.name__contains,
 						mode: 'insensitive',
 					}),
 				};
@@ -222,6 +198,7 @@ const plugin: FastifyPluginAsyncZod = async (app) => {
 			const page = req.query.page ?? 1;
 			const take = clamp(req.query.pageSize ?? 10, 10, 100);
 			const skip = take * (page - 1);
+			const sortOrder = req.query.sortOrder === 'ASC' ? 'asc' : 'desc';
 
 			const [total, rows] = await app.prisma.$transaction([
 				app.prisma.student.count({where}),
@@ -232,10 +209,10 @@ const plugin: FastifyPluginAsyncZod = async (app) => {
 					select: {
 						id: true,
 						externalId: true,
-						firstName: true,
-						lastName: true,
+						name: true,
 						course: true,
 						yearAndSection: true,
+						dateTimeLastBorrowedBook: true,
 						dateTimeCreated: true,
 						dateTimeUpdated: true,
 					},
@@ -245,10 +222,14 @@ const plugin: FastifyPluginAsyncZod = async (app) => {
 					...(req.query.sortBy != null && {
 						orderBy: {
 							...(req.query.sortBy === 'dateTimeCreated' && {
-								dateTimeCreated: req.query.sortOrder === 'ASC' ? 'asc' : 'desc',
+								dateTimeCreated: sortOrder,
 							}),
 							...(req.query.sortBy === 'dateTimeUpdated' && {
-								dateTimeUpdated: req.query.sortOrder === 'ASC' ? 'asc' : 'desc',
+								dateTimeUpdated: sortOrder,
+							}),
+							...(req.query.sortBy === 'dateTimeLastBorrowedBook' && {
+								// Students who never borrowed a book sort last.
+								dateTimeLastBorrowedBook: {sort: sortOrder, nulls: 'last'},
 							}),
 						},
 					}),
@@ -266,12 +247,12 @@ const plugin: FastifyPluginAsyncZod = async (app) => {
 					rows: rows.map((student) => ({
 						id: student.id,
 						externalId: student.externalId,
-						firstName: student.firstName,
-						lastName: student.lastName,
+						name: student.name,
 						course: student.course,
 						yearAndSection: student.yearAndSection,
 						dateTimeCreated: student.dateTimeCreated,
 						dateTimeUpdated: student.dateTimeUpdated,
+						dateTimeLastBorrowedBook: student.dateTimeLastBorrowedBook,
 					})),
 					next,
 					hasNext,
@@ -307,10 +288,10 @@ const plugin: FastifyPluginAsyncZod = async (app) => {
 				select: {
 					id: true,
 					externalId: true,
-					firstName: true,
-					lastName: true,
+					name: true,
 					course: true,
 					yearAndSection: true,
+					dateTimeLastBorrowedBook: true,
 					dateTimeCreated: true,
 					dateTimeUpdated: true,
 				},
@@ -323,12 +304,12 @@ const plugin: FastifyPluginAsyncZod = async (app) => {
 				data: {
 					id: student.id,
 					externalId: student.externalId,
-					firstName: student.firstName,
-					lastName: student.lastName,
+					name: student.name,
 					course: student.course,
 					yearAndSection: student.yearAndSection,
 					dateTimeCreated: student.dateTimeCreated,
 					dateTimeUpdated: student.dateTimeUpdated,
+					dateTimeLastBorrowedBook: student.dateTimeLastBorrowedBook,
 				},
 			});
 		},
@@ -362,18 +343,17 @@ const plugin: FastifyPluginAsyncZod = async (app) => {
 			const student = await app.prisma.student.create({
 				data: {
 					externalId: req.body.externalId,
-					firstName: req.body.firstName,
-					lastName: req.body.lastName,
+					name: req.body.name,
 					course: req.body.course,
 					yearAndSection: req.body.yearAndSection,
 				},
 				select: {
 					id: true,
 					externalId: true,
-					firstName: true,
-					lastName: true,
+					name: true,
 					course: true,
 					yearAndSection: true,
+					dateTimeLastBorrowedBook: true,
 					dateTimeCreated: true,
 					dateTimeUpdated: true,
 				},
@@ -384,12 +364,12 @@ const plugin: FastifyPluginAsyncZod = async (app) => {
 				data: {
 					id: student.id,
 					externalId: student.externalId,
-					firstName: student.firstName,
-					lastName: student.lastName,
+					name: student.name,
 					course: student.course,
 					yearAndSection: student.yearAndSection,
 					dateTimeCreated: student.dateTimeCreated,
 					dateTimeUpdated: student.dateTimeUpdated,
+					dateTimeLastBorrowedBook: student.dateTimeLastBorrowedBook,
 				},
 			});
 		},
@@ -431,10 +411,10 @@ const plugin: FastifyPluginAsyncZod = async (app) => {
 				select: {
 					id: true,
 					externalId: true,
-					firstName: true,
-					lastName: true,
+					name: true,
 					course: true,
 					yearAndSection: true,
+					dateTimeLastBorrowedBook: true,
 					dateTimeCreated: true,
 					dateTimeUpdated: true,
 				},
@@ -445,12 +425,12 @@ const plugin: FastifyPluginAsyncZod = async (app) => {
 				data: {
 					id: student.id,
 					externalId: student.externalId,
-					firstName: student.firstName,
-					lastName: student.lastName,
+					name: student.name,
 					course: student.course,
 					yearAndSection: student.yearAndSection,
 					dateTimeCreated: student.dateTimeCreated,
 					dateTimeUpdated: student.dateTimeUpdated,
+					dateTimeLastBorrowedBook: student.dateTimeLastBorrowedBook,
 				},
 			});
 		},

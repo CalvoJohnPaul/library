@@ -114,7 +114,6 @@ export function Copies() {
 					className: 'w-0 text-center',
 				},
 			]}
-			searchEnabled
 			paginationEnabled
 			total={query.data?.total ?? 0}
 			loading={query.isLoading}

@@ -15,7 +15,7 @@ export function Student() {
 
 	return (
 		<>
-			<title>{`${query.data.firstName} ${query.data.lastName} | read.`}</title>
+			<title>{`${query.data.name} | read.`}</title>
 			<StudentProvider value={query.data}>
 				<div>
 					<Link to="/students" className="flex items-center gap-1 text-blue-500 text-xs">
@@ -26,9 +26,7 @@ export function Student() {
 
 				<div className="mb-6 flex items-center gap-3">
 					<div className="grow">
-						<h1 className="font-bold text-xl">
-							{query.data.firstName} {query.data.lastName}
-						</h1>
+						<h1 className="font-bold text-xl">{query.data.name}</h1>
 						<p className="text-gray-600 text-sm">Manage the details of your student below.</p>
 					</div>
 				</div>
