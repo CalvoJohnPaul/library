@@ -6,18 +6,19 @@ import {
 	CreateBookCopyInputDefinition,
 	FailedHttpResponseDefinition,
 	PaginatedDefinition,
-	SortOrderDefinition,
 	ReturnBookCopyDataInputDefinition,
+	SortOrderDefinition,
 	SuccessfulHttpResponseDefinition,
 	UpdateBookCopyDataInputDefinition,
 	VoidSuccessfulHttpResponseDefinition,
 } from '@library/types';
-import {clamp, isNil, omitBy} from 'es-toolkit';
+import {clamp} from 'es-toolkit';
 import type {FastifyPluginAsyncZod} from 'fastify-type-provider-zod';
 import {uid} from 'uid';
 import * as XLSX from 'xlsx';
 import * as z from 'zod';
 import type {Prisma} from '../../prisma/.generated/client';
+import {clean} from '../helpers/clean';
 import {
 	ExcelWorkbookDefinition,
 	QueryString__DateDefinition,
@@ -404,7 +405,7 @@ const plugin: FastifyPluginAsyncZod = async (app) => {
 				return reply.notFound();
 			}
 
-			const data = omitBy(req.body, (value) => isNil(value) || value === '');
+			const data = clean(req.body);
 
 			if (data.bookId != null && !(await app.prisma.book.exists({id: data.bookId}))) {
 				return reply.badRequest('Book not found');

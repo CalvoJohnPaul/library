@@ -8,10 +8,11 @@ import {
 	SuccessfulHttpResponseDefinition,
 	UpdateStudentDataInputDefinition,
 } from '@library/types';
-import {clamp, isNil, omitBy} from 'es-toolkit';
+import {clamp} from 'es-toolkit';
 import type {FastifyPluginAsyncZod} from 'fastify-type-provider-zod';
 import * as z from 'zod';
 import type {Prisma} from '../../prisma/.generated/client';
+import {clean} from '../helpers/clean';
 import {
 	QueryString__DateDefinition,
 	QueryString__NumberArrayDefinition,
@@ -423,7 +424,7 @@ const plugin: FastifyPluginAsyncZod = async (app) => {
 				return reply.notFound();
 			}
 
-			const data = omitBy(req.body, (value) => isNil(value) || value === '');
+			const data = clean(req.body);
 			const student = await app.prisma.student.update({
 				where: {id: req.params.id},
 				data,

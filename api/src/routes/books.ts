@@ -10,11 +10,12 @@ import {
 	UpdateBookDataInputDefinition,
 	VoidSuccessfulHttpResponseDefinition,
 } from '@library/types';
-import {clamp, isNil, omitBy} from 'es-toolkit';
+import {clamp} from 'es-toolkit';
 import type {FastifyPluginAsyncZod} from 'fastify-type-provider-zod';
 import * as XLSX from 'xlsx';
 import * as z from 'zod';
 import type {Prisma} from '../../prisma/.generated/client';
+import {clean} from '../helpers/clean';
 import {
 	ExcelWorkbookDefinition,
 	QueryString__BooleanDefinition,
@@ -413,7 +414,7 @@ const plugin: FastifyPluginAsyncZod = async (app) => {
 				return reply.notFound();
 			}
 
-			const data = omitBy(req.body, (value) => isNil(value) || value === '');
+			const data = clean(req.body);
 			const book = await app.prisma.book.update({
 				where: {id: req.params.id},
 				data,
