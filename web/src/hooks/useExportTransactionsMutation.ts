@@ -22,7 +22,7 @@ export function useExportTransactionsMutation(
 		...options,
 		mutationKey: ['ExportTransactions'],
 		mutationFn: async (input: ExportTransactionsInput) => {
-			const params = useTransactionsQuery.getQueryParams(input);
+			const params = useTransactionsQuery.getSearchParams(input);
 
 			const res = await fetch(`${API_BASE_URL}/transactions/export?${params.toString()}`, {
 				method: 'POST',

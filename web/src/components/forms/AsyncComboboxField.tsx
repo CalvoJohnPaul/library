@@ -2,8 +2,9 @@ import {Portal} from '@ark-ui/react';
 import {useListCollection} from '@ark-ui/react/collection';
 import {useControllableState} from '@radix-ui/react-use-controllable-state';
 import {SearchIcon, XIcon} from 'lucide-react';
-import {useState} from 'react';
-import {useBoolean, useDebounceCallback, useTimeout} from 'usehooks-ts';
+import {useRef, useState} from 'react';
+import {useDebouncedCallback} from 'use-debounce';
+import {useBoolean, useTimeout} from 'usehooks-ts';
 import type {Option} from '@/types/index';
 import {Combobox} from '../ui/Combobox';
 import {Popover} from '../ui/Popover';
@@ -74,8 +75,12 @@ function AsyncComboboxField__single(props: AsyncComboboxField__singleProps) {
 		isItemDisabled: (item) => item.disabled ?? false,
 	});
 
-	const loadOptions = useDebounceCallback(async (inputValue: string, value: string) => {
+	const loadSeqRef = useRef(0);
+
+	const loadOptions = useDebouncedCallback(async (inputValue: string, value: string) => {
+		const seq = ++loadSeqRef.current;
 		const l = await props.options(inputValue, value);
+		if (seq !== loadSeqRef.current) return;
 		set(l);
 	}, 250);
 
@@ -181,8 +186,12 @@ function AsyncComboboxField__multi(props: AsyncComboboxField__multiProps) {
 
 	const labelOf = (value: string) => labels[value] ?? collection.stringify(value) ?? value;
 
-	const loadOptions = useDebounceCallback(async (inputValue: string, value: string[]) => {
+	const loadSeqRef = useRef(0);
+
+	const loadOptions = useDebouncedCallback(async (inputValue: string, value: string[]) => {
+		const seq = ++loadSeqRef.current;
 		const l = await props.options(inputValue, value);
+		if (seq !== loadSeqRef.current) return;
 		rememberLabels(l);
 		set(l);
 	}, 250);

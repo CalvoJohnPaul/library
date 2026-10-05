@@ -1,5 +1,7 @@
 import {createListCollection, Portal} from '@ark-ui/react';
 import {clamp} from 'es-toolkit';
+import {useEffect, useState} from 'react';
+import {useDebouncedCallback} from 'use-debounce';
 import {Pagination as ArkPagination} from '../ui/Pagination';
 import {Select} from '../ui/Select';
 import {useDataTableContext} from './DataTableContext';
@@ -9,9 +11,19 @@ const formatNumber = new Intl.NumberFormat('en-US', {
 	minimumFractionDigits: 0,
 }).format;
 
+const PAGE_COMMIT_DEBOUNCE = 250;
+
 export function Pagination() {
 	const {paginationEnabled, page, setPage, pageSize, setPageSize, total} = useDataTableContext();
 	const totalPages = Math.ceil(total / pageSize);
+
+	const [optimisticPage, setOptimisticPage] = useState(page);
+	const commitPage = useDebouncedCallback(setPage, PAGE_COMMIT_DEBOUNCE);
+
+	useEffect(() => {
+		setOptimisticPage(page);
+		commitPage.cancel();
+	}, [page, commitPage]);
 
 	const sizeCollection = createListCollection({
 		items: [10, 25, 50],
@@ -24,7 +36,7 @@ export function Pagination() {
 	return (
 		<div className="@container flex items-center gap-3 border-gray-200 border-t p-4 pl-6">
 			<p className="grow text-gray-500 text-sm">
-				Page {formatNumber(clamp(page, totalPages))} of {formatNumber(totalPages)}
+				Page {formatNumber(clamp(optimisticPage, totalPages))} of {formatNumber(totalPages)}
 			</p>
 			<Select.Root
 				value={[pageSize.toString()]}
@@ -33,6 +45,8 @@ export function Pagination() {
 					const n = s ? Number.parseInt(s, 10) : null;
 					const v = !n || Number.isNaN(n) ? 10 : n;
 
+					commitPage.cancel();
+					setOptimisticPage(1);
 					setPage(1);
 					setPageSize(v);
 				}}
@@ -61,13 +75,16 @@ export function Pagination() {
 
 			<ArkPagination.Root
 				count={total}
-				page={page}
+				page={optimisticPage}
 				pageSize={pageSize}
 				onPageChange={(details) => {
-					setPage(details.page);
+					setOptimisticPage(details.page);
+					commitPage(details.page);
 					setPageSize(details.pageSize);
 				}}
 				onPageSizeChange={(details) => {
+					commitPage.cancel();
+					setOptimisticPage(1);
 					setPage(1);
 					setPageSize(details.pageSize);
 				}}

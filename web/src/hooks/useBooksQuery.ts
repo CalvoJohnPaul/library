@@ -35,7 +35,7 @@ export interface BooksInput {
 }
 
 const getQueryKey = (input?: BooksInput): QueryKey => ['Books', input ?? {}];
-const getQueryParams = (input?: BooksInput) => {
+const getSearchParams = (input?: BooksInput) => {
 	const params = new URLSearchParams();
 
 	if (input?.page != null) params.append('page', input.page.toString());
@@ -113,7 +113,7 @@ const getQueryParams = (input?: BooksInput) => {
 };
 const getQueryFn = (input?: BooksInput) => {
 	return async (context?: {signal?: AbortSignal}) => {
-		const res = await fetch(`${API_BASE_URL}/books?${getQueryParams(input).toString()}`, {
+		const res = await fetch(`${API_BASE_URL}/books?${getSearchParams(input).toString()}`, {
 			signal: context?.signal,
 			credentials: 'include',
 		});
@@ -156,4 +156,4 @@ export function useBooksQuery(
 
 useBooksQuery.getQueryFn = getQueryFn;
 useBooksQuery.getQueryKey = getQueryKey;
-useBooksQuery.getQueryParams = getQueryParams;
+useBooksQuery.getSearchParams = getSearchParams;

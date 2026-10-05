@@ -1,11 +1,11 @@
 import {
 	HttpResponseDefinition,
-	type Paginated,
-	PaginatedDefinition,
-	type SortOrder,
 	type Member,
 	MemberDefinition,
 	type MemberSortByInput,
+	type Paginated,
+	PaginatedDefinition,
+	type SortOrder,
 } from '@library/types';
 import {type QueryKey, type UseQueryOptions, useQuery} from '@tanstack/react-query';
 import {API_BASE_URL} from '@/config/env';
@@ -27,7 +27,7 @@ export interface MembersInput {
 }
 
 const getQueryKey = (input?: MembersInput): QueryKey => ['Members', input ?? {}];
-const getQueryParams = (input?: MembersInput) => {
+const getSearchParams = (input?: MembersInput) => {
 	const params = new URLSearchParams();
 
 	if (input?.page != null) params.append('page', input.page.toString());
@@ -124,7 +124,7 @@ const getQueryParams = (input?: MembersInput) => {
 };
 const getQueryFn = (input?: MembersInput) => {
 	return async (context?: {signal?: AbortSignal}) => {
-		const res = await fetch(`${API_BASE_URL}/members?${getQueryParams(input).toString()}`, {
+		const res = await fetch(`${API_BASE_URL}/members?${getSearchParams(input).toString()}`, {
 			signal: context?.signal,
 			credentials: 'include',
 		});
@@ -169,4 +169,4 @@ export function useMembersQuery(
 
 useMembersQuery.getQueryFn = getQueryFn;
 useMembersQuery.getQueryKey = getQueryKey;
-useMembersQuery.getQueryParams = getQueryParams;
+useMembersQuery.getSearchParams = getSearchParams;

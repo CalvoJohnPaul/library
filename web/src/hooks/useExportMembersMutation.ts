@@ -22,7 +22,7 @@ export function useExportMembersMutation(
 		...options,
 		mutationKey: ['ExportMembers'],
 		mutationFn: async (input: ExportMembersInput) => {
-			const params = useMembersQuery.getQueryParams(input);
+			const params = useMembersQuery.getSearchParams(input);
 
 			const res = await fetch(`${API_BASE_URL}/members/export?${params.toString()}`, {
 				method: 'POST',

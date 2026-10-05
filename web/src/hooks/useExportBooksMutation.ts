@@ -22,8 +22,7 @@ export function useExportBooksMutation(
 		...options,
 		mutationKey: ['ExportBooks'],
 		mutationFn: async (input: ExportBooksInput) => {
-			const params = useBooksQuery.getQueryParams(input);
-
+			const params = useBooksQuery.getSearchParams(input);
 			const res = await fetch(`${API_BASE_URL}/books/export?${params.toString()}`, {
 				method: 'POST',
 				credentials: 'include',

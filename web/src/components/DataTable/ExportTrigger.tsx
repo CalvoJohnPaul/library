@@ -12,7 +12,7 @@ export function ExportTrigger() {
 	return (
 		<Tooltip.Root disabled={exporting}>
 			<Tooltip.Trigger asChild>
-				<IconButton variant="outline" accent="gray" disabled={exporting}>
+				<IconButton variant="outline" accent="gray" disabled={exporting} onClick={onExport}>
 					<DownloadIcon />
 				</IconButton>
 			</Tooltip.Trigger>

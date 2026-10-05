@@ -9,12 +9,9 @@ import {Badge} from '@/components/ui/Badge';
 import {Menu} from '@/components/ui/Menu';
 import {Tooltip} from '@/components/ui/Tooltip';
 import {type BooksInput, useBooksQuery} from '@/hooks/useBooksQuery';
-import {
-	type ExportTransactionsInput,
-	useExportTransactionsMutation,
-} from '@/hooks/useExportTransactionsMutation';
+import {useExportTransactionsMutation} from '@/hooks/useExportTransactionsMutation';
 import {type MembersInput, useMembersQuery} from '@/hooks/useMembersQuery';
-import {useTransactionsQuery} from '@/hooks/useTransactionsQuery';
+import {type TransactionsInput, useTransactionsQuery} from '@/hooks/useTransactionsQuery';
 import type {DateRange} from '@/types/index';
 import {client} from '@/utils/client';
 import {getTransactionTypeLabel, getTransactionTypeOptions} from '@/utils/common';
@@ -43,7 +40,9 @@ export function Transactions() {
 		},
 	);
 
-	const filters: ExportTransactionsInput = {
+	const filters = {
+		page: state.page,
+		pageSize: state.pageSize,
 		...(state.ticket && {
 			ticket: {
 				contains: state.ticket,
@@ -75,13 +74,9 @@ export function Transactions() {
 				lte: state.dateTimeCreated?.to,
 			},
 		}),
-	};
+	} satisfies TransactionsInput;
 
-	const query = useTransactionsQuery({
-		page: state.page,
-		pageSize: state.pageSize,
-		...filters,
-	});
+	const query = useTransactionsQuery(filters);
 
 	const exportMutation = useExportTransactionsMutation({
 		onError: (error) => {
@@ -158,16 +153,27 @@ export function Transactions() {
 							type: 'ASYNC_COMBOBOX',
 							multiple: true,
 							options: async (search) => {
-								const input: BooksInput = {title: {contains: search}};
-								const data = await client.query({
-									queryFn: useBooksQuery.getQueryFn(input),
-									queryKey: useBooksQuery.getQueryKey(input),
-								});
+								if (search.trim() === '') return [];
 
-								return data.rows.map((book) => ({
-									value: book.id.toString(),
-									label: book.title,
-								}));
+								try {
+									const input: BooksInput = {
+										title: {contains: search},
+										page: 1,
+										pageSize: 25,
+									};
+
+									const data = await client.query({
+										queryFn: useBooksQuery.getQueryFn(input),
+										queryKey: useBooksQuery.getQueryKey(input),
+									});
+
+									return data.rows.map((book) => ({
+										value: book.id.toString(),
+										label: book.title,
+									}));
+								} catch {
+									return [];
+								}
 							},
 							value: state.book ?? [],
 							onChange: (book) => setState({book}),

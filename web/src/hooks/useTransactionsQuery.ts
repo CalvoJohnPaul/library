@@ -36,7 +36,7 @@ export interface TransactionsInput {
 }
 
 const getQueryKey = (input?: TransactionsInput): QueryKey => ['Transactions', input ?? {}];
-const getQueryParams = (input?: TransactionsInput) => {
+const getSearchParams = (input?: TransactionsInput) => {
 	const params = new URLSearchParams();
 
 	if (input?.page != null) params.append('page', input.page.toString());
@@ -72,8 +72,7 @@ const getQueryParams = (input?: TransactionsInput) => {
 	if (input?.ticket?.contains != null) params.append('ticket__contains', input.ticket.contains);
 
 	if (input?.memberId?.eq != null) params.append('memberId__eq', input.memberId.eq.toString());
-	if (input?.memberId?.neq != null)
-		params.append('memberId__neq', input.memberId.neq.toString());
+	if (input?.memberId?.neq != null) params.append('memberId__neq', input.memberId.neq.toString());
 	if (input?.memberId?.in != null)
 		input.memberId.in.forEach(
 			(memberId) => void params.append('memberId__in', memberId.toString()),
@@ -136,7 +135,7 @@ const getQueryParams = (input?: TransactionsInput) => {
 };
 const getQueryFn = (input?: TransactionsInput) => {
 	return async (context?: {signal?: AbortSignal}) => {
-		const res = await fetch(`${API_BASE_URL}/transactions?${getQueryParams(input).toString()}`, {
+		const res = await fetch(`${API_BASE_URL}/transactions?${getSearchParams(input).toString()}`, {
 			signal: context?.signal,
 			credentials: 'include',
 		});
@@ -181,4 +180,4 @@ export function useTransactionsQuery(
 
 useTransactionsQuery.getQueryFn = getQueryFn;
 useTransactionsQuery.getQueryKey = getQueryKey;
-useTransactionsQuery.getQueryParams = getQueryParams;
+useTransactionsQuery.getSearchParams = getSearchParams;

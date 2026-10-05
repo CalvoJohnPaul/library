@@ -17,7 +17,7 @@ import {IconButton} from '@/components/ui/IconButton';
 import {Menu} from '@/components/ui/Menu';
 import {Tooltip} from '@/components/ui/Tooltip';
 import {type BooksInput, useBooksQuery} from '@/hooks/useBooksQuery';
-import {type ExportBooksInput, useExportBooksMutation} from '@/hooks/useExportBooksMutation';
+import {useExportBooksMutation} from '@/hooks/useExportBooksMutation';
 import type {DateRange} from '@/types/index';
 import {client} from '@/utils/client';
 import {getBookGenreLabel, getBookGenreOptions, getBookYearPublishedOptions} from '@/utils/common';
@@ -54,7 +54,9 @@ export function Books() {
 	);
 
 	const id = uniq([...(state.title ?? []) /* merge ids here */]);
-	const filters: ExportBooksInput = {
+	const filters = {
+		page: state.page,
+		pageSize: state.pageSize,
 		...(id.length && {
 			id: {
 				in: id,
@@ -98,13 +100,9 @@ export function Books() {
 		...(state.sortOrder && {
 			sortOrder: state.sortOrder,
 		}),
-	};
+	} satisfies BooksInput;
 
-	const query = useBooksQuery({
-		page: state.page,
-		pageSize: state.pageSize,
-		...filters,
-	});
+	const query = useBooksQuery(filters);
 
 	const exportMutation = useExportBooksMutation({
 		onError: (error) => {
@@ -151,8 +149,15 @@ export function Books() {
 								setState({title});
 							},
 							options: async (search) => {
+								if (search.trim() === '') return [];
+
 								try {
-									const input: BooksInput = {title: {contains: search}};
+									const input: BooksInput = {
+										title: {contains: search},
+										page: 1,
+										pageSize: 25,
+									};
+
 									const data = await client.query({
 										queryKey: useBooksQuery.getQueryKey(input),
 										queryFn: useBooksQuery.getQueryFn(input),

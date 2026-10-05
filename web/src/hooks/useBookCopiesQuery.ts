@@ -31,7 +31,7 @@ export interface BookCopiesInput {
 }
 
 const getQueryKey = (input?: BookCopiesInput): QueryKey => ['BookCopies', input ?? {}];
-const getQueryParams = (input?: BookCopiesInput) => {
+const getSearchParams = (input?: BookCopiesInput) => {
 	const params = new URLSearchParams();
 
 	if (input?.page != null) params.append('page', input.page.toString());
@@ -91,7 +91,7 @@ const getQueryParams = (input?: BookCopiesInput) => {
 };
 const getQueryFn = (input?: BookCopiesInput) => {
 	return async (context?: {signal?: AbortSignal}) => {
-		const res = await fetch(`${API_BASE_URL}/book-copies?${getQueryParams(input).toString()}`, {
+		const res = await fetch(`${API_BASE_URL}/book-copies?${getSearchParams(input).toString()}`, {
 			signal: context?.signal,
 			credentials: 'include',
 		});
@@ -136,4 +136,4 @@ export function useBookCopiesQuery(
 
 useBookCopiesQuery.getQueryFn = getQueryFn;
 useBookCopiesQuery.getQueryKey = getQueryKey;
-useBookCopiesQuery.getQueryParams = getQueryParams;
+useBookCopiesQuery.getSearchParams = getSearchParams;

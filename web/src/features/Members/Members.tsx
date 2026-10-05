@@ -1,9 +1,5 @@
 import {createListCollection, Portal} from '@ark-ui/react';
-import {
-	type SortOrder,
-	type MemberSortByInput,
-	MemberSortByInputDefinition,
-} from '@library/types';
+import {type MemberSortByInput, MemberSortByInputDefinition, type SortOrder} from '@library/types';
 import {format} from 'date-fns';
 import {uniq} from 'es-toolkit/compat';
 import {PlusIcon, SettingsIcon} from 'lucide-react';
@@ -13,10 +9,7 @@ import {DataTable} from '@/components/DataTable';
 import {IconButton} from '@/components/ui/IconButton';
 import {Menu} from '@/components/ui/Menu';
 import {Tooltip} from '@/components/ui/Tooltip';
-import {
-	type ExportMembersInput,
-	useExportMembersMutation,
-} from '@/hooks/useExportMembersMutation';
+import {useExportMembersMutation} from '@/hooks/useExportMembersMutation';
 import {type MembersInput, useMembersQuery} from '@/hooks/useMembersQuery';
 import type {DateRange} from '@/types/index';
 import {client} from '@/utils/client';
@@ -52,7 +45,9 @@ export function Members() {
 
 	const id = uniq([...(state.name ?? []), ...(state.externalId ?? [])]);
 
-	const filters: ExportMembersInput = {
+	const filters = {
+		page: state.page,
+		pageSize: state.pageSize,
 		...(id.length && {
 			id: {
 				in: id,
@@ -92,13 +87,9 @@ export function Members() {
 		...(state.sortOrder && {
 			sortOrder: state.sortOrder,
 		}),
-	};
+	} satisfies MembersInput;
 
-	const query = useMembersQuery({
-		page: state.page,
-		pageSize: state.pageSize,
-		...filters,
-	});
+	const query = useMembersQuery(filters);
 
 	const exportMutation = useExportMembersMutation({
 		onError: (error) => {
@@ -142,8 +133,15 @@ export function Members() {
 							value: state.externalId ?? [],
 							onChange: (externalId) => setState({externalId}),
 							options: async (search) => {
+								if (search.trim() === '') return [];
+
 								try {
-									const input: MembersInput = {externalId: {contains: search}};
+									const input: MembersInput = {
+										externalId: {contains: search},
+										page: 1,
+										pageSize: 25,
+									};
+
 									const data = await client.query({
 										queryKey: useMembersQuery.getQueryKey(input),
 										queryFn: useMembersQuery.getQueryFn(input),
@@ -169,8 +167,15 @@ export function Members() {
 							type: 'ASYNC_COMBOBOX',
 							multiple: true,
 							options: async (search) => {
+								if (search.trim() === '') return [];
+
 								try {
-									const input: MembersInput = {name: {contains: search}};
+									const input: MembersInput = {
+										name: {contains: search},
+										page: 1,
+										pageSize: 25,
+									};
+
 									const data = await client.query({
 										queryKey: useMembersQuery.getQueryKey(input),
 										queryFn: useMembersQuery.getQueryFn(input),

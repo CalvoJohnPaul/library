@@ -6,22 +6,23 @@ import {DataTable} from '@/components/DataTable';
 import {Badge} from '@/components/ui/Badge';
 import {Menu} from '@/components/ui/Menu';
 import {Tooltip} from '@/components/ui/Tooltip';
-import {
-	type ExportTransactionsInput,
-	useExportTransactionsMutation,
-} from '@/hooks/useExportTransactionsMutation';
-import {useTransactionsQuery} from '@/hooks/useTransactionsQuery';
+import {type BooksInput, useBooksQuery} from '@/hooks/useBooksQuery';
+import {useExportTransactionsMutation} from '@/hooks/useExportTransactionsMutation';
+import {type TransactionsInput, useTransactionsQuery} from '@/hooks/useTransactionsQuery';
+import {client} from '@/utils/client';
 import {getTransactionTypeLabel, getTransactionTypeOptions} from '@/utils/common';
 import {toaster} from '@/utils/toaster';
 import {useMemberContext} from './MemberContext';
 
 export function Transactions() {
 	const member = useMemberContext();
-	const filters: ExportTransactionsInput = {
+
+	const filters = {
 		memberId: {
 			eq: member.id.toString(),
 		},
-	};
+	} satisfies TransactionsInput;
+
 	const query = useTransactionsQuery(filters);
 
 	const exportMutation = useExportTransactionsMutation({
@@ -82,7 +83,29 @@ export function Transactions() {
 					},
 					filter: {
 						type: 'ASYNC_COMBOBOX',
-						options: async () => [],
+						options: async (search) => {
+							if (search.trim() === '') return [];
+
+							try {
+								const input: BooksInput = {
+									title: {contains: search},
+									page: 1,
+									pageSize: 25,
+								};
+
+								const data = await client.query({
+									queryFn: useBooksQuery.getQueryFn(input),
+									queryKey: useBooksQuery.getQueryKey(input),
+								});
+
+								return data.rows.map((book) => ({
+									value: book.id.toString(),
+									label: book.title,
+								}));
+							} catch {
+								return [];
+							}
+						},
 						multiple: true,
 						placeholder: 'Search book',
 					},
