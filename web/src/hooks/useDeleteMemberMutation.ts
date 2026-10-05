@@ -3,7 +3,7 @@ import {type UseMutationOptions, useMutation} from '@tanstack/react-query';
 import {API_BASE_URL} from '@/config/env';
 import {useCsrfQuery} from './useCsrfQuery';
 
-export function useDeleteStudentMutation(
+export function useDeleteMemberMutation(
 	options?: Pick<
 		UseMutationOptions<void, Error, number>,
 		| 'gcTime'
@@ -18,10 +18,10 @@ export function useDeleteStudentMutation(
 ) {
 	return useMutation({
 		...options,
-		mutationKey: ['DeleteStudent'],
+		mutationKey: ['DeleteMember'],
 		mutationFn: async (id) => {
 			const csrf = await useCsrfQuery.getQueryFn()();
-			const res = await fetch(`${API_BASE_URL}/students/${id}`, {
+			const res = await fetch(`${API_BASE_URL}/members/${id}`, {
 				method: 'DELETE',
 				credentials: 'include',
 				headers: {

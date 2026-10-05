@@ -1,6 +1,7 @@
 import {createListCollection, Portal} from '@ark-ui/react';
 import {format} from 'date-fns';
-import {SettingsIcon} from 'lucide-react';
+import {HistoryIcon, SettingsIcon} from 'lucide-react';
+import {Link} from 'react-router';
 import {DataTable} from '@/components/DataTable';
 import {Badge} from '@/components/ui/Badge';
 import {Menu} from '@/components/ui/Menu';
@@ -48,7 +49,17 @@ export function Copies() {
 					id: 'isbn',
 					heading: 'ISBN',
 					cell(copy) {
-						return copy.isbn;
+						return (
+							<div className="flex w-full items-center gap-3">
+								<span className="inline-block grow">{copy.isbn}</span>
+								<Link
+									to={`/books/${book.id}?tab=transactions&isbn=${copy.isbn}`}
+									className="text-gray-400 hover:text-blue-500"
+								>
+									<HistoryIcon className="size-5" />
+								</Link>
+							</div>
+						);
 					},
 				},
 				{

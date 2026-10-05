@@ -34,7 +34,7 @@ export const UpdateBookCopyInputDefinition = z.object({
 });
 
 export const BorrowBookCopyDataInputDefinition = z.object({
-	studentId: z.number({error: 'Student ID is required'}),
+	memberId: z.number({error: 'Member ID is required'}),
 	remarks: z.string({error: 'Remarks is required'}).optional().nullable(),
 });
 

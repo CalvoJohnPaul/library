@@ -3,15 +3,15 @@ import {
 	type Paginated,
 	PaginatedDefinition,
 	type SortOrder,
-	type Student,
-	StudentDefinition,
-	type StudentSortByInput,
+	type Member,
+	MemberDefinition,
+	type MemberSortByInput,
 } from '@library/types';
 import {type QueryKey, type UseQueryOptions, useQuery} from '@tanstack/react-query';
 import {API_BASE_URL} from '@/config/env';
 import type {DateFilterInput, IdFilterInput, StringFilterInput} from '@/types/index';
 
-export interface StudentsInput {
+export interface MembersInput {
 	page?: number;
 	pageSize?: number;
 	id?: IdFilterInput;
@@ -22,12 +22,12 @@ export interface StudentsInput {
 	dateTimeLastBorrowedBook?: DateFilterInput;
 	dateTimeCreated?: DateFilterInput;
 	dateTimeUpdated?: DateFilterInput;
-	sortBy?: StudentSortByInput;
+	sortBy?: MemberSortByInput;
 	sortOrder?: SortOrder;
 }
 
-const getQueryKey = (input?: StudentsInput): QueryKey => ['Students', input ?? {}];
-const getQueryParams = (input?: StudentsInput) => {
+const getQueryKey = (input?: MembersInput): QueryKey => ['Members', input ?? {}];
+const getQueryParams = (input?: MembersInput) => {
 	const params = new URLSearchParams();
 
 	if (input?.page != null) params.append('page', input.page.toString());
@@ -122,14 +122,14 @@ const getQueryParams = (input?: StudentsInput) => {
 
 	return params;
 };
-const getQueryFn = (input?: StudentsInput) => {
+const getQueryFn = (input?: MembersInput) => {
 	return async (context?: {signal?: AbortSignal}) => {
-		const res = await fetch(`${API_BASE_URL}/students?${getQueryParams(input).toString()}`, {
+		const res = await fetch(`${API_BASE_URL}/members?${getQueryParams(input).toString()}`, {
 			signal: context?.signal,
 			credentials: 'include',
 		});
 
-		const obj = HttpResponseDefinition(PaginatedDefinition(StudentDefinition)).parse(
+		const obj = HttpResponseDefinition(PaginatedDefinition(MemberDefinition)).parse(
 			await res.json(),
 		);
 
@@ -142,10 +142,10 @@ const getQueryFn = (input?: StudentsInput) => {
 	};
 };
 
-export function useStudentsQuery(
-	input?: StudentsInput,
+export function useMembersQuery(
+	input?: MembersInput,
 	options?: Pick<
-		UseQueryOptions<Paginated<Student>>,
+		UseQueryOptions<Paginated<Member>>,
 		| 'enabled'
 		| 'gcTime'
 		| 'staleTime'
@@ -167,6 +167,6 @@ export function useStudentsQuery(
 	});
 }
 
-useStudentsQuery.getQueryFn = getQueryFn;
-useStudentsQuery.getQueryKey = getQueryKey;
-useStudentsQuery.getQueryParams = getQueryParams;
+useMembersQuery.getQueryFn = getQueryFn;
+useMembersQuery.getQueryKey = getQueryKey;
+useMembersQuery.getQueryParams = getQueryParams;

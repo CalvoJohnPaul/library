@@ -1,12 +1,12 @@
 import {
-	CreateStudentInputDefinition,
+	CreateMemberInputDefinition,
 	FailedHttpResponseDefinition,
 	PaginatedDefinition,
 	SortOrderDefinition,
-	StudentDefinition,
-	StudentSortByInputDefinition,
+	MemberDefinition,
+	MemberSortByInputDefinition,
 	SuccessfulHttpResponseDefinition,
-	UpdateStudentDataInputDefinition,
+	UpdateMemberDataInputDefinition,
 	VoidSuccessfulHttpResponseDefinition,
 } from '@library/types';
 import {clamp} from 'es-toolkit';
@@ -30,7 +30,7 @@ const plugin: FastifyPluginAsyncZod = async (app) => {
 		{
 			preHandler: [app.verifyAuth],
 			schema: {
-				tags: ['Students'],
+				tags: ['Members'],
 				querystring: z.object({
 					page: QueryString__NumberDefinition,
 					pageSize: QueryString__NumberDefinition,
@@ -70,11 +70,11 @@ const plugin: FastifyPluginAsyncZod = async (app) => {
 					dateTimeUpdated__gte: QueryString__DateDefinition,
 					dateTimeUpdated__lt: QueryString__DateDefinition,
 					dateTimeUpdated__lte: QueryString__DateDefinition,
-					sortBy: StudentSortByInputDefinition.optional().nullable(),
+					sortBy: MemberSortByInputDefinition.optional().nullable(),
 					sortOrder: SortOrderDefinition.optional().nullable(),
 				}),
 				response: {
-					200: SuccessfulHttpResponseDefinition(PaginatedDefinition(StudentDefinition)),
+					200: SuccessfulHttpResponseDefinition(PaginatedDefinition(MemberDefinition)),
 					400: FailedHttpResponseDefinition,
 					401: FailedHttpResponseDefinition,
 					403: FailedHttpResponseDefinition,
@@ -82,7 +82,7 @@ const plugin: FastifyPluginAsyncZod = async (app) => {
 			},
 		},
 		async (req, reply) => {
-			const where: Prisma.StudentWhereInput = {};
+			const where: Prisma.MemberWhereInput = {};
 
 			if (
 				req.query.id__eq != null ||
@@ -230,8 +230,8 @@ const plugin: FastifyPluginAsyncZod = async (app) => {
 			const sortOrder = req.query.sortOrder === 'ASC' ? 'asc' : 'desc';
 
 			const [total, rows] = await app.prisma.$transaction([
-				app.prisma.student.count({where}),
-				app.prisma.student.findMany({
+				app.prisma.member.count({where}),
+				app.prisma.member.findMany({
 					skip,
 					take,
 					where,
@@ -272,15 +272,15 @@ const plugin: FastifyPluginAsyncZod = async (app) => {
 			return reply.send({
 				ok: true,
 				data: {
-					rows: rows.map((student) => ({
-						id: student.id,
-						externalId: student.externalId,
-						name: student.name,
-						course: student.course,
-						yearAndSection: student.yearAndSection,
-						dateTimeCreated: student.dateTimeCreated,
-						dateTimeUpdated: student.dateTimeUpdated,
-						dateTimeLastBorrowedBook: student.dateTimeLastBorrowedBook,
+					rows: rows.map((member) => ({
+						id: member.id,
+						externalId: member.externalId,
+						name: member.name,
+						course: member.course,
+						yearAndSection: member.yearAndSection,
+						dateTimeCreated: member.dateTimeCreated,
+						dateTimeUpdated: member.dateTimeUpdated,
+						dateTimeLastBorrowedBook: member.dateTimeLastBorrowedBook,
 					})),
 					next,
 					hasNext,
@@ -297,12 +297,12 @@ const plugin: FastifyPluginAsyncZod = async (app) => {
 		{
 			preHandler: [app.verifyAuth],
 			schema: {
-				tags: ['Students'],
+				tags: ['Members'],
 				params: z.object({
 					id: z.coerce.number().positive(),
 				}),
 				response: {
-					200: SuccessfulHttpResponseDefinition(StudentDefinition),
+					200: SuccessfulHttpResponseDefinition(MemberDefinition),
 					400: FailedHttpResponseDefinition,
 					401: FailedHttpResponseDefinition,
 					403: FailedHttpResponseDefinition,
@@ -311,7 +311,7 @@ const plugin: FastifyPluginAsyncZod = async (app) => {
 			},
 		},
 		async (req, reply) => {
-			const student = await app.prisma.student.findUnique({
+			const member = await app.prisma.member.findUnique({
 				where: {id: req.params.id},
 				select: {
 					id: true,
@@ -325,19 +325,19 @@ const plugin: FastifyPluginAsyncZod = async (app) => {
 				},
 			});
 
-			if (!student) return reply.notFound();
+			if (!member) return reply.notFound();
 
 			return reply.send({
 				ok: true,
 				data: {
-					id: student.id,
-					externalId: student.externalId,
-					name: student.name,
-					course: student.course,
-					yearAndSection: student.yearAndSection,
-					dateTimeCreated: student.dateTimeCreated,
-					dateTimeUpdated: student.dateTimeUpdated,
-					dateTimeLastBorrowedBook: student.dateTimeLastBorrowedBook,
+					id: member.id,
+					externalId: member.externalId,
+					name: member.name,
+					course: member.course,
+					yearAndSection: member.yearAndSection,
+					dateTimeCreated: member.dateTimeCreated,
+					dateTimeUpdated: member.dateTimeUpdated,
+					dateTimeLastBorrowedBook: member.dateTimeLastBorrowedBook,
 				},
 			});
 		},
@@ -349,10 +349,10 @@ const plugin: FastifyPluginAsyncZod = async (app) => {
 			onRequest: [app.csrfProtection],
 			preHandler: [app.verifyAuth],
 			schema: {
-				tags: ['Students'],
-				body: CreateStudentInputDefinition,
+				tags: ['Members'],
+				body: CreateMemberInputDefinition,
 				response: {
-					201: SuccessfulHttpResponseDefinition(StudentDefinition),
+					201: SuccessfulHttpResponseDefinition(MemberDefinition),
 					400: FailedHttpResponseDefinition,
 					401: FailedHttpResponseDefinition,
 					403: FailedHttpResponseDefinition,
@@ -364,11 +364,11 @@ const plugin: FastifyPluginAsyncZod = async (app) => {
 			},
 		},
 		async (req, reply) => {
-			if (await app.prisma.student.exists({externalId: req.body.externalId})) {
-				return reply.conflict('Student ID already exists');
+			if (await app.prisma.member.exists({externalId: req.body.externalId})) {
+				return reply.conflict('Member ID already exists');
 			}
 
-			const student = await app.prisma.student.create({
+			const member = await app.prisma.member.create({
 				data: {
 					externalId: req.body.externalId,
 					name: req.body.name,
@@ -390,14 +390,14 @@ const plugin: FastifyPluginAsyncZod = async (app) => {
 			return reply.code(201).send({
 				ok: true,
 				data: {
-					id: student.id,
-					externalId: student.externalId,
-					name: student.name,
-					course: student.course,
-					yearAndSection: student.yearAndSection,
-					dateTimeCreated: student.dateTimeCreated,
-					dateTimeUpdated: student.dateTimeUpdated,
-					dateTimeLastBorrowedBook: student.dateTimeLastBorrowedBook,
+					id: member.id,
+					externalId: member.externalId,
+					name: member.name,
+					course: member.course,
+					yearAndSection: member.yearAndSection,
+					dateTimeCreated: member.dateTimeCreated,
+					dateTimeUpdated: member.dateTimeUpdated,
+					dateTimeLastBorrowedBook: member.dateTimeLastBorrowedBook,
 				},
 			});
 		},
@@ -409,13 +409,13 @@ const plugin: FastifyPluginAsyncZod = async (app) => {
 			onRequest: [app.csrfProtection],
 			preHandler: [app.verifyAuth],
 			schema: {
-				tags: ['Students'],
+				tags: ['Members'],
 				params: z.object({
 					id: z.coerce.number().positive(),
 				}),
-				body: UpdateStudentDataInputDefinition,
+				body: UpdateMemberDataInputDefinition,
 				response: {
-					200: SuccessfulHttpResponseDefinition(StudentDefinition),
+					200: SuccessfulHttpResponseDefinition(MemberDefinition),
 					400: FailedHttpResponseDefinition,
 					401: FailedHttpResponseDefinition,
 					403: FailedHttpResponseDefinition,
@@ -429,7 +429,7 @@ const plugin: FastifyPluginAsyncZod = async (app) => {
 			},
 		},
 		async (req, reply) => {
-			if (!(await app.prisma.student.exists({id: req.params.id}))) {
+			if (!(await app.prisma.member.exists({id: req.params.id}))) {
 				return reply.notFound();
 			}
 
@@ -437,15 +437,15 @@ const plugin: FastifyPluginAsyncZod = async (app) => {
 
 			if (
 				data.externalId != null &&
-				(await app.prisma.student.exists({
+				(await app.prisma.member.exists({
 					externalId: data.externalId,
 					NOT: {id: req.params.id},
 				}))
 			) {
-				return reply.conflict('Student ID already exists');
+				return reply.conflict('Member ID already exists');
 			}
 
-			const student = await app.prisma.student.update({
+			const member = await app.prisma.member.update({
 				where: {id: req.params.id},
 				data,
 				select: {
@@ -463,14 +463,14 @@ const plugin: FastifyPluginAsyncZod = async (app) => {
 			return reply.send({
 				ok: true,
 				data: {
-					id: student.id,
-					externalId: student.externalId,
-					name: student.name,
-					course: student.course,
-					yearAndSection: student.yearAndSection,
-					dateTimeCreated: student.dateTimeCreated,
-					dateTimeUpdated: student.dateTimeUpdated,
-					dateTimeLastBorrowedBook: student.dateTimeLastBorrowedBook,
+					id: member.id,
+					externalId: member.externalId,
+					name: member.name,
+					course: member.course,
+					yearAndSection: member.yearAndSection,
+					dateTimeCreated: member.dateTimeCreated,
+					dateTimeUpdated: member.dateTimeUpdated,
+					dateTimeLastBorrowedBook: member.dateTimeLastBorrowedBook,
 				},
 			});
 		},
@@ -482,7 +482,7 @@ const plugin: FastifyPluginAsyncZod = async (app) => {
 			onRequest: [app.csrfProtection],
 			preHandler: [app.verifyAuth],
 			schema: {
-				tags: ['Students'],
+				tags: ['Members'],
 				params: z.object({
 					id: z.coerce.number().positive(),
 				}),
@@ -499,7 +499,7 @@ const plugin: FastifyPluginAsyncZod = async (app) => {
 			},
 		},
 		async (req, reply) => {
-			await app.prisma.student.deleteMany({where: {id: req.params.id}});
+			await app.prisma.member.deleteMany({where: {id: req.params.id}});
 
 			return reply.send({ok: true});
 		},
@@ -510,7 +510,7 @@ const plugin: FastifyPluginAsyncZod = async (app) => {
 		{
 			preHandler: [app.verifyAuth],
 			schema: {
-				tags: ['Students'],
+				tags: ['Members'],
 				querystring: z.object({
 					id__eq: QueryString__NumberDefinition,
 					id__neq: QueryString__NumberDefinition,
@@ -548,7 +548,7 @@ const plugin: FastifyPluginAsyncZod = async (app) => {
 					dateTimeUpdated__gte: QueryString__DateDefinition,
 					dateTimeUpdated__lt: QueryString__DateDefinition,
 					dateTimeUpdated__lte: QueryString__DateDefinition,
-					sortBy: StudentSortByInputDefinition.optional().nullable(),
+					sortBy: MemberSortByInputDefinition.optional().nullable(),
 					sortOrder: SortOrderDefinition.optional().nullable(),
 				}),
 				response: {
@@ -568,7 +568,7 @@ const plugin: FastifyPluginAsyncZod = async (app) => {
 			},
 		},
 		async (req, reply) => {
-			const where: Prisma.StudentWhereInput = {};
+			const where: Prisma.MemberWhereInput = {};
 
 			if (
 				req.query.id__eq != null ||
@@ -718,7 +718,7 @@ const plugin: FastifyPluginAsyncZod = async (app) => {
 
 			const sortOrder = req.query.sortOrder === 'ASC' ? 'asc' : 'desc';
 
-			const rows = await app.prisma.student.findMany({
+			const rows = await app.prisma.member.findMany({
 				where,
 				select: {
 					id: true,
@@ -749,30 +749,30 @@ const plugin: FastifyPluginAsyncZod = async (app) => {
 			});
 
 			const worksheet = XLSX.utils.json_to_sheet(
-				rows.map((student) => ({
-					id: student.id,
-					externalId: student.externalId,
-					name: student.name,
-					course: student.course,
-					yearAndSection: student.yearAndSection,
-					dateTimeLastBorrowedBook: student.dateTimeLastBorrowedBook?.toISOString() ?? null,
-					dateTimeCreated: student.dateTimeCreated.toISOString(),
-					dateTimeUpdated: student.dateTimeUpdated.toISOString(),
+				rows.map((member) => ({
+					id: member.id,
+					externalId: member.externalId,
+					name: member.name,
+					course: member.course,
+					yearAndSection: member.yearAndSection,
+					dateTimeLastBorrowedBook: member.dateTimeLastBorrowedBook?.toISOString() ?? null,
+					dateTimeCreated: member.dateTimeCreated.toISOString(),
+					dateTimeUpdated: member.dateTimeUpdated.toISOString(),
 				})),
 			);
 
 			const workbook = XLSX.utils.book_new();
-			XLSX.utils.book_append_sheet(workbook, worksheet, 'Students');
+			XLSX.utils.book_append_sheet(workbook, worksheet, 'Members');
 
 			const buffer = XLSX.write(workbook, {type: 'buffer', bookType: 'xlsx'}) as Buffer;
 
 			return reply
 				.header('content-type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-				.header('content-disposition', `attachment; filename="students-${Date.now()}.xlsx"`)
+				.header('content-disposition', `attachment; filename="members-${Date.now()}.xlsx"`)
 				.send(buffer);
 		},
 	);
 };
 
-export const autoPrefix = '/students';
+export const autoPrefix = '/members';
 export default plugin;

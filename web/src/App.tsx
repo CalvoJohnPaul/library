@@ -1,16 +1,17 @@
 import {Toaster} from '@ark-ui/react';
 import {QueryClientProvider} from '@tanstack/react-query';
 import {FrownIcon, InfoIcon, PartyPopperIcon, XIcon} from 'lucide-react';
+import {NuqsAdapter} from 'nuqs/adapters/react';
 import {Suspense} from 'react';
 import {BrowserRouter, Navigate, Route, Routes} from 'react-router';
 import {FeaturedIcon} from './components/ui/FeaturedIcon';
 import {Toast} from './components/ui/Toast';
 import {Book} from './features/Book/Book';
 import {Books} from './features/Books/Books';
+import {Member} from './features/Member/Member';
+import {Members} from './features/Members/Members';
 import {NotFound} from './features/NotFound/NotFound';
 import {RootLayout} from './features/RootLayout/RootLayout';
-import {Student} from './features/Student/Student';
-import {Students} from './features/Students/Students';
 import {Transactions} from './features/Transactions/Transactions';
 import {client} from './utils/client';
 import {toaster} from './utils/toaster';
@@ -18,21 +19,23 @@ import {toaster} from './utils/toaster';
 export function App() {
 	return (
 		<QueryClientProvider client={client}>
-			<Suspense fallback={null}>
-				<BrowserRouter>
-					<Routes>
-						<Route path="/" element={<RootLayout />}>
-							<Route index element={<Navigate to="/books" />} />
-							<Route path="books" element={<Books />} />
-							<Route path="books/:id" element={<Book />} />
-							<Route path="transactions" element={<Transactions />} />
-							<Route path="students" element={<Students />} />
-							<Route path="students/:id" element={<Student />} />
-							<Route path="*" element={<NotFound />} />
-						</Route>
-					</Routes>
-				</BrowserRouter>
-			</Suspense>
+			<NuqsAdapter>
+				<Suspense fallback={null}>
+					<BrowserRouter>
+						<Routes>
+							<Route path="/" element={<RootLayout />}>
+								<Route index element={<Navigate to="/books" />} />
+								<Route path="books" element={<Books />} />
+								<Route path="books/:id" element={<Book />} />
+								<Route path="transactions" element={<Transactions />} />
+								<Route path="members" element={<Members />} />
+								<Route path="members/:id" element={<Member />} />
+								<Route path="*" element={<NotFound />} />
+							</Route>
+						</Routes>
+					</BrowserRouter>
+				</Suspense>
+			</NuqsAdapter>
 			<Toaster toaster={toaster}>
 				{(toast) => (
 					<Toast.Root>

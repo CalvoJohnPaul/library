@@ -5,28 +5,28 @@ import {Button} from '@/components/ui/Button';
 import {Dialog} from '@/components/ui/Dialog';
 import {FeaturedIcon} from '@/components/ui/FeaturedIcon';
 import {Menu} from '@/components/ui/Menu';
-import {useDeleteStudentMutation} from '@/hooks/useDeleteStudentMutation';
+import {useDeleteMemberMutation} from '@/hooks/useDeleteMemberMutation';
 import {useDisclosure} from '@/hooks/useDisclosure';
-import {useStudentsQuery} from '@/hooks/useStudentsQuery';
+import {useMembersQuery} from '@/hooks/useMembersQuery';
 import {client} from '@/utils/client';
 import {toaster} from '@/utils/toaster';
-import {useStudentContext} from './StudentContext';
+import {useMemberContext} from './MemberContext';
 
-export function DeleteStudent() {
-	const student = useStudentContext();
+export function DeleteMember() {
+	const member = useMemberContext();
 	const disclosure = useDisclosure();
-	const mutation = useDeleteStudentMutation({
+	const mutation = useDeleteMemberMutation({
 		onSuccess: async () => {
 			await client.invalidateQueries({
 				refetchType: 'active',
-				queryKey: useStudentsQuery.getQueryKey(),
+				queryKey: useMembersQuery.getQueryKey(),
 				exact: false,
 				type: 'all',
 			});
 
 			disclosure.setOpen(false);
 			toaster.success({
-				description: 'Student has been deleted.',
+				description: 'Member has been deleted.',
 			});
 		},
 		onError: (error) => {
@@ -60,9 +60,9 @@ export function DeleteStudent() {
 								</FeaturedIcon.Icon>
 							</FeaturedIcon.Root>
 							<div>
-								<Dialog.Title>Delete student</Dialog.Title>
+								<Dialog.Title>Delete member</Dialog.Title>
 								<Dialog.Description>
-									Are you sure you want to delete this student? This action cannot be undone.
+									Are you sure you want to delete this member? This action cannot be undone.
 								</Dialog.Description>
 							</div>
 							<Dialog.CloseTrigger />
@@ -83,7 +83,7 @@ export function DeleteStudent() {
 							<Button
 								accent="danger"
 								disabled={mutation.isPending}
-								onClick={() => mutation.mutate(student.id)}
+								onClick={() => mutation.mutate(member.id)}
 							>
 								{mutation.isPending ? <SpinnerIcon className="size-5" /> : 'Confirm'}
 							</Button>

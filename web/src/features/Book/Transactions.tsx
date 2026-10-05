@@ -12,7 +12,7 @@ import {
 	type ExportTransactionsInput,
 	useExportTransactionsMutation,
 } from '@/hooks/useExportTransactionsMutation';
-import {type StudentsInput, useStudentsQuery} from '@/hooks/useStudentsQuery';
+import {type MembersInput, useMembersQuery} from '@/hooks/useMembersQuery';
 import {useTransactionsQuery} from '@/hooks/useTransactionsQuery';
 import type {DateRange} from '@/types/index';
 import {client} from '@/utils/client';
@@ -29,7 +29,7 @@ interface State {
 	ticket?: string | null;
 	type?: TransactionType[] | null;
 	isbn?: string | null;
-	student?: string[] | null;
+	member?: string[] | null;
 	dateTimeCreated?: DateRange | null;
 }
 
@@ -62,9 +62,9 @@ export function Transactions() {
 				contains: state.isbn,
 			},
 		}),
-		...(state.student?.length && {
-			studentId: {
-				in: state.student,
+		...(state.member?.length && {
+			memberId: {
+				in: state.member,
 			},
 		}),
 		...((state.dateTimeCreated?.from || state.dateTimeCreated?.to) && {
@@ -147,36 +147,36 @@ export function Transactions() {
 					orderable: true,
 				},
 				{
-					id: 'student',
-					heading: 'Student',
+					id: 'member',
+					heading: 'Member',
 					cell(transaction) {
 						return (
 							<Link
-								to={`/students/${transaction.student.id}`}
+								to={`/members/${transaction.member.id}`}
 								className="block max-w-48 truncate text-blue-500"
 							>
-								{transaction.student.name}
+								{transaction.member.name}
 							</Link>
 						);
 					},
 					filter: {
 						type: 'ASYNC_COMBOBOX',
 						options: async (search) => {
-							const input: StudentsInput = {name: {contains: search}};
+							const input: MembersInput = {name: {contains: search}};
 							const data = await client.query({
-								queryFn: useStudentsQuery.getQueryFn(input),
-								queryKey: useStudentsQuery.getQueryKey(input),
+								queryFn: useMembersQuery.getQueryFn(input),
+								queryKey: useMembersQuery.getQueryKey(input),
 							});
 
-							return data.rows.map((student) => ({
-								value: student.id.toString(),
-								label: student.name,
+							return data.rows.map((member) => ({
+								value: member.id.toString(),
+								label: member.name,
 							}));
 						},
-						value: state.student ?? [],
-						onChange: (student) => setState({student}),
+						value: state.member ?? [],
+						onChange: (member) => setState({member}),
 						multiple: true,
-						placeholder: 'Search student',
+						placeholder: 'Search member',
 					},
 					hideable: true,
 					orderable: true,

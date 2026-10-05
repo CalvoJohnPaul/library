@@ -1,14 +1,22 @@
 import {ArrowLeftIcon} from 'lucide-react';
+import {parseAsStringLiteral, useQueryState} from 'nuqs';
 import {Link, useParams} from 'react-router';
+import * as z from 'zod';
 import {Tabs} from '@/components/ui/Tabs';
-import {useStudentQuery} from '@/hooks/useStudentQuery';
+import {useMemberQuery} from '@/hooks/useMemberQuery';
+import {MemberProvider} from './MemberContext';
 import {Settings} from './Settings';
-import {StudentProvider} from './StudentContext';
 import {Transactions} from './Transactions';
 
-export function Student() {
+const TabDefinition = z.enum(['transactions', 'settings']);
+
+export function Member() {
 	const {id} = useParams<{id: string}>();
-	const query = useStudentQuery(id ? parseInt(id, 10) : null);
+	const query = useMemberQuery(id ? parseInt(id, 10) : null);
+	const [tab, setTab] = useQueryState(
+		'tab',
+		parseAsStringLiteral(TabDefinition.options).withDefault('transactions'),
+	);
 
 	if (!id) return null;
 	if (query.isLoading) return null;
@@ -17,22 +25,29 @@ export function Student() {
 	return (
 		<>
 			<title>{`${query.data.name} | read.`}</title>
-			<StudentProvider value={query.data}>
+			<MemberProvider value={query.data}>
 				<div>
-					<Link to="/students" className="flex items-center gap-1 text-blue-500 text-xs">
+					<Link to="/members" className="flex items-center gap-1 text-blue-500 text-xs">
 						<ArrowLeftIcon className="size-3.5" />
-						Go to students
+						Go to members
 					</Link>
 				</div>
 
 				<div className="mb-6 flex items-center gap-3">
 					<div className="grow">
 						<h1 className="font-bold text-xl">{query.data.name}</h1>
-						<p className="text-gray-600 text-sm">Manage the details of your student below.</p>
+						<p className="text-gray-600 text-sm">Manage the details of your member below.</p>
 					</div>
 				</div>
 
-				<Tabs.Root defaultValue="transactions" lazyMount unmountOnExit>
+				<Tabs.Root
+					defaultValue={tab}
+					onValueChange={(details) => {
+						setTab(TabDefinition.catch('transactions').parse(details.value));
+					}}
+					lazyMount
+					unmountOnExit
+				>
 					<Tabs.List className="mb-8 w-100">
 						<Tabs.Trigger value="transactions">Transactions</Tabs.Trigger>
 						<Tabs.Trigger value="settings">Settings</Tabs.Trigger>
@@ -45,7 +60,7 @@ export function Student() {
 						<Settings />
 					</Tabs.Content>
 				</Tabs.Root>
-			</StudentProvider>
+			</MemberProvider>
 		</>
 	);
 }

@@ -1,6 +1,7 @@
 import {ArrowLeftIcon} from 'lucide-react';
-import {useState} from 'react';
+import {parseAsStringLiteral, useQueryState} from 'nuqs';
 import {Link, useParams} from 'react-router';
+import * as z from 'zod';
 import {Tabs} from '@/components/ui/Tabs';
 import {useBookQuery} from '@/hooks/useBookQuery';
 import {AddCopy} from './AddCopy';
@@ -9,10 +10,15 @@ import {Copies} from './Copies';
 import {Settings} from './Settings';
 import {Transactions} from './Transactions';
 
+const TabDefinition = z.enum(['copies', 'transactions', 'settings']);
+
 export function Book() {
 	const {id} = useParams<{id: string}>();
 	const query = useBookQuery(id ? parseInt(id, 10) : null);
-	const [tab, setTab] = useState('copies');
+	const [tab, setTab] = useQueryState(
+		'tab',
+		parseAsStringLiteral(TabDefinition.options).withDefault('copies'),
+	);
 
 	if (!id) return null;
 	if (query.isLoading) return null;
@@ -40,7 +46,7 @@ export function Book() {
 
 				<Tabs.Root
 					value={tab}
-					onValueChange={(details) => setTab(details.value)}
+					onValueChange={(details) => setTab(TabDefinition.catch('copies').parse(details.value))}
 					lazyMount
 					unmountOnExit
 				>

@@ -1,8 +1,8 @@
 import {createListCollection, Portal} from '@ark-ui/react';
 import {
 	type SortOrder,
-	type StudentSortByInput,
-	StudentSortByInputDefinition,
+	type MemberSortByInput,
+	MemberSortByInputDefinition,
 } from '@library/types';
 import {format} from 'date-fns';
 import {uniq} from 'es-toolkit/compat';
@@ -14,18 +14,18 @@ import {IconButton} from '@/components/ui/IconButton';
 import {Menu} from '@/components/ui/Menu';
 import {Tooltip} from '@/components/ui/Tooltip';
 import {
-	type ExportStudentsInput,
-	useExportStudentsMutation,
-} from '@/hooks/useExportStudentsMutation';
-import {type StudentsInput, useStudentsQuery} from '@/hooks/useStudentsQuery';
+	type ExportMembersInput,
+	useExportMembersMutation,
+} from '@/hooks/useExportMembersMutation';
+import {type MembersInput, useMembersQuery} from '@/hooks/useMembersQuery';
 import type {DateRange} from '@/types/index';
 import {client} from '@/utils/client';
-import {getStudentCourseOptions, getStudentYearAndSectionOptions} from '@/utils/common';
+import {getMemberCourseOptions, getMemberYearAndSectionOptions} from '@/utils/common';
 import {toaster} from '@/utils/toaster';
-import {AddStudent} from './AddStudent';
-import {DeleteStudent} from './DeleteStudent';
-import {EditStudent} from './EditStudent';
-import {StudentProvider} from './StudentContext';
+import {AddMember} from './AddMember';
+import {DeleteMember} from './DeleteMember';
+import {EditMember} from './EditMember';
+import {MemberProvider} from './MemberContext';
 
 interface State {
 	page: number;
@@ -37,11 +37,11 @@ interface State {
 	dateTimeLastBorrowedBook?: DateRange | null;
 	dateTimeCreated?: DateRange | null;
 	dateTimeUpdated?: DateRange | null;
-	sortBy?: StudentSortByInput | null;
+	sortBy?: MemberSortByInput | null;
 	sortOrder?: SortOrder | null;
 }
 
-export function Students() {
+export function Members() {
 	const [state, setState] = useReducer(
 		(prev: State, next: Partial<State>) => ({...prev, ...next}),
 		{
@@ -52,7 +52,7 @@ export function Students() {
 
 	const id = uniq([...(state.name ?? []), ...(state.externalId ?? [])]);
 
-	const filters: ExportStudentsInput = {
+	const filters: ExportMembersInput = {
 		...(id.length && {
 			id: {
 				in: id,
@@ -94,13 +94,13 @@ export function Students() {
 		}),
 	};
 
-	const query = useStudentsQuery({
+	const query = useMembersQuery({
 		page: state.page,
 		pageSize: state.pageSize,
 		...filters,
 	});
 
-	const exportMutation = useExportStudentsMutation({
+	const exportMutation = useExportMembersMutation({
 		onError: (error) => {
 			toaster.error({
 				description: error.message,
@@ -110,29 +110,29 @@ export function Students() {
 
 	return (
 		<>
-			<title>Students | read.</title>
+			<title>Members | read.</title>
 			<div className="mb-6 flex items-center gap-3">
 				<div className="grow">
-					<h1 className="font-bold text-xl">Students</h1>
-					<p className="text-gray-600 text-sm">Manage student information below.</p>
+					<h1 className="font-bold text-xl">Members</h1>
+					<p className="text-gray-600 text-sm">Manage member information below.</p>
 				</div>
 
-				<AddStudent />
+				<AddMember />
 			</div>
 			<DataTable
-				id="students"
+				id="members"
 				collection={createListCollection({
 					items: query.data?.rows ?? [],
-					itemToString: (student) => student.name,
-					itemToValue: (student) => student.id.toString(),
+					itemToString: (member) => member.name,
+					itemToValue: (member) => member.id.toString(),
 				})}
 				columns={[
 					{
 						id: 'id',
 						heading: 'ID',
-						cell: (student) => (
-							<Link to={`/students/${student.id}`} className="text-blue-500">
-								{student.externalId}
+						cell: (member) => (
+							<Link to={`/members/${member.id}`} className="text-blue-500">
+								{member.externalId}
 							</Link>
 						),
 						filter: {
@@ -143,16 +143,16 @@ export function Students() {
 							onChange: (externalId) => setState({externalId}),
 							options: async (search) => {
 								try {
-									const input: StudentsInput = {externalId: {contains: search}};
+									const input: MembersInput = {externalId: {contains: search}};
 									const data = await client.query({
-										queryKey: useStudentsQuery.getQueryKey(input),
-										queryFn: useStudentsQuery.getQueryFn(input),
+										queryKey: useMembersQuery.getQueryKey(input),
+										queryFn: useMembersQuery.getQueryFn(input),
 									});
 
 									return (
-										data.rows.map((student) => ({
-											label: student.name,
-											value: student.id.toString(),
+										data.rows.map((member) => ({
+											label: member.name,
+											value: member.id.toString(),
 										})) ?? []
 									);
 								} catch {
@@ -164,22 +164,22 @@ export function Students() {
 					{
 						id: 'name',
 						heading: 'Name',
-						cell: (student) => student.name,
+						cell: (member) => member.name,
 						filter: {
 							type: 'ASYNC_COMBOBOX',
 							multiple: true,
 							options: async (search) => {
 								try {
-									const input: StudentsInput = {name: {contains: search}};
+									const input: MembersInput = {name: {contains: search}};
 									const data = await client.query({
-										queryKey: useStudentsQuery.getQueryKey(input),
-										queryFn: useStudentsQuery.getQueryFn(input),
+										queryKey: useMembersQuery.getQueryKey(input),
+										queryFn: useMembersQuery.getQueryFn(input),
 									});
 
 									return (
-										data.rows.map((student) => ({
-											label: student.name,
-											value: student.id.toString(),
+										data.rows.map((member) => ({
+											label: member.name,
+											value: member.id.toString(),
 										})) ?? []
 									);
 								} catch {
@@ -194,10 +194,10 @@ export function Students() {
 					{
 						id: 'course',
 						heading: 'Course',
-						cell: (student) => student.course,
+						cell: (member) => member.course,
 						filter: {
 							type: 'SELECT',
-							options: getStudentCourseOptions(),
+							options: getMemberCourseOptions(),
 							multiple: true,
 							placeholder: 'Select course',
 							value: state.course ?? [],
@@ -209,10 +209,10 @@ export function Students() {
 					{
 						id: 'yearAndSection',
 						heading: 'Year and section',
-						cell: (student) => student.yearAndSection,
+						cell: (member) => member.yearAndSection,
 						filter: {
 							type: 'SELECT',
-							options: getStudentYearAndSectionOptions(),
+							options: getMemberYearAndSectionOptions(),
 							multiple: true,
 							placeholder: 'Select year and section',
 							value: state.yearAndSection ?? [],
@@ -224,9 +224,9 @@ export function Students() {
 					{
 						id: 'dateTimeLastBorrowedBook',
 						heading: 'Date last borrowed book',
-						cell: (student) =>
-							student.dateTimeLastBorrowedBook
-								? format(student.dateTimeLastBorrowedBook, 'MMM dd, yyyy hh:mm a')
+						cell: (member) =>
+							member.dateTimeLastBorrowedBook
+								? format(member.dateTimeLastBorrowedBook, 'MMM dd, yyyy hh:mm a')
 								: null,
 						filter: {
 							type: 'DATE_RANGE',
@@ -241,7 +241,7 @@ export function Students() {
 					{
 						id: 'dateTimeCreated',
 						heading: 'Date added',
-						cell: (student) => format(student.dateTimeCreated, 'MMM dd, yyyy hh:mm a'),
+						cell: (member) => format(member.dateTimeCreated, 'MMM dd, yyyy hh:mm a'),
 						filter: {
 							type: 'DATE_RANGE',
 							placeholder: 'Select date',
@@ -255,7 +255,7 @@ export function Students() {
 					{
 						id: 'dateTimeUpdated',
 						heading: 'Date updated',
-						cell: (student) => format(student.dateTimeUpdated, 'MMM dd, yyyy hh:mm a'),
+						cell: (member) => format(member.dateTimeUpdated, 'MMM dd, yyyy hh:mm a'),
 						filter: {
 							type: 'DATE_RANGE',
 							placeholder: 'Select date',
@@ -269,7 +269,7 @@ export function Students() {
 					{
 						id: 'actions',
 						heading: <SettingsIcon className="size-5" />,
-						cell: (student) => (
+						cell: (member) => (
 							<Menu.Root>
 								<Menu.Trigger>
 									<SettingsIcon className="size-5" />
@@ -277,10 +277,10 @@ export function Students() {
 								<Portal>
 									<Menu.Positioner>
 										<Menu.Content>
-											<StudentProvider value={student}>
-												<EditStudent />
-												<DeleteStudent />
-											</StudentProvider>
+											<MemberProvider value={member}>
+												<EditMember />
+												<DeleteMember />
+											</MemberProvider>
 										</Menu.Content>
 									</Menu.Positioner>
 								</Portal>
@@ -301,7 +301,7 @@ export function Students() {
 				}}
 				sortColumn={state.sortBy ?? null}
 				onSortColumnChange={(value) =>
-					setState({sortBy: StudentSortByInputDefinition.nullable().optional().parse(value)})
+					setState({sortBy: MemberSortByInputDefinition.nullable().optional().parse(value)})
 				}
 				sortOrder={state.sortOrder ?? null}
 				onSortOrderChange={(sortOrder) => setState({sortOrder})}
@@ -310,7 +310,7 @@ export function Students() {
 					exportMutation.mutate(filters);
 				}}
 				cta={
-					<AddStudent
+					<AddMember
 						trigger={({setOpen}) => (
 							<Tooltip.Root>
 								<Tooltip.Trigger asChild>
@@ -324,7 +324,7 @@ export function Students() {
 											<Tooltip.Arrow>
 												<Tooltip.ArrowTip />
 											</Tooltip.Arrow>
-											Add student
+											Add member
 										</Tooltip.Content>
 									</Tooltip.Positioner>
 								</Portal>

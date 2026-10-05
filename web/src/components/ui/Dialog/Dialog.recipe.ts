@@ -13,7 +13,7 @@ export const dialogRecipe = tv({
 			'relative z-dialog mx-auto flex size-full h-auto w-full max-w-105 ui-closed:animate-dialog-out ui-open:animate-dialog-in flex-col rounded-lg bg-white',
 		],
 		header: 'relative flex gap-4 p-6 pb-8',
-		body: 'relative grow px-6 pb-8',
+		body: 'relative grow space-y-2.5 px-6 pb-8',
 		footer: 'relative flex justify-end gap-3 px-6 py-5',
 		title: 'font-semibold text-lg leading-normal',
 		description: 'text-gray-500 text-sm leading-tight',

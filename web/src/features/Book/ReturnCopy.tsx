@@ -115,7 +115,7 @@ export function ReturnCopy() {
 								</div>
 								<Dialog.CloseTrigger />
 							</Dialog.Header>
-							<Dialog.Body className="space-y-3">
+							<Dialog.Body>
 								<Field.Root invalid={!!form.formState.errors.remarks}>
 									<Field.Label>Remarks</Field.Label>
 									<Field.Textarea placeholder="Enter remarks" {...form.register('remarks')} />

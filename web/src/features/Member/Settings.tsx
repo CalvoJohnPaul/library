@@ -1,6 +1,6 @@
 import {Portal} from '@ark-ui/react';
 import {zodResolver} from '@hookform/resolvers/zod';
-import {type Paginated, type Student, UpdateStudentDataInputDefinition} from '@library/types';
+import {type Paginated, type Member, UpdateMemberDataInputDefinition} from '@library/types';
 import {isNil, omitBy} from 'es-toolkit';
 import {isEmpty} from 'es-toolkit/compat';
 import {TrashIcon} from 'lucide-react';
@@ -12,31 +12,31 @@ import {Button} from '@/components/ui/Button';
 import {Dialog} from '@/components/ui/Dialog';
 import {FeaturedIcon} from '@/components/ui/FeaturedIcon';
 import {Field} from '@/components/ui/Field';
-import {useDeleteStudentMutation} from '@/hooks/useDeleteStudentMutation';
+import {useDeleteMemberMutation} from '@/hooks/useDeleteMemberMutation';
 import {useDisclosure} from '@/hooks/useDisclosure';
-import {useStudentQuery} from '@/hooks/useStudentQuery';
-import {useStudentsQuery} from '@/hooks/useStudentsQuery';
-import {useUpdateStudentMutation} from '@/hooks/useUpdateStudentMutation';
+import {useMemberQuery} from '@/hooks/useMemberQuery';
+import {useMembersQuery} from '@/hooks/useMembersQuery';
+import {useUpdateMemberMutation} from '@/hooks/useUpdateMemberMutation';
 import {client} from '@/utils/client';
-import {getStudentCourseOptions, getStudentYearAndSectionOptions} from '@/utils/common';
+import {getMemberCourseOptions, getMemberYearAndSectionOptions} from '@/utils/common';
 import {toaster} from '@/utils/toaster';
-import {useStudentContext} from './StudentContext';
+import {useMemberContext} from './MemberContext';
 
 export function Settings() {
-	const student = useStudentContext();
+	const member = useMemberContext();
 	const form = useForm({
-		resolver: zodResolver(UpdateStudentDataInputDefinition),
-		defaultValues: student,
+		resolver: zodResolver(UpdateMemberDataInputDefinition),
+		defaultValues: member,
 	});
 
-	const mutation = useUpdateStudentMutation({
+	const mutation = useUpdateMemberMutation({
 		onSuccess: (next) => {
 			form.reset(next);
 
-			client.setQueryData<Student>(useStudentQuery.getQueryKey(next.id), next);
-			client.setQueriesData<Paginated<Student>>(
+			client.setQueryData<Member>(useMemberQuery.getQueryKey(next.id), next);
+			client.setQueriesData<Paginated<Member>>(
 				{
-					queryKey: useStudentsQuery.getQueryKey(),
+					queryKey: useMembersQuery.getQueryKey(),
 					exact: false,
 					type: 'all',
 				},
@@ -67,10 +67,10 @@ export function Settings() {
 				onSubmit={form.handleSubmit((data) => {
 					data = omitBy(
 						data,
-						(value, key) => isNil(value) || value === '' || student[key] === value,
+						(value, key) => isNil(value) || value === '' || member[key] === value,
 					);
-					if (isEmpty(data)) return form.reset(student);
-					mutation.mutate({id: student.id, data});
+					if (isEmpty(data)) return form.reset(member);
+					mutation.mutate({id: member.id, data});
 				})}
 				noValidate
 			>
@@ -92,7 +92,7 @@ export function Settings() {
 							<Field.Root invalid={!!fieldState.error}>
 								<Field.Label>Course</Field.Label>
 								<SelectField
-									options={getStudentCourseOptions()}
+									options={getMemberCourseOptions()}
 									placeholder="Select course"
 									value={field.value ?? ''}
 									onChange={(value) => field.onChange(value || null)}
@@ -108,7 +108,7 @@ export function Settings() {
 							<Field.Root invalid={!!fieldState.error}>
 								<Field.Label>Year and section</Field.Label>
 								<SelectField
-									options={getStudentYearAndSectionOptions()}
+									options={getMemberYearAndSectionOptions()}
 									placeholder="Select year and section"
 									value={field.value ?? ''}
 									onChange={(value) => field.onChange(value || null)}
@@ -127,7 +127,7 @@ export function Settings() {
 								variant="outline"
 								accent="gray"
 								onClick={() => {
-									form.reset(student);
+									form.reset(member);
 								}}
 								disabled={mutation.isPending}
 							>
@@ -138,7 +138,7 @@ export function Settings() {
 							</Button>
 						</>
 					) : (
-						<DeleteStudent />
+						<DeleteMember />
 					)}
 				</div>
 			</form>
@@ -146,23 +146,23 @@ export function Settings() {
 	);
 }
 
-export function DeleteStudent() {
-	const student = useStudentContext();
+export function DeleteMember() {
+	const member = useMemberContext();
 	const disclosure = useDisclosure();
 	const navigate = useNavigate();
-	const mutation = useDeleteStudentMutation({
+	const mutation = useDeleteMemberMutation({
 		onSuccess: async () => {
-			await navigate('/students');
+			await navigate('/members');
 			await client.invalidateQueries({
 				refetchType: 'active',
-				queryKey: useStudentsQuery.getQueryKey(),
+				queryKey: useMembersQuery.getQueryKey(),
 				exact: false,
 				type: 'all',
 			});
 
 			disclosure.setOpen(false);
 			toaster.success({
-				description: 'Student has been deleted.',
+				description: 'Member has been deleted.',
 			});
 		},
 		onError: (error) => {
@@ -193,9 +193,9 @@ export function DeleteStudent() {
 								</FeaturedIcon.Icon>
 							</FeaturedIcon.Root>
 							<div>
-								<Dialog.Title>Delete student</Dialog.Title>
+								<Dialog.Title>Delete member</Dialog.Title>
 								<Dialog.Description>
-									Are you sure you want to delete this student? This action cannot be undone.
+									Are you sure you want to delete this member? This action cannot be undone.
 								</Dialog.Description>
 							</div>
 							<Dialog.CloseTrigger />
@@ -216,7 +216,7 @@ export function DeleteStudent() {
 							<Button
 								accent="danger"
 								disabled={mutation.isPending}
-								onClick={() => mutation.mutate(student.id)}
+								onClick={() => mutation.mutate(member.id)}
 							>
 								{mutation.isPending ? <SpinnerIcon className="size-5" /> : 'Confirm'}
 							</Button>

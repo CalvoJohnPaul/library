@@ -67,15 +67,15 @@ model BookCopy {
   transactions    Transaction[]
 }
 
-model Student {
-  id                       Int          @id @default(autoincrement())
-  externalId               String       @unique
+model Member {
+  id                       Int           @id @default(autoincrement())
+  externalId               String        @unique
   name                     String
   course                   String
   yearAndSection           String
   dateTimeLastBorrowedBook DateTime?
-  dateTimeCreated          DateTime     @default(now())
-  dateTimeUpdated          DateTime     @updatedAt
+  dateTimeCreated          DateTime      @default(now())
+  dateTimeUpdated          DateTime      @updatedAt
   transactions             Transaction[]
 }
 
@@ -95,8 +95,8 @@ model Transaction {
   status          TransactionStatus @default(PENDING)
   ticket          String
   remarks         String?
-  student         Student           @relation(fields: [studentId], references: [id], onDelete: Cascade)
-  studentId       Int
+  member          Member            @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  memberId        Int
   bookCopy        BookCopy          @relation(fields: [bookCopyId], references: [id], onDelete: Cascade)
   bookCopyId      Int
   dateTimeCreated DateTime          @default(now())

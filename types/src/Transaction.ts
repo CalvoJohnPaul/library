@@ -1,7 +1,7 @@
 import * as z from 'zod';
 import {BookCopyDefinition} from './BookCopy.js';
 import {DateDefinition} from './common.js';
-import {StudentDefinition} from './Student.js';
+import {MemberDefinition} from './Member.js';
 
 export const TransactionTypeDefinition = z.enum(['BORROW', 'RETURN']);
 export const TransactionStatusDefinition = z.enum(['PENDING', 'COMPLETED']);
@@ -11,7 +11,7 @@ export const TransactionDefinition = z.object({
 	status: TransactionStatusDefinition,
 	ticket: z.string(),
 	remarks: z.string().optional().nullable(),
-	student: StudentDefinition.pick({
+	member: MemberDefinition.pick({
 		id: true,
 		externalId: true,
 		name: true,

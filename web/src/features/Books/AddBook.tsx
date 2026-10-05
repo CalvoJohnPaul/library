@@ -91,7 +91,7 @@ export function AddBook({trigger}: AddBookProps) {
 								</div>
 								<Dialog.CloseTrigger />
 							</Dialog.Header>
-							<Dialog.Body className="space-y-3">
+							<Dialog.Body>
 								<Field.Root invalid={!!form.formState.errors.title}>
 									<Field.Label>Title</Field.Label>
 									<Field.Input placeholder="Enter title" {...form.register('title')} />

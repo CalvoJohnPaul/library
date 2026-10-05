@@ -46,8 +46,8 @@ export function Navbar() {
 		},
 		{
 			icon: <UsersIcon />,
-			label: 'Students',
-			href: '/students',
+			label: 'Members',
+			href: '/members',
 		},
 	];
 
@@ -226,7 +226,7 @@ function EditAccount() {
 								</div>
 								<Dialog.CloseTrigger />
 							</Dialog.Header>
-							<Dialog.Body className="space-y-3">
+							<Dialog.Body>
 								<Field.Root invalid={!!form.formState.errors.name}>
 									<Field.Label>Name</Field.Label>
 									<Field.Input placeholder="Enter name" {...form.register('name')} />
@@ -346,7 +346,7 @@ function ChangePassword() {
 								</div>
 								<Dialog.CloseTrigger />
 							</Dialog.Header>
-							<Dialog.Body className="space-y-3">
+							<Dialog.Body>
 								<Controller
 									control={form.control}
 									name="oldPassword"

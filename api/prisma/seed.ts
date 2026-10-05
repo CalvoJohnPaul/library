@@ -14,7 +14,7 @@ async function seed() {
 		prisma.transaction.deleteMany(),
 		prisma.bookCopy.deleteMany(),
 		prisma.book.deleteMany(),
-		prisma.student.deleteMany(),
+		prisma.member.deleteMany(),
 	]);
 
 	const booksData: Prisma.BookUncheckedCreateInput[] = Array.from({length: 50}, () => ({
@@ -41,7 +41,7 @@ async function seed() {
 
 	await prisma.bookCopy.createMany({data: bookCopiesData});
 
-	const studentsData: Prisma.StudentUncheckedCreateInput[] = Array.from(
+	const membersData: Prisma.MemberUncheckedCreateInput[] = Array.from(
 		{length: 20},
 		(_, index) => ({
 			externalId: `${faker.string.alphanumeric(6)}-${index}`,
@@ -60,9 +60,9 @@ async function seed() {
 		}),
 	);
 
-	await prisma.student.createMany({data: studentsData});
+	await prisma.member.createMany({data: membersData});
 
-	const students = await prisma.student.findMany({select: {id: true}});
+	const members = await prisma.member.findMany({select: {id: true}});
 	const bookCopies = await prisma.bookCopy.findMany({select: {id: true, status: true}});
 
 	const date = new Date();
@@ -86,7 +86,7 @@ async function seed() {
 			ticket,
 			remarks: faker.datatype.boolean(0.3) ? faker.lorem.sentence() : null,
 			bookCopyId: copy.id,
-			studentId: faker.helpers.arrayElement(students).id,
+			memberId: faker.helpers.arrayElement(members).id,
 			dateTimeCreated: borrowedAt,
 			dateTimeUpdated: copy.status === 'BORROWED' ? borrowedAt : returnedAt,
 		};
@@ -110,22 +110,22 @@ async function seed() {
 	await prisma.transaction.createMany({data: transactionsData});
 
 	const lastBorrows = await prisma.transaction.groupBy({
-		by: ['studentId'],
+		by: ['memberId'],
 		where: {type: 'BORROW'},
 		_max: {dateTimeCreated: true},
 	});
 
 	await prisma.$transaction(
 		lastBorrows.map((lastBorrow) =>
-			prisma.student.update({
-				where: {id: lastBorrow.studentId},
+			prisma.member.update({
+				where: {id: lastBorrow.memberId},
 				data: {dateTimeLastBorrowedBook: lastBorrow._max.dateTimeCreated},
 			}),
 		),
 	);
 
 	console.log(
-		`Seeded ${booksData.length} books, ${bookCopiesData.length} copies, ${studentsData.length} students, ${transactionsData.length} transactions.`,
+		`Seeded ${booksData.length} books, ${bookCopiesData.length} copies, ${membersData.length} members, ${transactionsData.length} transactions.`,
 	);
 }
 

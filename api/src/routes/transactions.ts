@@ -52,10 +52,10 @@ const plugin: FastifyPluginAsyncZod = async (app) => {
 					ticket__in: QueryString__StringArrayDefinition,
 					ticket__nin: QueryString__StringArrayDefinition,
 					ticket__contains: QueryString__StringDefinition,
-					studentId__eq: QueryString__NumberDefinition,
-					studentId__neq: QueryString__NumberDefinition,
-					studentId__in: QueryString__NumberArrayDefinition,
-					studentId__nin: QueryString__NumberArrayDefinition,
+					memberId__eq: QueryString__NumberDefinition,
+					memberId__neq: QueryString__NumberDefinition,
+					memberId__in: QueryString__NumberArrayDefinition,
+					memberId__nin: QueryString__NumberArrayDefinition,
 					bookCopyId__eq: QueryString__NumberDefinition,
 					bookCopyId__neq: QueryString__NumberDefinition,
 					bookCopyId__in: QueryString__NumberArrayDefinition,
@@ -153,16 +153,16 @@ const plugin: FastifyPluginAsyncZod = async (app) => {
 			}
 
 			if (
-				req.query.studentId__eq != null ||
-				req.query.studentId__neq != null ||
-				req.query.studentId__in != null ||
-				req.query.studentId__nin != null
+				req.query.memberId__eq != null ||
+				req.query.memberId__neq != null ||
+				req.query.memberId__in != null ||
+				req.query.memberId__nin != null
 			) {
-				where.studentId = {
-					...(req.query.studentId__eq != null && {equals: req.query.studentId__eq}),
-					...(req.query.studentId__neq != null && {not: req.query.studentId__neq}),
-					...(req.query.studentId__in != null && {in: req.query.studentId__in}),
-					...(req.query.studentId__nin != null && {notIn: req.query.studentId__nin}),
+				where.memberId = {
+					...(req.query.memberId__eq != null && {equals: req.query.memberId__eq}),
+					...(req.query.memberId__neq != null && {not: req.query.memberId__neq}),
+					...(req.query.memberId__in != null && {in: req.query.memberId__in}),
+					...(req.query.memberId__nin != null && {notIn: req.query.memberId__nin}),
 				};
 			}
 
@@ -263,7 +263,7 @@ const plugin: FastifyPluginAsyncZod = async (app) => {
 						remarks: true,
 						dateTimeCreated: true,
 						dateTimeUpdated: true,
-						student: {
+						member: {
 							select: {
 								id: true,
 								externalId: true,
@@ -319,12 +319,12 @@ const plugin: FastifyPluginAsyncZod = async (app) => {
 						status: transaction.status,
 						ticket: transaction.ticket,
 						remarks: transaction.remarks,
-						student: {
-							id: transaction.student.id,
-							externalId: transaction.student.externalId,
-							name: transaction.student.name,
-							course: transaction.student.course,
-							yearAndSection: transaction.student.yearAndSection,
+						member: {
+							id: transaction.member.id,
+							externalId: transaction.member.externalId,
+							name: transaction.member.name,
+							course: transaction.member.course,
+							yearAndSection: transaction.member.yearAndSection,
 						},
 						bookCopy: {
 							id: transaction.bookCopy.id,
@@ -380,7 +380,7 @@ const plugin: FastifyPluginAsyncZod = async (app) => {
 					remarks: true,
 					dateTimeCreated: true,
 					dateTimeUpdated: true,
-					student: {
+					member: {
 						select: {
 							id: true,
 							externalId: true,
@@ -418,12 +418,12 @@ const plugin: FastifyPluginAsyncZod = async (app) => {
 					status: transaction.status,
 					ticket: transaction.ticket,
 					remarks: transaction.remarks,
-					student: {
-						id: transaction.student.id,
-						externalId: transaction.student.externalId,
-						name: transaction.student.name,
-						course: transaction.student.course,
-						yearAndSection: transaction.student.yearAndSection,
+					member: {
+						id: transaction.member.id,
+						externalId: transaction.member.externalId,
+						name: transaction.member.name,
+						course: transaction.member.course,
+						yearAndSection: transaction.member.yearAndSection,
 					},
 					bookCopy: {
 						id: transaction.bookCopy.id,
@@ -468,10 +468,10 @@ const plugin: FastifyPluginAsyncZod = async (app) => {
 					ticket__in: QueryString__StringArrayDefinition,
 					ticket__nin: QueryString__StringArrayDefinition,
 					ticket__contains: QueryString__StringDefinition,
-					studentId__eq: QueryString__NumberDefinition,
-					studentId__neq: QueryString__NumberDefinition,
-					studentId__in: QueryString__NumberArrayDefinition,
-					studentId__nin: QueryString__NumberArrayDefinition,
+					memberId__eq: QueryString__NumberDefinition,
+					memberId__neq: QueryString__NumberDefinition,
+					memberId__in: QueryString__NumberArrayDefinition,
+					memberId__nin: QueryString__NumberArrayDefinition,
 					bookCopyId__eq: QueryString__NumberDefinition,
 					bookCopyId__neq: QueryString__NumberDefinition,
 					bookCopyId__in: QueryString__NumberArrayDefinition,
@@ -573,16 +573,16 @@ const plugin: FastifyPluginAsyncZod = async (app) => {
 			}
 
 			if (
-				req.query.studentId__eq != null ||
-				req.query.studentId__neq != null ||
-				req.query.studentId__in != null ||
-				req.query.studentId__nin != null
+				req.query.memberId__eq != null ||
+				req.query.memberId__neq != null ||
+				req.query.memberId__in != null ||
+				req.query.memberId__nin != null
 			) {
-				where.studentId = {
-					...(req.query.studentId__eq != null && {equals: req.query.studentId__eq}),
-					...(req.query.studentId__neq != null && {not: req.query.studentId__neq}),
-					...(req.query.studentId__in != null && {in: req.query.studentId__in}),
-					...(req.query.studentId__nin != null && {notIn: req.query.studentId__nin}),
+				where.memberId = {
+					...(req.query.memberId__eq != null && {equals: req.query.memberId__eq}),
+					...(req.query.memberId__neq != null && {not: req.query.memberId__neq}),
+					...(req.query.memberId__in != null && {in: req.query.memberId__in}),
+					...(req.query.memberId__nin != null && {notIn: req.query.memberId__nin}),
 				};
 			}
 
@@ -675,7 +675,7 @@ const plugin: FastifyPluginAsyncZod = async (app) => {
 					remarks: true,
 					dateTimeCreated: true,
 					dateTimeUpdated: true,
-					student: {
+					member: {
 						select: {
 							id: true,
 							externalId: true,
@@ -723,11 +723,11 @@ const plugin: FastifyPluginAsyncZod = async (app) => {
 					status: transaction.status,
 					ticket: transaction.ticket,
 					remarks: transaction.remarks,
-					studentId: transaction.student.id,
-					externalId: transaction.student.externalId,
-					name: transaction.student.name,
-					course: transaction.student.course,
-					yearAndSection: transaction.student.yearAndSection,
+					memberId: transaction.member.id,
+					externalId: transaction.member.externalId,
+					name: transaction.member.name,
+					course: transaction.member.course,
+					yearAndSection: transaction.member.yearAndSection,
 					bookCopyId: transaction.bookCopy.id,
 					isbn: transaction.bookCopy.isbn,
 					title: transaction.bookCopy.book.title,

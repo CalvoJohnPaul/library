@@ -512,12 +512,12 @@ const plugin: FastifyPluginAsyncZod = async (app) => {
 			},
 		},
 		async (req, reply) => {
-			const [existing, studentCount] = await app.prisma.$transaction([
+			const [existing, memberCount] = await app.prisma.$transaction([
 				app.prisma.bookCopy.findUnique({
 					where: {id: req.params.id},
 					select: {status: true},
 				}),
-				app.prisma.student.count({where: {id: req.body.studentId}}),
+				app.prisma.member.count({where: {id: req.body.memberId}}),
 			]);
 
 			if (!existing) {
@@ -528,8 +528,8 @@ const plugin: FastifyPluginAsyncZod = async (app) => {
 				return reply.conflict('Book copy is not available');
 			}
 
-			if (studentCount <= 0) {
-				return reply.badRequest('Student not found');
+			if (memberCount <= 0) {
+				return reply.badRequest('Member not found');
 			}
 
 			const bookCopy = await app.prisma.$transaction(async (tx) => {
@@ -556,14 +556,14 @@ const plugin: FastifyPluginAsyncZod = async (app) => {
 						ticket,
 						remarks: req.body.remarks,
 						bookCopyId: req.params.id,
-						studentId: req.body.studentId,
+						memberId: req.body.memberId,
 						dateTimeCreated: date,
 						dateTimeUpdated: date,
 					},
 				});
 
-				await tx.student.update({
-					where: {id: req.body.studentId},
+				await tx.member.update({
+					where: {id: req.body.memberId},
 					data: {dateTimeLastBorrowedBook: date},
 				});
 
@@ -648,7 +648,7 @@ const plugin: FastifyPluginAsyncZod = async (app) => {
 						select: {
 							id: true,
 							ticket: true,
-							studentId: true,
+							memberId: true,
 						},
 					},
 				},
@@ -683,7 +683,7 @@ const plugin: FastifyPluginAsyncZod = async (app) => {
 						ticket: borrow.ticket,
 						remarks: req.body?.remarks,
 						bookCopyId: req.params.id,
-						studentId: borrow.studentId,
+						memberId: borrow.memberId,
 					},
 				});
 

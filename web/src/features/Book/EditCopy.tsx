@@ -105,7 +105,7 @@ export function EditCopy() {
 								</div>
 								<Dialog.CloseTrigger />
 							</Dialog.Header>
-							<Dialog.Body className="space-y-3">
+							<Dialog.Body>
 								<Field.Root invalid={!!form.formState.errors.isbn}>
 									<Field.Label>ISBN</Field.Label>
 									<Field.Input placeholder="Enter ISBN" {...form.register('isbn')} />

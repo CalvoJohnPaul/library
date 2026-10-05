@@ -1,7 +1,7 @@
 import * as z from 'zod';
 import {DateDefinition} from './common.js';
 
-export const StudentDefinition = z.object({
+export const MemberDefinition = z.object({
 	id: z.number(),
 	externalId: z.string(),
 	name: z.string(),
@@ -12,33 +12,33 @@ export const StudentDefinition = z.object({
 	dateTimeLastBorrowedBook: DateDefinition.nullable(),
 });
 
-export const CreateStudentInputDefinition = z.object({
+export const CreateMemberInputDefinition = z.object({
 	externalId: z.string({error: 'External ID is required'}),
 	name: z.string({error: 'Name is required'}),
 	course: z.string({error: 'Course is required'}),
 	yearAndSection: z.string({error: 'Year and section is required'}),
 });
 
-export const UpdateStudentDataInputDefinition = z.object({
+export const UpdateMemberDataInputDefinition = z.object({
 	externalId: z.string().optional().nullable(),
 	name: z.string().optional().nullable(),
 	course: z.string().optional().nullable(),
 	yearAndSection: z.string().optional().nullable(),
 });
 
-export const UpdateStudentInputDefinition = z.object({
+export const UpdateMemberInputDefinition = z.object({
 	id: z.number(),
-	data: UpdateStudentDataInputDefinition,
+	data: UpdateMemberDataInputDefinition,
 });
 
-export const StudentSortByInputDefinition = z.enum([
+export const MemberSortByInputDefinition = z.enum([
 	'dateTimeCreated',
 	'dateTimeUpdated',
 	'dateTimeLastBorrowedBook',
 ]);
 
-export type Student = z.infer<typeof StudentDefinition>;
-export type CreateStudentInput = z.infer<typeof CreateStudentInputDefinition>;
-export type UpdateStudentDataInput = z.infer<typeof UpdateStudentDataInputDefinition>;
-export type UpdateStudentInput = z.infer<typeof UpdateStudentInputDefinition>;
-export type StudentSortByInput = z.infer<typeof StudentSortByInputDefinition>;
+export type Member = z.infer<typeof MemberDefinition>;
+export type CreateMemberInput = z.infer<typeof CreateMemberInputDefinition>;
+export type UpdateMemberDataInput = z.infer<typeof UpdateMemberDataInputDefinition>;
+export type UpdateMemberInput = z.infer<typeof UpdateMemberInputDefinition>;
+export type MemberSortByInput = z.infer<typeof MemberSortByInputDefinition>;

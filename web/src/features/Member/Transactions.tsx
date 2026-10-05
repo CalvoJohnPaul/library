@@ -13,13 +13,13 @@ import {
 import {useTransactionsQuery} from '@/hooks/useTransactionsQuery';
 import {getTransactionTypeLabel, getTransactionTypeOptions} from '@/utils/common';
 import {toaster} from '@/utils/toaster';
-import {useStudentContext} from './StudentContext';
+import {useMemberContext} from './MemberContext';
 
 export function Transactions() {
-	const student = useStudentContext();
+	const member = useMemberContext();
 	const filters: ExportTransactionsInput = {
-		studentId: {
-			eq: student.id.toString(),
+		memberId: {
+			eq: member.id.toString(),
 		},
 	};
 	const query = useTransactionsQuery(filters);
@@ -34,7 +34,7 @@ export function Transactions() {
 
 	return (
 		<DataTable
-			id="student-transactions"
+			id="member-transactions"
 			collection={createListCollection({
 				items: query.data?.rows ?? [],
 				itemToString: (transaction) => transaction.id.toString(),

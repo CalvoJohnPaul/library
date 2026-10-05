@@ -1,6 +1,6 @@
 import {Portal} from '@ark-ui/react';
 import {zodResolver} from '@hookform/resolvers/zod';
-import {CreateStudentInputDefinition} from '@library/types';
+import {CreateMemberInputDefinition} from '@library/types';
 import {isFunction} from 'es-toolkit';
 import {PlusIcon} from 'lucide-react';
 import type {ReactNode} from 'react';
@@ -11,35 +11,35 @@ import {Button} from '@/components/ui/Button';
 import {Dialog} from '@/components/ui/Dialog';
 import {FeaturedIcon} from '@/components/ui/FeaturedIcon';
 import {Field} from '@/components/ui/Field';
-import {useCreateStudentMutation} from '@/hooks/useCreateStudentMutation';
+import {useCreateMemberMutation} from '@/hooks/useCreateMemberMutation';
 import {type UseDisclosureReturn, useDisclosure} from '@/hooks/useDisclosure';
-import {useStudentsQuery} from '@/hooks/useStudentsQuery';
+import {useMembersQuery} from '@/hooks/useMembersQuery';
 import {client} from '@/utils/client';
-import {getStudentCourseOptions, getStudentYearAndSectionOptions} from '@/utils/common';
+import {getMemberCourseOptions, getMemberYearAndSectionOptions} from '@/utils/common';
 import {toaster} from '@/utils/toaster';
 
-export interface AddStudentProps {
+export interface AddMemberProps {
 	trigger?: ReactNode | ((disclosure: UseDisclosureReturn) => ReactNode);
 }
 
-export function AddStudent({trigger}: AddStudentProps) {
+export function AddMember({trigger}: AddMemberProps) {
 	const disclosure = useDisclosure();
 	const form = useForm({
-		resolver: zodResolver(CreateStudentInputDefinition),
+		resolver: zodResolver(CreateMemberInputDefinition),
 	});
 
-	const mutation = useCreateStudentMutation({
+	const mutation = useCreateMemberMutation({
 		onSuccess: async () => {
 			await client.invalidateQueries({
 				refetchType: 'active',
-				queryKey: useStudentsQuery.getQueryKey(),
+				queryKey: useMembersQuery.getQueryKey(),
 				exact: false,
 				type: 'all',
 			});
 
 			disclosure.setOpen(false);
 			toaster.success({
-				description: 'Student has been added.',
+				description: 'Member has been added.',
 			});
 		},
 		onError: (error) => {
@@ -63,7 +63,7 @@ export function AddStudent({trigger}: AddStudentProps) {
 					: (trigger ?? (
 							<Button>
 								<PlusIcon />
-								Add student
+								Add member
 							</Button>
 						))}
 			</Dialog.Trigger>
@@ -84,14 +84,14 @@ export function AddStudent({trigger}: AddStudentProps) {
 									</FeaturedIcon.Icon>
 								</FeaturedIcon.Root>
 								<div>
-									<Dialog.Title>Add student</Dialog.Title>
+									<Dialog.Title>Add member</Dialog.Title>
 									<Dialog.Description>
-										Fill out the form to add a new student to your&nbsp;collection.
+										Fill out the form to add a new member to your&nbsp;collection.
 									</Dialog.Description>
 								</div>
 								<Dialog.CloseTrigger />
 							</Dialog.Header>
-							<Dialog.Body className="space-y-3">
+							<Dialog.Body>
 								<Field.Root invalid={!!form.formState.errors.externalId}>
 									<Field.Label>ID</Field.Label>
 									<Field.Input placeholder="Enter ID" {...form.register('externalId')} />
@@ -110,7 +110,7 @@ export function AddStudent({trigger}: AddStudentProps) {
 											<Field.Label>Course</Field.Label>
 											<SelectField
 												placeholder="Select course"
-												options={getStudentCourseOptions()}
+												options={getMemberCourseOptions()}
 												value={field.value ?? ''}
 												onChange={(value) => {
 													field.onChange(value);
@@ -128,7 +128,7 @@ export function AddStudent({trigger}: AddStudentProps) {
 											<Field.Label>Year and Section</Field.Label>
 											<SelectField
 												placeholder="Select year and section"
-												options={getStudentYearAndSectionOptions()}
+												options={getMemberYearAndSectionOptions()}
 												value={field.value ?? ''}
 												onChange={(value) => {
 													field.onChange(value);

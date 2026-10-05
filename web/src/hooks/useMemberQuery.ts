@@ -1,16 +1,16 @@
-import {HttpResponseDefinition, type Student, StudentDefinition} from '@library/types';
+import {HttpResponseDefinition, type Member, MemberDefinition} from '@library/types';
 import {type QueryKey, type UseQueryOptions, useQuery} from '@tanstack/react-query';
 import {API_BASE_URL} from '@/config/env';
 
-const getQueryKey = (id?: number | null): QueryKey => ['Student', {id}];
+const getQueryKey = (id?: number | null): QueryKey => ['Member', {id}];
 const getQueryFn = (id?: number | null) => {
 	return async (context?: {signal?: AbortSignal}) => {
-		const res = await fetch(`${API_BASE_URL}/students/${id}`, {
+		const res = await fetch(`${API_BASE_URL}/members/${id}`, {
 			signal: context?.signal,
 			credentials: 'include',
 		});
 
-		const obj = HttpResponseDefinition(StudentDefinition).parse(await res.json());
+		const obj = HttpResponseDefinition(MemberDefinition).parse(await res.json());
 
 		if (obj.ok) return obj.data;
 
@@ -21,10 +21,10 @@ const getQueryFn = (id?: number | null) => {
 	};
 };
 
-export function useStudentQuery(
+export function useMemberQuery(
 	id?: number | null,
 	options?: Pick<
-		UseQueryOptions<Student>,
+		UseQueryOptions<Member>,
 		| 'enabled'
 		| 'gcTime'
 		| 'staleTime'
@@ -47,5 +47,5 @@ export function useStudentQuery(
 	});
 }
 
-useStudentQuery.getQueryFn = getQueryFn;
-useStudentQuery.getQueryKey = getQueryKey;
+useMemberQuery.getQueryFn = getQueryFn;
+useMemberQuery.getQueryKey = getQueryKey;

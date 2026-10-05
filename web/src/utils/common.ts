@@ -109,11 +109,11 @@ export function getTransactionTypeLabel(type: TransactionType): string {
 
 /*
  *--------------------------------------------
- *	STUDENT
+ *	MEMBER
  *--------------------------------------------
  */
 
-export function getStudentCourseOptions(): Option[] {
+export function getMemberCourseOptions(): Option[] {
 	return [
 		/**/
 		'BSTM',
@@ -125,7 +125,7 @@ export function getStudentCourseOptions(): Option[] {
 	}));
 }
 
-export function getStudentYearAndSectionOptions(): Option[] {
+export function getMemberYearAndSectionOptions(): Option[] {
 	return [
 		/**/
 		'1-A',

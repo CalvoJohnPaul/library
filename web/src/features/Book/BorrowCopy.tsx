@@ -1,5 +1,6 @@
 import {Portal} from '@ark-ui/react';
-import {RepeatIcon, SearchIcon} from 'lucide-react';
+import {ArrowRightIcon, RepeatIcon} from 'lucide-react';
+import {useBoolean} from 'usehooks-ts';
 import {Button} from '@/components/ui/Button';
 import {Dialog} from '@/components/ui/Dialog';
 import {FeaturedIcon} from '@/components/ui/FeaturedIcon';
@@ -12,6 +13,7 @@ import {useCopyContext} from './CopyContext';
 export function BorrowCopy() {
 	const copy = useCopyContext();
 	const disclosure = useDisclosure();
+	const loaded = useBoolean();
 
 	console.log(copy);
 
@@ -50,22 +52,49 @@ export function BorrowCopy() {
 									<Field.Label>User ID</Field.Label>
 									<div className="flex items-center gap-2">
 										<Field.Input placeholder="Enter user ID" />
-										<IconButton variant="outline" accent="gray" className="shrink-0">
-											<SearchIcon />
+										<IconButton
+											variant="outline"
+											accent="gray"
+											className="shrink-0"
+											onClick={() => loaded.setTrue()}
+										>
+											<ArrowRightIcon />
 										</IconButton>
 									</div>
 								</Field.Root>
+
+								{loaded.value && (
+									<>
+										<Field.Root>
+											<Field.Label>Name</Field.Label>
+											<Field.Input placeholder="Enter name" />
+										</Field.Root>
+
+										<Field.Root>
+											<Field.Label>Course</Field.Label>
+											<Field.Input placeholder="Select course" />
+										</Field.Root>
+
+										<Field.Root>
+											<Field.Label>Year and section</Field.Label>
+											<Field.Input placeholder="Select year and section" />
+										</Field.Root>
+									</>
+								)}
 							</Dialog.Body>
-							<Dialog.Footer>
-								<Dialog.Context>
-									{(api) => (
-										<Button variant="outline" accent="gray" onClick={() => api.setOpen(false)}>
-											Cancel
-										</Button>
-									)}
-								</Dialog.Context>
-								<Button>Submit</Button>
-							</Dialog.Footer>
+
+							{loaded.value && (
+								<Dialog.Footer>
+									<Dialog.Context>
+										{(api) => (
+											<Button variant="outline" accent="gray" onClick={() => api.setOpen(false)}>
+												Cancel
+											</Button>
+										)}
+									</Dialog.Context>
+									<Button>Submit</Button>
+								</Dialog.Footer>
+							)}
 						</form>
 					</Dialog.Content>
 				</Dialog.Positioner>

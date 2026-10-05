@@ -25,7 +25,7 @@ export interface TransactionsInput {
 	type?: EnumFilterInput<TransactionType>;
 	status?: EnumFilterInput<TransactionStatus>;
 	ticket?: StringFilterInput;
-	studentId?: IdFilterInput;
+	memberId?: IdFilterInput;
 	bookCopyId?: IdFilterInput;
 	bookId?: IdFilterInput;
 	isbn?: StringFilterInput;
@@ -71,16 +71,16 @@ const getQueryParams = (input?: TransactionsInput) => {
 		input.ticket.nin.forEach((ticket) => void params.append('ticket__nin', ticket));
 	if (input?.ticket?.contains != null) params.append('ticket__contains', input.ticket.contains);
 
-	if (input?.studentId?.eq != null) params.append('studentId__eq', input.studentId.eq.toString());
-	if (input?.studentId?.neq != null)
-		params.append('studentId__neq', input.studentId.neq.toString());
-	if (input?.studentId?.in != null)
-		input.studentId.in.forEach(
-			(studentId) => void params.append('studentId__in', studentId.toString()),
+	if (input?.memberId?.eq != null) params.append('memberId__eq', input.memberId.eq.toString());
+	if (input?.memberId?.neq != null)
+		params.append('memberId__neq', input.memberId.neq.toString());
+	if (input?.memberId?.in != null)
+		input.memberId.in.forEach(
+			(memberId) => void params.append('memberId__in', memberId.toString()),
 		);
-	if (input?.studentId?.nin != null)
-		input.studentId.nin.forEach(
-			(studentId) => void params.append('studentId__nin', studentId.toString()),
+	if (input?.memberId?.nin != null)
+		input.memberId.nin.forEach(
+			(memberId) => void params.append('memberId__nin', memberId.toString()),
 		);
 
 	if (input?.bookCopyId?.eq != null)

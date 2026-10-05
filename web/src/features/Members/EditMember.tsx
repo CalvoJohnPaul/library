@@ -1,6 +1,6 @@
 import {Portal} from '@ark-ui/react';
 import {zodResolver} from '@hookform/resolvers/zod';
-import {type Paginated, type Student, UpdateStudentDataInputDefinition} from '@library/types';
+import {type Member, type Paginated, UpdateMemberDataInputDefinition} from '@library/types';
 import {isNil, omitBy} from 'es-toolkit';
 import {isEmpty} from 'es-toolkit/compat';
 import {PenSquareIcon} from 'lucide-react';
@@ -13,26 +13,26 @@ import {FeaturedIcon} from '@/components/ui/FeaturedIcon';
 import {Field} from '@/components/ui/Field';
 import {Menu} from '@/components/ui/Menu';
 import {useDisclosure} from '@/hooks/useDisclosure';
-import {useStudentsQuery} from '@/hooks/useStudentsQuery';
-import {useUpdateStudentMutation} from '@/hooks/useUpdateStudentMutation';
+import {useMembersQuery} from '@/hooks/useMembersQuery';
+import {useUpdateMemberMutation} from '@/hooks/useUpdateMemberMutation';
 import {client} from '@/utils/client';
-import {getStudentCourseOptions, getStudentYearAndSectionOptions} from '@/utils/common';
+import {getMemberCourseOptions, getMemberYearAndSectionOptions} from '@/utils/common';
 import {toaster} from '@/utils/toaster';
-import {useStudentContext} from './StudentContext';
+import {useMemberContext} from './MemberContext';
 
-export function EditStudent() {
-	const student = useStudentContext();
+export function EditMember() {
+	const member = useMemberContext();
 	const form = useForm({
-		resolver: zodResolver(UpdateStudentDataInputDefinition),
-		defaultValues: student,
+		resolver: zodResolver(UpdateMemberDataInputDefinition),
+		defaultValues: member,
 	});
 
 	const disclosure = useDisclosure();
-	const mutation = useUpdateStudentMutation({
+	const mutation = useUpdateMemberMutation({
 		onSuccess: async (next) => {
-			client.setQueriesData<Paginated<Student>>(
+			client.setQueriesData<Paginated<Member>>(
 				{
-					queryKey: useStudentsQuery.getQueryKey(),
+					queryKey: useMembersQuery.getQueryKey(),
 					exact: false,
 					type: 'all',
 				},
@@ -62,7 +62,7 @@ export function EditStudent() {
 			open={disclosure.open}
 			onOpenChange={(details) => disclosure.setOpen(details.open)}
 			onExitComplete={() => {
-				form.reset(student);
+				form.reset(member);
 			}}
 		>
 			<Dialog.Context>
@@ -81,7 +81,7 @@ export function EditStudent() {
 							onSubmit={form.handleSubmit((data) => {
 								data = omitBy(
 									data,
-									(value, key) => isNil(value) || value === '' || student[key] === value,
+									(value, key) => isNil(value) || value === '' || member[key] === value,
 								);
 
 								if (isEmpty(data)) {
@@ -90,7 +90,7 @@ export function EditStudent() {
 								}
 
 								mutation.mutate({
-									id: student.id,
+									id: member.id,
 									data,
 								});
 							})}
@@ -103,14 +103,14 @@ export function EditStudent() {
 									</FeaturedIcon.Icon>
 								</FeaturedIcon.Root>
 								<div>
-									<Dialog.Title>Edit student</Dialog.Title>
+									<Dialog.Title>Edit member</Dialog.Title>
 									<Dialog.Description>
-										Fill out the form to edit the student in your&nbsp;collection.
+										Fill out the form to edit the member in your&nbsp;collection.
 									</Dialog.Description>
 								</div>
 								<Dialog.CloseTrigger />
 							</Dialog.Header>
-							<Dialog.Body className="space-y-3">
+							<Dialog.Body>
 								<Field.Root invalid={!!form.formState.errors.externalId}>
 									<Field.Label>ID</Field.Label>
 									<Field.Input placeholder="Enter ID" {...form.register('externalId')} />
@@ -129,7 +129,7 @@ export function EditStudent() {
 											<Field.Label>Course</Field.Label>
 											<SelectField
 												placeholder="Select course"
-												options={getStudentCourseOptions()}
+												options={getMemberCourseOptions()}
 												value={field.value ?? ''}
 												onChange={(value) => {
 													field.onChange(value || null);
@@ -147,7 +147,7 @@ export function EditStudent() {
 											<Field.Label>Year and Section</Field.Label>
 											<SelectField
 												placeholder="Select year and section"
-												options={getStudentYearAndSectionOptions()}
+												options={getMemberYearAndSectionOptions()}
 												value={field.value ?? ''}
 												onChange={(value) => {
 													field.onChange(value || null);

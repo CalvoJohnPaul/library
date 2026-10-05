@@ -1,16 +1,16 @@
 import {
+	type CreateMemberInput,
 	HttpResponseDefinition,
-	type Student,
-	StudentDefinition,
-	type UpdateStudentInput,
+	type Member,
+	MemberDefinition,
 } from '@library/types';
 import {type UseMutationOptions, useMutation} from '@tanstack/react-query';
 import {API_BASE_URL} from '@/config/env';
 import {useCsrfQuery} from './useCsrfQuery';
 
-export function useUpdateStudentMutation(
+export function useCreateMemberMutation(
 	options?: Pick<
-		UseMutationOptions<Student, Error, UpdateStudentInput>,
+		UseMutationOptions<Member, Error, CreateMemberInput>,
 		| 'gcTime'
 		| 'onMutate'
 		| 'onSettled'
@@ -23,12 +23,12 @@ export function useUpdateStudentMutation(
 ) {
 	return useMutation({
 		...options,
-		mutationKey: ['UpdateStudent'],
+		mutationKey: ['CreateMember'],
 		mutationFn: async (input) => {
 			const csrf = await useCsrfQuery.getQueryFn()();
-			const res = await fetch(`${API_BASE_URL}/students/${input.id}`, {
-				method: 'PATCH',
-				body: JSON.stringify(input.data),
+			const res = await fetch(`${API_BASE_URL}/members`, {
+				method: 'POST',
+				body: JSON.stringify(input),
 				credentials: 'include',
 				headers: {
 					'X-CSRF-Token': csrf.token,
@@ -36,7 +36,7 @@ export function useUpdateStudentMutation(
 				},
 			});
 
-			const obj = HttpResponseDefinition(StudentDefinition).parse(await res.json());
+			const obj = HttpResponseDefinition(MemberDefinition).parse(await res.json());
 
 			if (obj.ok) return obj.data;
 
