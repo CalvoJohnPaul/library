@@ -21,7 +21,6 @@ export function useCreateSessionMutation(
 		mutationKey: ['CreateSession'],
 		mutationFn: async (input) => {
 			const csrf = await useCsrfQuery.getQueryFn()();
-			console.log(csrf.token);
 
 			const res = await fetch(`${API_BASE_URL}/sessions`, {
 				method: 'POST',
