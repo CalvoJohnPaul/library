@@ -21,7 +21,6 @@
 		"date-fns": "4.4.0",
 		"es-toolkit": "^1.52.0",
 		"lucide-react": "^1.48.0",
-		"nuqs": "^2.10.1",
 		"react": "^19.2.8",
 		"react-dom": "^19.2.8",
 		"react-hook-form": "^7.89.0",
