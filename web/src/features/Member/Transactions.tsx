@@ -1,6 +1,8 @@
 import {createListCollection, Portal} from '@ark-ui/react';
+import {type TransactionType, TransactionTypeDefinition} from '@library/types';
 import {addDays, differenceInDays, format} from 'date-fns';
-import {AlertTriangleIcon, CornerDownLeftIcon, SettingsIcon} from 'lucide-react';
+import {AlertTriangleIcon, SettingsIcon} from 'lucide-react';
+import {useReducer} from 'react';
 import {Link} from 'react-router';
 import {DataTable} from '@/components/DataTable';
 import {Badge} from '@/components/ui/Badge';
@@ -9,18 +11,60 @@ import {Tooltip} from '@/components/ui/Tooltip';
 import {type BooksInput, useBooksQuery} from '@/hooks/useBooksQuery';
 import {useExportTransactionsMutation} from '@/hooks/useExportTransactionsMutation';
 import {type TransactionsInput, useTransactionsQuery} from '@/hooks/useTransactionsQuery';
+import type {DateRange} from '@/types/index';
 import {client} from '@/utils/client';
 import {getTransactionTypeLabel, getTransactionTypeOptions} from '@/utils/common';
 import {toaster} from '@/utils/toaster';
+import {BookCopyProvider} from './BookCopyContext';
 import {useMemberContext} from './MemberContext';
+import {ReturnBookCopy} from './ReturnBookCopy';
+
+interface State {
+	page: number;
+	pageSize: number;
+	ticket?: string | null;
+	type?: TransactionType[] | null;
+	book?: string[] | null;
+	dateTimeCreated?: DateRange | null;
+}
 
 export function Transactions() {
 	const member = useMemberContext();
+	const [state, setState] = useReducer(
+		(prev: State, next: Partial<State>) => ({...prev, ...next}),
+		{
+			page: 1,
+			pageSize: 10,
+		},
+	);
 
 	const filters = {
+		page: state.page,
+		pageSize: state.pageSize,
 		memberId: {
 			eq: member.id.toString(),
 		},
+		...(state.ticket && {
+			ticket: {
+				contains: state.ticket,
+			},
+		}),
+		...(state.type?.length && {
+			type: {
+				in: state.type,
+			},
+		}),
+		...(state.book?.length && {
+			bookId: {
+				in: state.book,
+			},
+		}),
+		...((state.dateTimeCreated?.from || state.dateTimeCreated?.to) && {
+			dateTimeCreated: {
+				gte: state.dateTimeCreated?.from,
+				lte: state.dateTimeCreated?.to,
+			},
+		}),
 	} satisfies TransactionsInput;
 
 	const query = useTransactionsQuery(filters);
@@ -57,6 +101,11 @@ export function Transactions() {
 						options: getTransactionTypeOptions(),
 						multiple: true,
 						placeholder: 'Select type',
+						value: state.type ?? [],
+						onChange: (value) =>
+							setState({
+								type: value.map((v) => TransactionTypeDefinition.safeParse(v).data).filter(Boolean),
+							}),
 					},
 				},
 				{
@@ -66,6 +115,8 @@ export function Transactions() {
 					filter: {
 						type: 'TEXT',
 						placeholder: 'Enter ticket',
+						value: state.ticket ?? '',
+						onChange: (value) => setState({ticket: value}),
 					},
 				},
 				{
@@ -106,6 +157,8 @@ export function Transactions() {
 								return [];
 							}
 						},
+						value: state.book ?? [],
+						onChange: (book) => setState({book}),
 						multiple: true,
 						placeholder: 'Search book',
 					},
@@ -171,6 +224,8 @@ export function Transactions() {
 					filter: {
 						type: 'DATE_RANGE',
 						placeholder: 'Select date',
+						value: state.dateTimeCreated ?? null,
+						onChange: (dateTimeCreated) => setState({dateTimeCreated}),
 					},
 					sortable: true,
 					hideable: true,
@@ -191,10 +246,9 @@ export function Transactions() {
 								<Portal>
 									<Menu.Positioner>
 										<Menu.Content>
-											<Menu.Item value="return">
-												<CornerDownLeftIcon />
-												Return
-											</Menu.Item>
+											<BookCopyProvider value={transaction.bookCopy}>
+												<ReturnBookCopy />
+											</BookCopyProvider>
 										</Menu.Content>
 									</Menu.Positioner>
 								</Portal>
@@ -205,7 +259,13 @@ export function Transactions() {
 				},
 			]}
 			paginationEnabled
-			onReload={() => {}}
+			page={state.page}
+			pageSize={state.pageSize}
+			onPageChange={(page) => setState({page})}
+			onPageSizeChange={(pageSize) => setState({pageSize})}
+			onReload={() => {
+				query.refetch();
+			}}
 			exporting={exportMutation.isPending}
 			onExport={() => {
 				exportMutation.mutate(filters);

@@ -1,6 +1,6 @@
 import {Portal} from '@ark-ui/react';
 import {zodResolver} from '@hookform/resolvers/zod';
-import {type Paginated, type Member, UpdateMemberDataInputDefinition} from '@library/types';
+import {type Member, type Paginated, UpdateMemberDataInputDefinition} from '@library/types';
 import {isNil, omitBy} from 'es-toolkit';
 import {isEmpty} from 'es-toolkit/compat';
 import {TrashIcon} from 'lucide-react';
