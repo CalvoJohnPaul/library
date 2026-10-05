@@ -6,15 +6,29 @@ import {DataTable} from '@/components/DataTable';
 import {Badge} from '@/components/ui/Badge';
 import {Menu} from '@/components/ui/Menu';
 import {Tooltip} from '@/components/ui/Tooltip';
+import {
+	type ExportTransactionsInput,
+	useExportTransactionsMutation,
+} from '@/hooks/useExportTransactionsMutation';
 import {useTransactionsQuery} from '@/hooks/useTransactionsQuery';
 import {getTransactionTypeLabel, getTransactionTypeOptions} from '@/utils/common';
+import {toaster} from '@/utils/toaster';
 import {useStudentContext} from './StudentContext';
 
 export function Transactions() {
 	const student = useStudentContext();
-	const query = useTransactionsQuery({
+	const filters: ExportTransactionsInput = {
 		studentId: {
 			eq: student.id.toString(),
+		},
+	};
+	const query = useTransactionsQuery(filters);
+
+	const exportMutation = useExportTransactionsMutation({
+		onError: (error) => {
+			toaster.error({
+				description: error.message,
+			});
 		},
 	});
 
@@ -169,7 +183,10 @@ export function Transactions() {
 			]}
 			paginationEnabled
 			onReload={() => {}}
-			onExport={() => {}}
+			exporting={exportMutation.isPending}
+			onExport={() => {
+				exportMutation.mutate(filters);
+			}}
 			total={query.data?.total ?? 0}
 			loading={query.isLoading}
 		/>

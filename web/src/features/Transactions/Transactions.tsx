@@ -1,16 +1,26 @@
 import {createListCollection, Portal} from '@ark-ui/react';
 import {type TransactionType, TransactionTypeDefinition} from '@library/types';
 import {addDays, differenceInDays, format} from 'date-fns';
-import {AlertTriangleIcon, CornerDownLeftIcon, SettingsIcon} from 'lucide-react';
+import {AlertTriangleIcon, SettingsIcon} from 'lucide-react';
 import {useReducer} from 'react';
 import {Link} from 'react-router';
 import {DataTable} from '@/components/DataTable';
 import {Badge} from '@/components/ui/Badge';
 import {Menu} from '@/components/ui/Menu';
 import {Tooltip} from '@/components/ui/Tooltip';
+import {type BooksInput, useBooksQuery} from '@/hooks/useBooksQuery';
+import {
+	type ExportTransactionsInput,
+	useExportTransactionsMutation,
+} from '@/hooks/useExportTransactionsMutation';
+import {type StudentsInput, useStudentsQuery} from '@/hooks/useStudentsQuery';
 import {useTransactionsQuery} from '@/hooks/useTransactionsQuery';
 import type {DateRange} from '@/types/index';
+import {client} from '@/utils/client';
 import {getTransactionTypeLabel, getTransactionTypeOptions} from '@/utils/common';
+import {toaster} from '@/utils/toaster';
+import {BookCopyProvider} from './BookCopyContext';
+import {ReturnBookCopy} from './ReturnBookCopy';
 
 interface State {
 	page: number;
@@ -18,9 +28,9 @@ interface State {
 	search?: string | null;
 	ticket?: string | null;
 	type?: TransactionType[] | null;
-	bookId?: string[] | null;
+	book?: string[] | null;
 	isbn?: string | null;
-	studentId?: string[] | null;
+	student?: string[] | null;
 	dateTimeCreated?: DateRange | null;
 }
 
@@ -33,9 +43,7 @@ export function Transactions() {
 		},
 	);
 
-	const query = useTransactionsQuery({
-		page: state.page,
-		pageSize: state.pageSize,
+	const filters: ExportTransactionsInput = {
 		...(state.ticket && {
 			ticket: {
 				contains: state.ticket,
@@ -46,9 +54,9 @@ export function Transactions() {
 				in: state.type,
 			},
 		}),
-		...(state.bookId?.length && {
+		...(state.book?.length && {
 			bookId: {
-				in: state.bookId,
+				in: state.book,
 			},
 		}),
 		...(state.isbn && {
@@ -56,9 +64,9 @@ export function Transactions() {
 				contains: state.isbn,
 			},
 		}),
-		...(state.studentId?.length && {
+		...(state.student?.length && {
 			studentId: {
-				in: state.studentId,
+				in: state.student,
 			},
 		}),
 		...((state.dateTimeCreated?.from || state.dateTimeCreated?.to) && {
@@ -67,6 +75,20 @@ export function Transactions() {
 				lte: state.dateTimeCreated?.to,
 			},
 		}),
+	};
+
+	const query = useTransactionsQuery({
+		page: state.page,
+		pageSize: state.pageSize,
+		...filters,
+	});
+
+	const exportMutation = useExportTransactionsMutation({
+		onError: (error) => {
+			toaster.error({
+				description: error.message,
+			});
+		},
 	});
 
 	return (
@@ -135,9 +157,20 @@ export function Transactions() {
 						filter: {
 							type: 'ASYNC_COMBOBOX',
 							multiple: true,
-							options: async () => {
-								return [];
+							options: async (search) => {
+								const input: BooksInput = {title: {contains: search}};
+								const data = await client.query({
+									queryFn: useBooksQuery.getQueryFn(input),
+									queryKey: useBooksQuery.getQueryKey(input),
+								});
+
+								return data.rows.map((book) => ({
+									value: book.id.toString(),
+									label: book.title,
+								}));
 							},
+							value: state.book ?? [],
+							onChange: (book) => setState({book}),
 							placeholder: 'Search book',
 						},
 						hideable: true,
@@ -169,9 +202,20 @@ export function Transactions() {
 						),
 						filter: {
 							type: 'ASYNC_COMBOBOX',
-							options: async () => {
-								return [];
+							options: async (search) => {
+								const input: StudentsInput = {name: {contains: search}};
+								const data = await client.query({
+									queryFn: useStudentsQuery.getQueryFn(input),
+									queryKey: useStudentsQuery.getQueryKey(input),
+								});
+
+								return data.rows.map((student) => ({
+									value: student.id.toString(),
+									label: student.name,
+								}));
 							},
+							value: state.student ?? [],
+							onChange: (student) => setState({student}),
 							multiple: true,
 							placeholder: 'Search student',
 						},
@@ -250,10 +294,9 @@ export function Transactions() {
 									<Portal>
 										<Menu.Positioner>
 											<Menu.Content>
-												<Menu.Item value="return">
-													<CornerDownLeftIcon />
-													Return
-												</Menu.Item>
+												<BookCopyProvider value={transaction.bookCopy}>
+													<ReturnBookCopy />
+												</BookCopyProvider>
 											</Menu.Content>
 										</Menu.Positioner>
 									</Portal>
@@ -273,7 +316,10 @@ export function Transactions() {
 				onReload={() => {
 					query.refetch();
 				}}
-				onExport={() => {}}
+				exporting={exportMutation.isPending}
+				onExport={() => {
+					exportMutation.mutate(filters);
+				}}
 			/>
 		</>
 	);

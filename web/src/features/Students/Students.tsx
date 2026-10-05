@@ -13,10 +13,15 @@ import {DataTable} from '@/components/DataTable';
 import {IconButton} from '@/components/ui/IconButton';
 import {Menu} from '@/components/ui/Menu';
 import {Tooltip} from '@/components/ui/Tooltip';
+import {
+	type ExportStudentsInput,
+	useExportStudentsMutation,
+} from '@/hooks/useExportStudentsMutation';
 import {type StudentsInput, useStudentsQuery} from '@/hooks/useStudentsQuery';
 import type {DateRange} from '@/types/index';
 import {client} from '@/utils/client';
 import {getStudentCourseOptions, getStudentYearAndSectionOptions} from '@/utils/common';
+import {toaster} from '@/utils/toaster';
 import {AddStudent} from './AddStudent';
 import {DeleteStudent} from './DeleteStudent';
 import {EditStudent} from './EditStudent';
@@ -47,9 +52,7 @@ export function Students() {
 
 	const id = uniq([...(state.name ?? []), ...(state.externalId ?? [])]);
 
-	const query = useStudentsQuery({
-		page: state.page,
-		pageSize: state.pageSize,
+	const filters: ExportStudentsInput = {
 		...(id.length && {
 			id: {
 				in: id,
@@ -89,6 +92,20 @@ export function Students() {
 		...(state.sortOrder && {
 			sortOrder: state.sortOrder,
 		}),
+	};
+
+	const query = useStudentsQuery({
+		page: state.page,
+		pageSize: state.pageSize,
+		...filters,
+	});
+
+	const exportMutation = useExportStudentsMutation({
+		onError: (error) => {
+			toaster.error({
+				description: error.message,
+			});
+		},
 	});
 
 	return (
@@ -288,7 +305,10 @@ export function Students() {
 				}
 				sortOrder={state.sortOrder ?? null}
 				onSortOrderChange={(sortOrder) => setState({sortOrder})}
-				onExport={() => {}}
+				exporting={exportMutation.isPending}
+				onExport={() => {
+					exportMutation.mutate(filters);
+				}}
 				cta={
 					<AddStudent
 						trigger={({setOpen}) => (

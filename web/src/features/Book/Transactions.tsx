@@ -1,20 +1,91 @@
 import {createListCollection, Portal} from '@ark-ui/react';
+import {type TransactionType, TransactionTypeDefinition} from '@library/types';
 import {addDays, differenceInDays, format} from 'date-fns';
-import {AlertTriangleIcon, CornerDownLeftIcon, SettingsIcon} from 'lucide-react';
+import {AlertTriangleIcon, SettingsIcon} from 'lucide-react';
+import {useReducer} from 'react';
 import {Link} from 'react-router';
 import {DataTable} from '@/components/DataTable';
 import {Badge} from '@/components/ui/Badge';
 import {Menu} from '@/components/ui/Menu';
 import {Tooltip} from '@/components/ui/Tooltip';
+import {
+	type ExportTransactionsInput,
+	useExportTransactionsMutation,
+} from '@/hooks/useExportTransactionsMutation';
+import {type StudentsInput, useStudentsQuery} from '@/hooks/useStudentsQuery';
 import {useTransactionsQuery} from '@/hooks/useTransactionsQuery';
+import type {DateRange} from '@/types/index';
+import {client} from '@/utils/client';
 import {getTransactionTypeLabel, getTransactionTypeOptions} from '@/utils/common';
+import {toaster} from '@/utils/toaster';
 import {useBookContext} from './BookContext';
+import {CopyProvider} from './CopyContext';
+import {ReturnCopy} from './ReturnCopy';
+
+interface State {
+	page: number;
+	pageSize: number;
+	search?: string | null;
+	ticket?: string | null;
+	type?: TransactionType[] | null;
+	isbn?: string | null;
+	student?: string[] | null;
+	dateTimeCreated?: DateRange | null;
+}
 
 export function Transactions() {
 	const book = useBookContext();
-	const query = useTransactionsQuery({
+	const [state, setState] = useReducer(
+		(prev: State, next: Partial<State>) => ({...prev, ...next}),
+		{
+			page: 1,
+			pageSize: 10,
+		},
+	);
+
+	const filters: ExportTransactionsInput = {
 		bookId: {
 			eq: book.id.toString(),
+		},
+		...(state.ticket && {
+			ticket: {
+				contains: state.ticket,
+			},
+		}),
+		...(state.type?.length && {
+			type: {
+				in: state.type,
+			},
+		}),
+		...(state.isbn && {
+			isbn: {
+				contains: state.isbn,
+			},
+		}),
+		...(state.student?.length && {
+			studentId: {
+				in: state.student,
+			},
+		}),
+		...((state.dateTimeCreated?.from || state.dateTimeCreated?.to) && {
+			dateTimeCreated: {
+				gte: state.dateTimeCreated?.from,
+				lte: state.dateTimeCreated?.to,
+			},
+		}),
+	};
+
+	const query = useTransactionsQuery({
+		page: state.page,
+		pageSize: state.pageSize,
+		...filters,
+	});
+
+	const exportMutation = useExportTransactionsMutation({
+		onError: (error) => {
+			toaster.error({
+				description: error.message,
+			});
 		},
 	});
 
@@ -42,12 +113,23 @@ export function Transactions() {
 						options: getTransactionTypeOptions(),
 						multiple: true,
 						placeholder: 'Select type',
+						value: state.type ?? [],
+						onChange: (value) =>
+							setState({
+								type: value.map((v) => TransactionTypeDefinition.safeParse(v).data).filter(Boolean),
+							}),
 					},
 				},
 				{
 					id: 'ticket',
 					heading: 'Ticket',
 					cell: (transaction) => transaction.ticket,
+					filter: {
+						type: 'TEXT',
+						placeholder: 'Enter ticket',
+						value: state.ticket ?? '',
+						onChange: (value) => setState({ticket: value}),
+					},
 				},
 				{
 					id: 'isbn',
@@ -58,6 +140,8 @@ export function Transactions() {
 					filter: {
 						type: 'TEXT',
 						placeholder: 'Enter ISBN',
+						value: state.isbn ?? '',
+						onChange: (value) => setState({isbn: value}),
 					},
 					hideable: true,
 					orderable: true,
@@ -77,9 +161,20 @@ export function Transactions() {
 					},
 					filter: {
 						type: 'ASYNC_COMBOBOX',
-						options: async () => {
-							return [];
+						options: async (search) => {
+							const input: StudentsInput = {name: {contains: search}};
+							const data = await client.query({
+								queryFn: useStudentsQuery.getQueryFn(input),
+								queryKey: useStudentsQuery.getQueryKey(input),
+							});
+
+							return data.rows.map((student) => ({
+								value: student.id.toString(),
+								label: student.name,
+							}));
 						},
+						value: state.student ?? [],
+						onChange: (student) => setState({student}),
 						multiple: true,
 						placeholder: 'Search student',
 					},
@@ -99,7 +194,7 @@ export function Transactions() {
 				{
 					id: 'dateTimeCreated',
 					heading: 'Transaction date',
-					cell: (transaction) => {
+					cell(transaction) {
 						const overdue =
 							transaction.type === 'BORROW' &&
 							transaction.status === 'PENDING' &&
@@ -136,6 +231,8 @@ export function Transactions() {
 					filter: {
 						type: 'DATE_RANGE',
 						placeholder: 'Select date',
+						value: state.dateTimeCreated ?? null,
+						onChange: (dateTimeCreated) => setState({dateTimeCreated}),
 					},
 					sortable: true,
 					hideable: true,
@@ -156,10 +253,9 @@ export function Transactions() {
 								<Portal>
 									<Menu.Positioner>
 										<Menu.Content>
-											<Menu.Item value="return">
-												<CornerDownLeftIcon />
-												Return
-											</Menu.Item>
+											<CopyProvider value={transaction.bookCopy}>
+												<ReturnCopy />
+											</CopyProvider>
 										</Menu.Content>
 									</Menu.Positioner>
 								</Portal>
@@ -170,10 +266,19 @@ export function Transactions() {
 				},
 			]}
 			paginationEnabled
-			onReload={() => {}}
-			onExport={() => {}}
+			page={state.page}
+			pageSize={state.pageSize}
+			onPageChange={(page) => setState({page})}
+			onPageSizeChange={(pageSize) => setState({pageSize})}
 			total={query.data?.total ?? 0}
 			loading={query.isLoading}
+			onReload={() => {
+				query.refetch();
+			}}
+			exporting={exportMutation.isPending}
+			onExport={() => {
+				exportMutation.mutate(filters);
+			}}
 		/>
 	);
 }

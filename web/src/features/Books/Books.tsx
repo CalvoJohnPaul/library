@@ -17,9 +17,11 @@ import {IconButton} from '@/components/ui/IconButton';
 import {Menu} from '@/components/ui/Menu';
 import {Tooltip} from '@/components/ui/Tooltip';
 import {type BooksInput, useBooksQuery} from '@/hooks/useBooksQuery';
+import {type ExportBooksInput, useExportBooksMutation} from '@/hooks/useExportBooksMutation';
 import type {DateRange} from '@/types/index';
 import {client} from '@/utils/client';
 import {getBookGenreLabel, getBookGenreOptions, getBookYearPublishedOptions} from '@/utils/common';
+import {toaster} from '@/utils/toaster';
 import {AddBook} from './AddBook';
 import {BookProvider} from './BookContext';
 import {DeleteBook} from './DeleteBook';
@@ -52,9 +54,7 @@ export function Books() {
 	);
 
 	const id = uniq([...(state.title ?? []) /* merge ids here */]);
-	const query = useBooksQuery({
-		page: state.page,
-		pageSize: state.pageSize,
+	const filters: ExportBooksInput = {
 		...(id.length && {
 			id: {
 				in: id,
@@ -98,6 +98,20 @@ export function Books() {
 		...(state.sortOrder && {
 			sortOrder: state.sortOrder,
 		}),
+	};
+
+	const query = useBooksQuery({
+		page: state.page,
+		pageSize: state.pageSize,
+		...filters,
+	});
+
+	const exportMutation = useExportBooksMutation({
+		onError: (error) => {
+			toaster.error({
+				description: error.message,
+			});
+		},
 	});
 
 	return (
@@ -320,8 +334,10 @@ export function Books() {
 				onReload={() => {
 					query.refetch();
 				}}
-				exporting={false}
-				onExport={() => {}}
+				exporting={exportMutation.isPending}
+				onExport={() => {
+					exportMutation.mutate(filters);
+				}}
 				paginationEnabled
 				total={query.data?.total ?? 0}
 				page={state.page}

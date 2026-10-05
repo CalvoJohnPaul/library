@@ -510,10 +510,10 @@ const plugin: FastifyPluginAsyncZod = async (app) => {
 					genre__neq: QueryString__EnumDefinition(BookGenreDefinition),
 					genre__in: QueryString__EnumArrayDefinition(BookGenreDefinition),
 					genre__nin: QueryString__EnumArrayDefinition(BookGenreDefinition),
-					yearPublished__gt: QueryString__NumberDefinition,
-					yearPublished__gte: QueryString__NumberDefinition,
-					yearPublished__lt: QueryString__NumberDefinition,
-					yearPublished__lte: QueryString__NumberDefinition,
+					yearPublished__eq: QueryString__NumberDefinition,
+					yearPublished__neq: QueryString__NumberDefinition,
+					yearPublished__in: QueryString__NumberArrayDefinition,
+					yearPublished__nin: QueryString__NumberArrayDefinition,
 					dateTimeCreated__gt: QueryString__DateDefinition,
 					dateTimeCreated__gte: QueryString__DateDefinition,
 					dateTimeCreated__lt: QueryString__DateDefinition,
@@ -646,6 +646,20 @@ const plugin: FastifyPluginAsyncZod = async (app) => {
 					...(req.query.dateTimeUpdated__gte != null && {gte: req.query.dateTimeUpdated__gte}),
 					...(req.query.dateTimeUpdated__lt != null && {lt: req.query.dateTimeUpdated__lt}),
 					...(req.query.dateTimeUpdated__lte != null && {lte: req.query.dateTimeUpdated__lte}),
+				};
+			}
+
+			if (
+				req.query.yearPublished__eq != null ||
+				req.query.yearPublished__neq != null ||
+				req.query.yearPublished__in != null ||
+				req.query.yearPublished__nin != null
+			) {
+				where.yearPublished = {
+					...(req.query.yearPublished__eq != null && {equals: req.query.yearPublished__eq}),
+					...(req.query.yearPublished__neq != null && {not: req.query.yearPublished__neq}),
+					...(req.query.yearPublished__in != null && {in: req.query.yearPublished__in}),
+					...(req.query.yearPublished__nin != null && {notIn: req.query.yearPublished__nin}),
 				};
 			}
 

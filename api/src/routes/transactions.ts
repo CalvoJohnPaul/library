@@ -480,6 +480,11 @@ const plugin: FastifyPluginAsyncZod = async (app) => {
 					bookId__neq: QueryString__NumberDefinition,
 					bookId__in: QueryString__NumberArrayDefinition,
 					bookId__nin: QueryString__NumberArrayDefinition,
+					isbn__eq: QueryString__StringDefinition,
+					isbn__neq: QueryString__StringDefinition,
+					isbn__in: QueryString__StringArrayDefinition,
+					isbn__nin: QueryString__StringArrayDefinition,
+					isbn__contains: QueryString__StringDefinition,
 					dateTimeCreated__gt: QueryString__DateDefinition,
 					dateTimeCreated__gte: QueryString__DateDefinition,
 					dateTimeCreated__lt: QueryString__DateDefinition,
@@ -593,6 +598,27 @@ const plugin: FastifyPluginAsyncZod = async (app) => {
 					...(req.query.bookCopyId__in != null && {in: req.query.bookCopyId__in}),
 					...(req.query.bookCopyId__nin != null && {notIn: req.query.bookCopyId__nin}),
 				};
+			}
+
+			if (
+				req.query.isbn__eq != null ||
+				req.query.isbn__neq != null ||
+				req.query.isbn__in != null ||
+				req.query.isbn__nin != null ||
+				req.query.isbn__contains != null
+			) {
+				where.bookCopy = assign(where.bookCopy || {}, {
+					isbn: {
+						...(req.query.isbn__eq != null && {equals: req.query.isbn__eq}),
+						...(req.query.isbn__neq != null && {not: req.query.isbn__neq}),
+						...(req.query.isbn__in != null && {in: req.query.isbn__in}),
+						...(req.query.isbn__nin != null && {notIn: req.query.isbn__nin}),
+						...(req.query.isbn__contains != null && {
+							contains: req.query.isbn__contains,
+							mode: 'insensitive',
+						}),
+					},
+				});
 			}
 
 			if (

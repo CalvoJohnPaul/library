@@ -5,15 +5,34 @@ import {DataTable} from '@/components/DataTable';
 import {Badge} from '@/components/ui/Badge';
 import {Menu} from '@/components/ui/Menu';
 import {useBookCopiesQuery} from '@/hooks/useBookCopiesQuery';
+import {
+	type ExportBookCopiesInput,
+	useExportBookCopiesMutation,
+} from '@/hooks/useExportBookCopiesMutation';
 import {getBookCopyStatusLabel, getBookCopyStatusOptions} from '@/utils/common';
+import {toaster} from '@/utils/toaster';
 import {useBookContext} from './BookContext';
 import {CopyProvider} from './CopyContext';
 import {DeleteCopy} from './DeleteCopy';
 import {EditCopy} from './EditCopy';
+import {ReturnCopy} from './ReturnCopy';
 
 export function Copies() {
 	const book = useBookContext();
-	const query = useBookCopiesQuery({bookId: {eq: book.id.toString()}});
+	const filters: ExportBookCopiesInput = {
+		bookId: {
+			eq: book.id.toString(),
+		},
+	};
+	const query = useBookCopiesQuery(filters);
+
+	const exportMutation = useExportBookCopiesMutation({
+		onError: (error) => {
+			toaster.error({
+				description: error.message,
+			});
+		},
+	});
 
 	return (
 		<DataTable
@@ -92,12 +111,7 @@ export function Copies() {
 														Borrow
 													</Menu.Item>
 												)}
-												{copy.status === 'BORROWED' && (
-													<Menu.Item value="return">
-														<RepeatIcon />
-														Return
-													</Menu.Item>
-												)}
+												{copy.status === 'BORROWED' && <ReturnCopy />}
 												<Menu.Separator />
 												<DeleteCopy />
 											</CopyProvider>
@@ -114,7 +128,10 @@ export function Copies() {
 			total={query.data?.total ?? 0}
 			loading={query.isLoading}
 			onReload={() => {}}
-			onExport={() => {}}
+			exporting={exportMutation.isPending}
+			onExport={() => {
+				exportMutation.mutate(filters);
+			}}
 		/>
 	);
 }
