@@ -1,22 +1,14 @@
 import {ArrowLeftIcon} from 'lucide-react';
-import {parseAsStringLiteral, useQueryState} from 'nuqs';
 import {Link, useParams} from 'react-router';
-import * as z from 'zod';
 import {Tabs} from '@/components/ui/Tabs';
 import {useMemberQuery} from '@/hooks/useMemberQuery';
 import {MemberProvider} from './MemberContext';
 import {Settings} from './Settings';
 import {Transactions} from './Transactions';
 
-const TabDefinition = z.enum(['transactions', 'settings']);
-
 export function Member() {
 	const {id} = useParams<{id: string}>();
 	const query = useMemberQuery(id ? parseInt(id, 10) : null);
-	const [tab, setTab] = useQueryState(
-		'tab',
-		parseAsStringLiteral(TabDefinition.options).withDefault('transactions'),
-	);
 
 	if (!id) return null;
 	if (query.isLoading) return null;
@@ -40,14 +32,7 @@ export function Member() {
 					</div>
 				</div>
 
-				<Tabs.Root
-					defaultValue={tab}
-					onValueChange={(details) => {
-						setTab(TabDefinition.catch('transactions').parse(details.value));
-					}}
-					lazyMount
-					unmountOnExit
-				>
+				<Tabs.Root defaultValue="transactions" lazyMount unmountOnExit>
 					<Tabs.List className="mb-8 w-100">
 						<Tabs.Trigger value="transactions">Transactions</Tabs.Trigger>
 						<Tabs.Trigger value="settings">Settings</Tabs.Trigger>
