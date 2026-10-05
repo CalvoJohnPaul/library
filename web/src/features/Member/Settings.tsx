@@ -28,6 +28,7 @@ export function Settings() {
 		resolver: zodResolver(UpdateMemberDataInputDefinition),
 		defaultValues: member,
 	});
+	const course = form.watch('course');
 
 	const mutation = useUpdateMemberMutation({
 		onSuccess: (next) => {
@@ -95,7 +96,13 @@ export function Settings() {
 									options={getMemberCourseOptions()}
 									placeholder="Select course"
 									value={field.value ?? ''}
-									onChange={(value) => field.onChange(value || null)}
+									onChange={(value) => {
+										field.onChange(value || null);
+
+										if (!value) {
+											form.setValue('yearAndSection', null, {shouldValidate: true});
+										}
+									}}
 								/>
 								<Field.ErrorText>{fieldState.error?.message}</Field.ErrorText>
 							</Field.Root>
@@ -111,6 +118,7 @@ export function Settings() {
 									options={getMemberYearAndSectionOptions()}
 									placeholder="Select year and section"
 									value={field.value ?? ''}
+									disabled={!course}
 									onChange={(value) => field.onChange(value || null)}
 								/>
 								<Field.ErrorText>{fieldState.error?.message}</Field.ErrorText>

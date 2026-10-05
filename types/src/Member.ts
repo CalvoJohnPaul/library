@@ -5,18 +5,24 @@ export const MemberDefinition = z.object({
 	id: z.number(),
 	externalId: z.string(),
 	name: z.string(),
-	course: z.string(),
-	yearAndSection: z.string(),
+	course: z.string().nullable(),
+	yearAndSection: z.string().nullable(),
 	dateTimeCreated: DateDefinition,
 	dateTimeUpdated: DateDefinition,
 	dateTimeLastBorrowedBook: DateDefinition.nullable(),
 });
 
 export const CreateMemberInputDefinition = z.object({
-	externalId: z.string({error: 'External ID is required'}),
-	name: z.string({error: 'Name is required'}),
-	course: z.string({error: 'Course is required'}),
-	yearAndSection: z.string({error: 'Year and section is required'}),
+	externalId: z
+		.string({error: 'External ID is required'})
+		.trim()
+		.min(1, {error: 'External ID is required'}),
+	name: z
+		.string({error: 'Name is required'})
+		.trim()
+		.min(1, {error: 'Name is required'}),
+	course: z.string().optional().nullable(),
+	yearAndSection: z.string().optional().nullable(),
 });
 
 export const UpdateMemberDataInputDefinition = z.object({

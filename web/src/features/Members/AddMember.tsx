@@ -4,7 +4,7 @@ import {CreateMemberInputDefinition} from '@library/types';
 import {isFunction} from 'es-toolkit';
 import {PlusIcon} from 'lucide-react';
 import type {ReactNode} from 'react';
-import {Controller, useForm} from 'react-hook-form';
+import {Controller, useForm, useWatch} from 'react-hook-form';
 import {SelectField} from '@/components/forms/SelectField';
 import {SpinnerIcon} from '@/components/icons/SpinnerIcon';
 import {Button} from '@/components/ui/Button';
@@ -26,6 +26,18 @@ export function AddMember({trigger}: AddMemberProps) {
 	const disclosure = useDisclosure();
 	const form = useForm({
 		resolver: zodResolver(CreateMemberInputDefinition),
+		defaultValues: {
+			externalId: '',
+			name: '',
+			course: null,
+			yearAndSection: null,
+		},
+	});
+
+	const course = useWatch({
+		control: form.control,
+		name: 'course',
+		defaultValue: null,
 	});
 
 	const mutation = useCreateMemberMutation({
@@ -73,7 +85,10 @@ export function AddMember({trigger}: AddMemberProps) {
 					<Dialog.Content asChild>
 						<form
 							onSubmit={form.handleSubmit((data) => {
-								mutation.mutate(data);
+								const copy = {...data};
+								if (!copy.course) delete copy.course;
+								if (!copy.yearAndSection) delete copy.yearAndSection;
+								mutation.mutate(copy);
 							})}
 							noValidate
 						>
@@ -113,7 +128,11 @@ export function AddMember({trigger}: AddMemberProps) {
 												options={getMemberCourseOptions()}
 												value={field.value ?? ''}
 												onChange={(value) => {
-													field.onChange(value);
+													field.onChange(value || null);
+
+													if (!value) {
+														form.setValue('yearAndSection', null, {shouldValidate: true});
+													}
 												}}
 											/>
 											<Field.ErrorText>{fieldState.error?.message}</Field.ErrorText>
@@ -130,8 +149,9 @@ export function AddMember({trigger}: AddMemberProps) {
 												placeholder="Select year and section"
 												options={getMemberYearAndSectionOptions()}
 												value={field.value ?? ''}
+												disabled={!course}
 												onChange={(value) => {
-													field.onChange(value);
+													field.onChange(value || null);
 												}}
 											/>
 											<Field.ErrorText>{fieldState.error?.message}</Field.ErrorText>

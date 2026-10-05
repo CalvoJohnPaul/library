@@ -1,10 +1,10 @@
 import {
 	CreateMemberInputDefinition,
 	FailedHttpResponseDefinition,
-	PaginatedDefinition,
-	SortOrderDefinition,
 	MemberDefinition,
 	MemberSortByInputDefinition,
+	PaginatedDefinition,
+	SortOrderDefinition,
 	SuccessfulHttpResponseDefinition,
 	UpdateMemberDataInputDefinition,
 	VoidSuccessfulHttpResponseDefinition,
@@ -499,7 +499,22 @@ const plugin: FastifyPluginAsyncZod = async (app) => {
 			},
 		},
 		async (req, reply) => {
-			await app.prisma.member.deleteMany({where: {id: req.params.id}});
+			await app.prisma.$transaction([
+				app.prisma.bookCopy.updateMany({
+					where: {
+						status: 'BORROWED',
+						transactions: {
+							some: {
+								type: 'BORROW',
+								status: 'PENDING',
+								memberId: req.params.id,
+							},
+						},
+					},
+					data: {status: 'AVAILABLE'},
+				}),
+				app.prisma.member.deleteMany({where: {id: req.params.id}}),
+			]);
 
 			return reply.send({ok: true});
 		},

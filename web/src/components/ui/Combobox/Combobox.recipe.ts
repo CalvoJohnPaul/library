@@ -4,10 +4,11 @@ import {anatomyToRecipeSlots} from '@/utils/anatomyToRecipeSlots';
 
 export const comboboxRecipe = tv({
 	slots: anatomyToRecipeSlots(comboboxAnatomy, {
-		control: ['flex', 'h-11', 'grow', 'bg-white', 'ui-invalid:border-red-400'],
-		input: 'h-11 grow rounded-l-md border border-gray-200 border-r-0 bg-white pl-4 outline-none',
+		control: 'flex h-11 grow ui-invalid:border-red-400 bg-white',
+		input:
+			'h-11 grow rounded-l-md border border-gray-200 border-r-0 bg-white pl-4 outline-none disabled:opacity-65',
 		trigger:
-			'flex icon:size-5 size-11 shrink-0 ui-closed:icon:rotate-0 ui-open:icon:rotate-180 items-center justify-center rounded-r-md border border-gray-200 border-l-0 bg-white icon:text-gray-600 icon:transition-transform icon:duration-300',
+			'flex icon:size-5 size-11 shrink-0 ui-closed:icon:rotate-0 ui-open:icon:rotate-180 items-center justify-center rounded-r-md border border-gray-200 border-l-0 bg-white icon:text-gray-600 icon:transition-transform icon:duration-300 disabled:opacity-65',
 		clearTrigger:
 			'ml-2 flex icon:size-5 size-11 shrink-0 items-center justify-center rounded-md border border-gray-200 icon:text-gray-600',
 		positioner: 'z-dropdown',

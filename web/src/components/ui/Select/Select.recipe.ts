@@ -5,30 +5,13 @@ import {anatomyToRecipeSlots} from '@/utils/anatomyToRecipeSlots';
 export const selectRecipe = tv({
 	slots: anatomyToRecipeSlots(selectAnatomy, {
 		control: 'flex gap-2',
-		trigger: [
-			'h-11',
-			'px-4',
-			'grow',
-			'flex',
-			'items-center',
-			'rounded-md',
-			'border',
-			'border-gray-200',
-			'bg-white',
-			'ui-invalid:border-red-400',
-			'ui-open:ui-invalid:border-red-400',
-		],
+		trigger:
+			'flex h-11 grow items-center rounded-md border border-gray-200 ui-invalid:border-red-400 ui-open:ui-invalid:border-red-400 bg-white px-4 disabled:opacity-65',
 		clearTrigger:
 			'flex icon:size-5 size-11 items-center justify-center rounded-md border border-gray-200 bg-white icon:text-gray-600',
 		valueText: 'grow text-left',
-		indicator: [
-			'size-5',
-			'text-gray-600',
-			'transition-transform',
-			'duration-300',
-			'ui-open:rotate-180',
-			'ui-closed:rotate-0',
-		],
+		indicator:
+			'size-5 ui-closed:rotate-0 ui-open:rotate-180 text-gray-600 transition-transform duration-300',
 		positioner: 'z-dropdown',
 		content: [
 			'z-dropdown',

@@ -9,6 +9,7 @@ import {
 	ReturnBookCopyDataInputDefinition,
 	SortOrderDefinition,
 	SuccessfulHttpResponseDefinition,
+	TransactionDefinition,
 	UpdateBookCopyDataInputDefinition,
 	VoidSuccessfulHttpResponseDefinition,
 } from '@library/types';
@@ -499,7 +500,12 @@ const plugin: FastifyPluginAsyncZod = async (app) => {
 				}),
 				body: BorrowBookCopyDataInputDefinition,
 				response: {
-					200: SuccessfulHttpResponseDefinition(BookCopyDefinition),
+					200: SuccessfulHttpResponseDefinition(
+						z.object({
+							bookCopy: BookCopyDefinition,
+							transaction: TransactionDefinition,
+						}),
+					),
 					400: FailedHttpResponseDefinition,
 					401: FailedHttpResponseDefinition,
 					403: FailedHttpResponseDefinition,
@@ -532,13 +538,13 @@ const plugin: FastifyPluginAsyncZod = async (app) => {
 				return reply.badRequest('Member not found');
 			}
 
-			const bookCopy = await app.prisma.$transaction(async (tx) => {
+			const [bookCopy, transaction] = await app.prisma.$transaction(async (tx) => {
 				const {count} = await tx.bookCopy.updateMany({
 					where: {id: req.params.id, status: 'AVAILABLE'},
 					data: {status: 'BORROWED'},
 				});
 
-				if (count === 0) return null;
+				if (count === 0) return [null, null] as const;
 
 				const date = new Date();
 				const ticketSegment0 = req.account.id.toString().padStart(4, '0');
@@ -549,7 +555,7 @@ const plugin: FastifyPluginAsyncZod = async (app) => {
 					date.getFullYear();
 				const ticket = `${ticketSegment0}-${ticketSegment1}-${ticketSegment2}`;
 
-				await tx.transaction.create({
+				const transaction = await tx.transaction.create({
 					data: {
 						type: 'BORROW',
 						status: 'PENDING',
@@ -560,6 +566,40 @@ const plugin: FastifyPluginAsyncZod = async (app) => {
 						dateTimeCreated: date,
 						dateTimeUpdated: date,
 					},
+					select: {
+						id: true,
+						type: true,
+						status: true,
+						ticket: true,
+						remarks: true,
+						member: {
+							select: {
+								id: true,
+								externalId: true,
+								name: true,
+								course: true,
+								yearAndSection: true,
+							},
+						},
+						bookCopy: {
+							select: {
+								id: true,
+								isbn: true,
+								status: true,
+								book: {
+									select: {
+										id: true,
+										title: true,
+										genre: true,
+										author: true,
+										yearPublished: true,
+									},
+								},
+							},
+						},
+						dateTimeCreated: true,
+						dateTimeUpdated: true,
+					},
 				});
 
 				await tx.member.update({
@@ -567,7 +607,7 @@ const plugin: FastifyPluginAsyncZod = async (app) => {
 					data: {dateTimeLastBorrowedBook: date},
 				});
 
-				return tx.bookCopy.findUnique({
+				const bookCopy = await tx.bookCopy.findUnique({
 					where: {id: req.params.id},
 					select: {
 						id: true,
@@ -586,27 +626,59 @@ const plugin: FastifyPluginAsyncZod = async (app) => {
 						},
 					},
 				});
+
+				return [bookCopy, transaction] as const;
 			});
 
-			if (!bookCopy) {
+			if (!bookCopy || !transaction) {
 				return reply.conflict('Book copy is not available');
 			}
 
 			return reply.send({
 				ok: true,
 				data: {
-					id: bookCopy.id,
-					isbn: bookCopy.isbn,
-					book: {
-						id: bookCopy.book.id,
-						title: bookCopy.book.title,
-						genre: bookCopy.book.genre,
-						author: bookCopy.book.author,
-						yearPublished: bookCopy.book.yearPublished,
+					bookCopy: {
+						id: bookCopy.id,
+						isbn: bookCopy.isbn,
+						book: {
+							id: bookCopy.book.id,
+							title: bookCopy.book.title,
+							genre: bookCopy.book.genre,
+							author: bookCopy.book.author,
+							yearPublished: bookCopy.book.yearPublished,
+						},
+						status: bookCopy.status,
+						dateTimeCreated: bookCopy.dateTimeCreated,
+						dateTimeUpdated: bookCopy.dateTimeUpdated,
 					},
-					status: bookCopy.status,
-					dateTimeCreated: bookCopy.dateTimeCreated,
-					dateTimeUpdated: bookCopy.dateTimeUpdated,
+					transaction: {
+						id: transaction.id,
+						type: transaction.type,
+						status: transaction.status,
+						ticket: transaction.ticket,
+						remarks: transaction.remarks,
+						member: {
+							id: transaction.member.id,
+							externalId: transaction.member.externalId,
+							name: transaction.member.name,
+							course: transaction.member.course,
+							yearAndSection: transaction.member.yearAndSection,
+						},
+						bookCopy: {
+							id: transaction.bookCopy.id,
+							isbn: transaction.bookCopy.isbn,
+							book: {
+								id: transaction.bookCopy.book.id,
+								title: transaction.bookCopy.book.title,
+								genre: transaction.bookCopy.book.genre,
+								author: transaction.bookCopy.book.author,
+								yearPublished: transaction.bookCopy.book.yearPublished,
+							},
+							status: transaction.bookCopy.status,
+						},
+						dateTimeCreated: transaction.dateTimeCreated,
+						dateTimeUpdated: transaction.dateTimeUpdated,
+					},
 				},
 			});
 		},
@@ -624,7 +696,12 @@ const plugin: FastifyPluginAsyncZod = async (app) => {
 				}),
 				body: ReturnBookCopyDataInputDefinition,
 				response: {
-					200: SuccessfulHttpResponseDefinition(BookCopyDefinition),
+					200: SuccessfulHttpResponseDefinition(
+						z.object({
+							bookCopy: BookCopyDefinition,
+							transaction: TransactionDefinition,
+						}),
+					),
 					400: FailedHttpResponseDefinition,
 					401: FailedHttpResponseDefinition,
 					403: FailedHttpResponseDefinition,
@@ -668,15 +745,15 @@ const plugin: FastifyPluginAsyncZod = async (app) => {
 				return reply.conflict('Book copy is not borrowed');
 			}
 
-			const bookCopy = await app.prisma.$transaction(async (tx) => {
+			const [bookCopy, transaction] = await app.prisma.$transaction(async (tx) => {
 				const {count} = await tx.bookCopy.updateMany({
 					where: {id: req.params.id, status: 'BORROWED'},
 					data: {status: 'AVAILABLE'},
 				});
 
-				if (count === 0) return null;
+				if (count === 0) return [null, null] as const;
 
-				await tx.transaction.create({
+				const transaction = await tx.transaction.create({
 					data: {
 						type: 'RETURN',
 						status: 'COMPLETED',
@@ -685,6 +762,40 @@ const plugin: FastifyPluginAsyncZod = async (app) => {
 						bookCopyId: req.params.id,
 						memberId: borrow.memberId,
 					},
+					select: {
+						id: true,
+						type: true,
+						status: true,
+						ticket: true,
+						remarks: true,
+						member: {
+							select: {
+								id: true,
+								externalId: true,
+								name: true,
+								course: true,
+								yearAndSection: true,
+							},
+						},
+						bookCopy: {
+							select: {
+								id: true,
+								isbn: true,
+								status: true,
+								book: {
+									select: {
+										id: true,
+										title: true,
+										genre: true,
+										author: true,
+										yearPublished: true,
+									},
+								},
+							},
+						},
+						dateTimeCreated: true,
+						dateTimeUpdated: true,
+					},
 				});
 
 				await tx.transaction.update({
@@ -692,7 +803,7 @@ const plugin: FastifyPluginAsyncZod = async (app) => {
 					data: {status: 'COMPLETED'},
 				});
 
-				return tx.bookCopy.findUnique({
+				const bookCopy = await tx.bookCopy.findUnique({
 					where: {id: req.params.id},
 					select: {
 						id: true,
@@ -711,27 +822,59 @@ const plugin: FastifyPluginAsyncZod = async (app) => {
 						},
 					},
 				});
+
+				return [bookCopy, transaction] as const;
 			});
 
-			if (!bookCopy) {
+			if (!bookCopy || !transaction) {
 				return reply.conflict('Book copy is not borrowed');
 			}
 
 			return reply.send({
 				ok: true,
 				data: {
-					id: bookCopy.id,
-					isbn: bookCopy.isbn,
-					book: {
-						id: bookCopy.book.id,
-						title: bookCopy.book.title,
-						genre: bookCopy.book.genre,
-						author: bookCopy.book.author,
-						yearPublished: bookCopy.book.yearPublished,
+					bookCopy: {
+						id: bookCopy.id,
+						isbn: bookCopy.isbn,
+						book: {
+							id: bookCopy.book.id,
+							title: bookCopy.book.title,
+							genre: bookCopy.book.genre,
+							author: bookCopy.book.author,
+							yearPublished: bookCopy.book.yearPublished,
+						},
+						status: bookCopy.status,
+						dateTimeCreated: bookCopy.dateTimeCreated,
+						dateTimeUpdated: bookCopy.dateTimeUpdated,
 					},
-					status: bookCopy.status,
-					dateTimeCreated: bookCopy.dateTimeCreated,
-					dateTimeUpdated: bookCopy.dateTimeUpdated,
+					transaction: {
+						id: transaction.id,
+						type: transaction.type,
+						status: transaction.status,
+						ticket: transaction.ticket,
+						remarks: transaction.remarks,
+						member: {
+							id: transaction.member.id,
+							externalId: transaction.member.externalId,
+							name: transaction.member.name,
+							course: transaction.member.course,
+							yearAndSection: transaction.member.yearAndSection,
+						},
+						bookCopy: {
+							id: transaction.bookCopy.id,
+							isbn: transaction.bookCopy.isbn,
+							book: {
+								id: transaction.bookCopy.book.id,
+								title: transaction.bookCopy.book.title,
+								genre: transaction.bookCopy.book.genre,
+								author: transaction.bookCopy.book.author,
+								yearPublished: transaction.bookCopy.book.yearPublished,
+							},
+							status: transaction.bookCopy.status,
+						},
+						dateTimeCreated: transaction.dateTimeCreated,
+						dateTimeUpdated: transaction.dateTimeUpdated,
+					},
 				},
 			});
 		},

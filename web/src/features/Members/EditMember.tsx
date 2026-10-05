@@ -4,7 +4,7 @@ import {type Member, type Paginated, UpdateMemberDataInputDefinition} from '@lib
 import {isNil, omitBy} from 'es-toolkit';
 import {isEmpty} from 'es-toolkit/compat';
 import {PenSquareIcon} from 'lucide-react';
-import {Controller, useForm} from 'react-hook-form';
+import {Controller, useForm, useWatch} from 'react-hook-form';
 import {SelectField} from '@/components/forms/SelectField';
 import {SpinnerIcon} from '@/components/icons/SpinnerIcon';
 import {Button} from '@/components/ui/Button';
@@ -24,7 +24,18 @@ export function EditMember() {
 	const member = useMemberContext();
 	const form = useForm({
 		resolver: zodResolver(UpdateMemberDataInputDefinition),
-		defaultValues: member,
+		defaultValues: {
+			externalId: member.externalId,
+			name: member.name,
+			course: member.course,
+			yearAndSection: member.yearAndSection,
+		},
+	});
+
+	const course = useWatch({
+		control: form.control,
+		name: 'course',
+		defaultValue: null,
 	});
 
 	const disclosure = useDisclosure();
@@ -133,6 +144,10 @@ export function EditMember() {
 												value={field.value ?? ''}
 												onChange={(value) => {
 													field.onChange(value || null);
+
+													if (!value) {
+														form.setValue('yearAndSection', null, {shouldValidate: true});
+													}
 												}}
 											/>
 											<Field.ErrorText>{fieldState.error?.message}</Field.ErrorText>
@@ -149,6 +164,7 @@ export function EditMember() {
 												placeholder="Select year and section"
 												options={getMemberYearAndSectionOptions()}
 												value={field.value ?? ''}
+												disabled={!course}
 												onChange={(value) => {
 													field.onChange(value || null);
 												}}

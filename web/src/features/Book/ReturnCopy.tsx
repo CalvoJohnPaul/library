@@ -100,7 +100,7 @@ export function ReturnCopy() {
 							noValidate
 						>
 							<Dialog.Header>
-								<FeaturedIcon.Root>
+								<FeaturedIcon.Root accent="warning">
 									<FeaturedIcon.Icon>
 										<CornerDownLeftIcon />
 									</FeaturedIcon.Icon>
@@ -108,9 +108,7 @@ export function ReturnCopy() {
 								<div>
 									<Dialog.Title>Return copy</Dialog.Title>
 									<Dialog.Description>
-										Confirm the return of the copy of&nbsp;
-										<em className="italic">"{copy.book.title}"</em> with ISBN&nbsp;
-										<em className="italic">"{copy.isbn}"</em>.
+										You are about to return the copy. This action can not be undone.
 									</Dialog.Description>
 								</div>
 								<Dialog.CloseTrigger />
@@ -135,7 +133,7 @@ export function ReturnCopy() {
 										</Button>
 									)}
 								</Dialog.Context>
-								<Button type="submit" disabled={mutation.isPending}>
+								<Button type="submit" accent="warning" disabled={mutation.isPending}>
 									{mutation.isPending ? <SpinnerIcon className="size-5" /> : 'Return'}
 								</Button>
 							</Dialog.Footer>

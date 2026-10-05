@@ -23,6 +23,11 @@ export const buttonRecipe = tv({
 				'[--border:var(--color-gray-200)]',
 				'[--fg:var(--color-gray-700)]',
 			],
+			warning: [
+				'[--bg:var(--color-amber-600)]',
+				'[--border:var(--color-amber-500)]',
+				'[--fg:var(--color-amber-600)]',
+			],
 		},
 	},
 	defaultVariants: {

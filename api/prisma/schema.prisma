@@ -71,8 +71,8 @@ model Member {
   id                       Int           @id @default(autoincrement())
   externalId               String        @unique
   name                     String
-  course                   String
-  yearAndSection           String
+  course                   String?
+  yearAndSection           String?
   dateTimeLastBorrowedBook DateTime?
   dateTimeCreated          DateTime      @default(now())
   dateTimeUpdated          DateTime      @updatedAt

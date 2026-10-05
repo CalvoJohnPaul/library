@@ -1,16 +1,23 @@
 import {
 	type BookCopy,
 	BookCopyDefinition,
-	type BorrowBookCopyInput,
 	HttpResponseDefinition,
+	type BorrowBookCopyInput,
+	type Transaction,
+	TransactionDefinition,
 } from '@library/types';
 import {type UseMutationOptions, useMutation} from '@tanstack/react-query';
+import * as z from 'zod';
 import {API_BASE_URL} from '@/config/env';
 import {useCsrfQuery} from './useCsrfQuery';
 
 export function useBorrowBookCopyMutation(
 	options?: Pick<
-		UseMutationOptions<BookCopy, Error, BorrowBookCopyInput>,
+		UseMutationOptions<
+			{bookCopy: BookCopy; transaction: Transaction},
+			Error,
+			BorrowBookCopyInput
+		>,
 		| 'gcTime'
 		| 'onMutate'
 		| 'onSettled'
@@ -36,7 +43,9 @@ export function useBorrowBookCopyMutation(
 				},
 			});
 
-			const obj = HttpResponseDefinition(BookCopyDefinition).parse(await res.json());
+			const obj = HttpResponseDefinition(
+				z.object({bookCopy: BookCopyDefinition, transaction: TransactionDefinition}),
+			).parse(await res.json());
 
 			if (obj.ok) return obj.data;
 
