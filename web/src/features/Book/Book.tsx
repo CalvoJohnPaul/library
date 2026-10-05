@@ -1,5 +1,6 @@
 import {ArrowLeftIcon} from 'lucide-react';
 import {Link, useParams} from 'react-router';
+import {Button} from '@/components/ui/Button';
 import {Tabs} from '@/components/ui/Tabs';
 import {useBookQuery} from '@/hooks/useBookQuery';
 import {AddCopy} from './AddCopy';
@@ -14,7 +15,23 @@ export function Book() {
 
 	if (!id) return null;
 	if (query.isLoading) return null;
-	if (!query.data) return null /* TODO: Show 404 page */;
+	if (!query.data) {
+		return (
+			<div className="mx-auto max-w-md py-24 text-center">
+				<title>Book not found | read.</title>
+				<h1 className="mt-5 font-bold text-xl">Book not found</h1>
+				<p className="mt-1 text-gray-600 text-sm">
+					The book you are looking for no longer exists or has been removed.
+				</p>
+				<Button asChild variant="outline" accent="gray" className="mt-6">
+					<Link to="/books">
+						<ArrowLeftIcon />
+						Go to books
+					</Link>
+				</Button>
+			</div>
+		);
+	}
 
 	return (
 		<>
