@@ -57,9 +57,7 @@ export function GenreChart() {
 					}}
 				/>
 				<Legend
-					layout="vertical"
-					align="right"
-					verticalAlign="middle"
+					position="right"
 					wrapperStyle={{fontSize: '0.75rem'}}
 					iconType="circle"
 					iconSize={8}
