@@ -4,6 +4,7 @@ import {isNil, omitBy} from 'es-toolkit';
 import {isEmpty} from 'es-toolkit/compat';
 import {
 	BookOpenIcon,
+	ChartColumnBigIcon,
 	LockKeyholeIcon,
 	LogOutIcon,
 	RotateCcwClockIcon,
@@ -34,6 +35,11 @@ import {toaster} from '@/utils/toaster';
 export function Navbar() {
 	const query = useMeQuery();
 	const links = [
+		{
+			icon: <ChartColumnBigIcon />,
+			label: 'Dashboard',
+			href: '/',
+		},
 		{
 			icon: <BookOpenIcon />,
 			label: 'Books',

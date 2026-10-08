@@ -11,9 +11,9 @@ export function NotFound() {
 				The page you are looking for no longer exists or has been removed.
 			</p>
 			<Button asChild variant="outline" accent="gray" className="mt-6">
-				<Link to="/books">
+				<Link to="/">
 					<ArrowLeftIcon />
-					Go to books
+					Go to dashboard
 				</Link>
 			</Button>
 		</div>
