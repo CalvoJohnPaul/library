@@ -1,3 +1,0 @@
-- [ ] Implement dashboard page
-- [ ] Implement reserve book copy feature
-- [ ] Implement unreserve book copy feature
