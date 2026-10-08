@@ -1,13 +1,19 @@
+import {useStatsQuery} from '@/hooks/useStatsQuery';
 import {ActivityChart} from './ActivityChart';
 import {DashboardCard} from './DashboardCard';
+import {DashboardProvider} from './DashboardContext';
 import {GenreChart} from './GenreChart';
-import {activity, genres, stats, topBooks} from './mockData';
 import {RankingChart} from './RankingChart';
 import {StatCards} from './StatCards';
 
 export function Dashboard() {
+	const query = useStatsQuery();
+
+	if (query.isLoading) return null;
+	if (query.data == null) return null;
+
 	return (
-		<>
+		<DashboardProvider value={query.data}>
 			<title>read. | Dashboard</title>
 			<div className="mb-6 flex items-center gap-3">
 				<div className="grow">
@@ -17,7 +23,7 @@ export function Dashboard() {
 			</div>
 
 			<div className="flex flex-col gap-4">
-				<StatCards stats={stats} />
+				<StatCards />
 
 				<div className="grid grid-cols-1 gap-4 xl:grid-cols-3">
 					<DashboardCard
@@ -25,22 +31,18 @@ export function Dashboard() {
 						subtitle="Borrowed and returned copies over the last 14 days"
 						className="xl:col-span-2"
 					>
-						<ActivityChart activity={activity} />
+						<ActivityChart />
 					</DashboardCard>
 
 					<DashboardCard title="Books by genre" subtitle="Distribution across the catalog">
-						<GenreChart genres={genres} />
+						<GenreChart />
 					</DashboardCard>
 				</div>
 
-				<DashboardCard title="Top borrowed books" subtitle="Most borrowed of all time">
-					<RankingChart
-						items={topBooks.map((book) => ({name: book.title, count: book.count}))}
-						color="var(--color-blue-500)"
-						unitLabel="borrows"
-					/>
+				<DashboardCard title="Top borrowed books" subtitle="Most borrowed this month">
+					<RankingChart />
 				</DashboardCard>
 			</div>
-		</>
+		</DashboardProvider>
 	);
 }

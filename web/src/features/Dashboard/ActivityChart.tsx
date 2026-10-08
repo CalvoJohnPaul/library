@@ -1,3 +1,4 @@
+import {format} from 'date-fns';
 import {
 	Bar,
 	BarChart,
@@ -8,13 +9,21 @@ import {
 	XAxis,
 	YAxis,
 } from 'recharts';
-import type {ActivityPoint} from './mockData';
+import {useDashboardContext} from './DashboardContext';
 
-interface ActivityChartProps {
-	activity: ActivityPoint[];
-}
+export function ActivityChart() {
+	const data = useDashboardContext();
 
-export function ActivityChart({activity}: ActivityChartProps) {
+	const activity: {
+		date: string;
+		borrowed: number;
+		returned: number;
+	}[] = data.last14DaysActivity.map((point) => ({
+		date: format(point.timestamp, 'MMM dd'),
+		borrowed: point.totalBooksBorrowed,
+		returned: point.totalBooksReturned,
+	}));
+
 	return (
 		<ResponsiveContainer width="100%" height={275}>
 			<BarChart data={activity} barGap={2}>

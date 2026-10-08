@@ -1,17 +1,17 @@
 import {Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis} from 'recharts';
+import {useDashboardContext} from './DashboardContext';
 
-export interface RankingItem {
-	name: string;
-	count: number;
-}
+export function RankingChart() {
+	const data = useDashboardContext();
 
-interface RankingChartProps {
-	items: RankingItem[];
-	color: string;
-	unitLabel: string;
-}
+	const items: {
+		name: string;
+		count: number;
+	}[] = data.topBorrowedBooksThisMonth.map((book) => ({
+		name: book.book.title,
+		count: book.total,
+	}));
 
-export function RankingChart({items, color, unitLabel}: RankingChartProps) {
 	return (
 		<ResponsiveContainer width="100%" height={275}>
 			<BarChart data={items} layout="vertical" barCategoryGap="25%">
@@ -38,9 +38,9 @@ export function RankingChart({items, color, unitLabel}: RankingChartProps) {
 						fontSize: '0.75rem',
 					}}
 					cursor={{fill: 'var(--color-gray-100)'}}
-					formatter={(value) => [value, unitLabel]}
+					formatter={(value) => [value, 'borrows']}
 				/>
-				<Bar dataKey="count" fill={color} radius={[0, 4, 4, 0]} maxBarSize={16} />
+				<Bar dataKey="count" fill="var(--color-blue-500)" radius={[0, 4, 4, 0]} maxBarSize={16} />
 			</BarChart>
 		</ResponsiveContainer>
 	);

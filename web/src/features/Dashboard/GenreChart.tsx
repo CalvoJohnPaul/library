@@ -1,7 +1,9 @@
-import {Cell, Legend, Pie, PieChart, ResponsiveContainer, Tooltip} from 'recharts';
-import type {GenrePoint} from './mockData';
+import {Legend, Pie, PieChart, ResponsiveContainer, Tooltip} from 'recharts';
+import {getBookGenreLabel} from '@/utils/common';
+import {useDashboardContext} from './DashboardContext';
 
-const genreColors = [
+const GENRE_SLICE_COUNT = 6;
+const GENRE_COLORS_MAP = [
 	'var(--color-blue-500)',
 	'var(--color-green-500)',
 	'var(--color-violet-500)',
@@ -11,11 +13,30 @@ const genreColors = [
 	'var(--color-gray-400)',
 ];
 
-interface GenreChartProps {
-	genres: GenrePoint[];
-}
+export function GenreChart() {
+	const data = useDashboardContext();
 
-export function GenreChart({genres}: GenreChartProps) {
+	const sortedGenres = data.totalBookCopiesByGenre
+		.map((genre) => ({genre: getBookGenreLabel(genre.genre), count: genre.total}))
+		.sort((a, b) => b.count - a.count);
+
+	const topGenres = sortedGenres.slice(0, GENRE_SLICE_COUNT);
+	const othersCount = sortedGenres
+		.slice(GENRE_SLICE_COUNT)
+		.reduce((total, genre) => total + genre.count, 0);
+
+	const mergedGenres =
+		othersCount > 0 ? [...topGenres, {genre: 'Others', count: othersCount}] : topGenres;
+
+	const genres: {
+		genre: string;
+		count: number;
+		fill: string;
+	}[] = mergedGenres.map((genre, index) => ({
+		...genre,
+		fill: GENRE_COLORS_MAP[index % GENRE_COLORS_MAP.length],
+	}));
+
 	return (
 		<ResponsiveContainer width="100%" height={275}>
 			<PieChart>
@@ -27,11 +48,7 @@ export function GenreChart({genres}: GenreChartProps) {
 					outerRadius="80%"
 					paddingAngle={2}
 					stroke="var(--color-white)"
-				>
-					{genres.map((genre, index) => (
-						<Cell key={genre.genre} fill={genreColors[index % genreColors.length]} />
-					))}
-				</Pie>
+				/>
 				<Tooltip
 					contentStyle={{
 						border: '1px solid var(--color-gray-200)',
