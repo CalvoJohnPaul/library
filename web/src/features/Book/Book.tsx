@@ -1,5 +1,6 @@
 import {ArrowLeftIcon} from 'lucide-react';
 import {Link, useParams} from 'react-router';
+import {SpinnerIcon} from '@/components/icons/SpinnerIcon';
 import {Button} from '@/components/ui/Button';
 import {Tabs} from '@/components/ui/Tabs';
 import {useBookQuery} from '@/hooks/useBookQuery';
@@ -14,7 +15,16 @@ export function Book() {
 	const query = useBookQuery(id ? parseInt(id, 10) : null);
 
 	if (!id) return null;
-	if (query.isLoading) return null;
+
+	if (query.isLoading) {
+		return (
+			<div className="flex items-center gap-1.5">
+				<SpinnerIcon className="size-4.5 text-blue-500" />
+				<span className="text-gray-600">Loading.</span>
+			</div>
+		);
+	}
+
 	if (!query.data) {
 		return (
 			<div className="mx-auto max-w-md py-24 text-center">

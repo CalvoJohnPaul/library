@@ -1,3 +1,4 @@
+import {SpinnerIcon} from '@/components/icons/SpinnerIcon';
 import {useStatsQuery} from '@/hooks/useStatsQuery';
 import {ActivityChart} from './ActivityChart';
 import {DashboardCard} from './DashboardCard';
@@ -9,8 +10,16 @@ import {StatCards} from './StatCards';
 export function Dashboard() {
 	const query = useStatsQuery();
 
-	if (query.isLoading) return null;
-	if (query.data == null) return null;
+	if (query.isLoading) {
+		return (
+			<div className="flex items-center gap-1.5">
+				<SpinnerIcon className="size-4.5 text-blue-500" />
+				<span className="text-gray-600">Loading.</span>
+			</div>
+		);
+	}
+
+	if (!query.data) return null;
 
 	return (
 		<DashboardProvider value={query.data}>
@@ -21,10 +30,8 @@ export function Dashboard() {
 					<p className="text-gray-600 text-sm">View an overview of your library at a glance.</p>
 				</div>
 			</div>
-
 			<div className="flex flex-col gap-4">
 				<StatCards />
-
 				<div className="grid grid-cols-1 gap-4 xl:grid-cols-3">
 					<DashboardCard
 						title="Borrowing activity"
@@ -33,12 +40,10 @@ export function Dashboard() {
 					>
 						<ActivityChart />
 					</DashboardCard>
-
 					<DashboardCard title="Books by genre" subtitle="Distribution across the catalog">
 						<GenreChart />
 					</DashboardCard>
 				</div>
-
 				<DashboardCard title="Top borrowed books" subtitle="Most borrowed this month">
 					<RankingChart />
 				</DashboardCard>
