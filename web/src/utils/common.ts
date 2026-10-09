@@ -3,6 +3,8 @@ import {
 	BookCopyStatusDefinition,
 	type BookGenre,
 	BookGenreDefinition,
+	type TransactionStatus,
+	TransactionStatusDefinition,
 	type TransactionType,
 	TransactionTypeDefinition,
 } from '@library/types';
@@ -105,6 +107,22 @@ export function getTransactionTypeOptions(): Option[] {
 
 export function getTransactionTypeLabel(type: TransactionType): string {
 	return TRANSACTION_TYPE_MAP[type];
+}
+
+const TRANSACTION_STATUS_MAP: Record<TransactionStatus, string> = {
+	COMPLETED: 'Completed',
+	PENDING: 'Pending',
+};
+
+export function getTransactionStatusOptions(): Option[] {
+	return TransactionStatusDefinition.options.map((value) => ({
+		value,
+		label: TRANSACTION_STATUS_MAP[value],
+	}));
+}
+
+export function getTransactionStatusLabel(status: TransactionStatus): string {
+	return TRANSACTION_STATUS_MAP[status];
 }
 
 /*

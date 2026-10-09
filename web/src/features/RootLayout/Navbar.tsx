@@ -13,7 +13,7 @@ import {
 	UsersIcon,
 } from 'lucide-react';
 import {Controller, useForm} from 'react-hook-form';
-import {NavLink, useNavigate} from 'react-router';
+import {Link, NavLink, useNavigate} from 'react-router';
 import {cx} from 'tailwind-variants';
 import * as z from 'zod';
 import {PasswordField} from '@/components/forms/PasswordField';
@@ -59,7 +59,9 @@ export function Navbar() {
 
 	return (
 		<header className="flex h-16 items-center border-gray-200 border-b px-12">
-			<h2 className="logo-shine block font-extrabold text-xl tracking-wider">read.</h2>
+			<Link to="/" className="block">
+				<h2 className="logo-shine block font-extrabold text-xl tracking-wider">read.</h2>
+			</Link>
 			<div className="grow"></div>
 			<nav className="flex gap-1">
 				<ul className="contents">

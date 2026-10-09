@@ -1,6 +1,15 @@
 import {createListCollection, Portal} from '@ark-ui/react';
-import {type TransactionType, TransactionTypeDefinition} from '@library/types';
+import {
+	type SortOrder,
+	type TransactionSortByInput,
+	TransactionSortByInputDefinition,
+	type TransactionStatus,
+	TransactionStatusDefinition,
+	type TransactionType,
+	TransactionTypeDefinition,
+} from '@library/types';
 import {addDays, differenceInDays, format} from 'date-fns';
+import {clamp} from 'es-toolkit';
 import {AlertTriangleIcon, SettingsIcon} from 'lucide-react';
 import {useReducer} from 'react';
 import {Link} from 'react-router';
@@ -13,7 +22,12 @@ import {type MembersInput, useMembersQuery} from '@/hooks/useMembersQuery';
 import {type TransactionsInput, useTransactionsQuery} from '@/hooks/useTransactionsQuery';
 import type {DateRange} from '@/types/index';
 import {client} from '@/utils/client';
-import {getTransactionTypeLabel, getTransactionTypeOptions} from '@/utils/common';
+import {
+	getTransactionStatusLabel,
+	getTransactionStatusOptions,
+	getTransactionTypeLabel,
+	getTransactionTypeOptions,
+} from '@/utils/common';
 import {toaster} from '@/utils/toaster';
 import {useBookContext} from './BookContext';
 import {CopyProvider} from './CopyContext';
@@ -25,9 +39,12 @@ interface State {
 	search?: string | null;
 	ticket?: string | null;
 	type?: TransactionType[] | null;
+	status?: TransactionStatus[] | null;
 	isbn?: string | null;
 	member?: string[] | null;
 	dateTimeCreated?: DateRange | null;
+	sortBy?: TransactionSortByInput | null;
+	sortOrder?: SortOrder | null;
 }
 
 export function Transactions() {
@@ -56,6 +73,11 @@ export function Transactions() {
 				in: state.type,
 			},
 		}),
+		...(state.status?.length && {
+			status: {
+				in: state.status,
+			},
+		}),
 		...(state.isbn && {
 			isbn: {
 				contains: state.isbn,
@@ -71,6 +93,12 @@ export function Transactions() {
 				gte: state.dateTimeCreated?.from,
 				lte: state.dateTimeCreated?.to,
 			},
+		}),
+		...(state.sortBy && {
+			sortBy: state.sortBy,
+		}),
+		...(state.sortOrder && {
+			sortOrder: state.sortOrder,
 		}),
 	} satisfies TransactionsInput;
 
@@ -125,6 +153,33 @@ export function Transactions() {
 						value: state.ticket ?? '',
 						onChange: (value) => setState({ticket: value}),
 					},
+				},
+				{
+					id: 'status',
+					heading: 'Status',
+					cell: (transaction) => {
+						return (
+							<Badge.Root accent={transaction.status === 'PENDING' ? 'warning' : 'success'}>
+								<Badge.Label>{getTransactionStatusLabel(transaction.status)}</Badge.Label>
+							</Badge.Root>
+						);
+					},
+					filter: {
+						type: 'SELECT',
+						options: getTransactionStatusOptions(),
+						multiple: true,
+						placeholder: 'Select status',
+						value: state.status ?? [],
+						onChange: (value) =>
+							setState({
+								status: value
+									.map((v) => TransactionStatusDefinition.safeParse(v).data)
+									.filter(Boolean),
+							}),
+					},
+					hideable: true,
+					orderable: true,
+					defaultHidden: true,
 				},
 				{
 					id: 'isbn',
@@ -207,7 +262,11 @@ export function Transactions() {
 							differenceInDays(new Date(), transaction.dateTimeCreated) >= 3;
 						const overdueDaysCount =
 							transaction.type === 'BORROW' && transaction.status === 'PENDING'
-								? differenceInDays(new Date(), addDays(transaction.dateTimeCreated, 3))
+								? clamp(
+										differenceInDays(new Date(), addDays(transaction.dateTimeCreated, 3)),
+										1,
+										Infinity,
+									)
 								: 0;
 
 						return (
@@ -285,6 +344,14 @@ export function Transactions() {
 			onExport={() => {
 				exportMutation.mutate(filters);
 			}}
+			sortColumn={state.sortBy ?? null}
+			onSortColumnChange={(value) =>
+				setState({
+					sortBy: TransactionSortByInputDefinition.nullable().optional().parse(value),
+				})
+			}
+			sortOrder={state.sortOrder ?? null}
+			onSortOrderChange={(sortOrder) => setState({sortOrder})}
 		/>
 	);
 }
