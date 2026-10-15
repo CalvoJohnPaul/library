@@ -24,7 +24,7 @@
 		"lint": "biome lint ."
 	},
 	"dependencies": {
-		"@biomejs/biome": "^2.5.14",
-		"turbo": "^2.11.3"
+		"@biomejs/biome": "^2.5.15",
+		"turbo": "^2.11.8"
 	}
 }
