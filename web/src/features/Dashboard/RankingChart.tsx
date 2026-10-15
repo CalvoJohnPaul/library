@@ -1,5 +1,6 @@
 import {Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis} from 'recharts';
 import {useDashboardContext} from './DashboardContext';
+import {roundedAxisMax} from './utils';
 
 export function RankingChart() {
 	const data = useDashboardContext();
@@ -12,6 +13,8 @@ export function RankingChart() {
 		count: book.total,
 	}));
 
+	const axisMax = roundedAxisMax(items.map((item) => item.count));
+
 	return (
 		<ResponsiveContainer width="100%" height={275}>
 			<BarChart data={items} layout="vertical" barCategoryGap="25%">
@@ -22,6 +25,7 @@ export function RankingChart() {
 					axisLine={false}
 					tick={{fontSize: 11, fill: 'var(--color-gray-600)'}}
 					allowDecimals={false}
+					domain={[0, axisMax]}
 				/>
 				<YAxis
 					type="category"
@@ -33,7 +37,6 @@ export function RankingChart() {
 				/>
 				<Tooltip
 					contentStyle={{
-						border: '1px solid var(--color-gray-200)',
 						borderRadius: '0.5rem',
 						fontSize: '0.75rem',
 					}}

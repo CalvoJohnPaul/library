@@ -30,6 +30,7 @@ export function useBookQuery(
 		| 'staleTime'
 		| 'initialData'
 		| 'initialDataUpdatedAt'
+		| 'placeholderData'
 		| 'refetchInterval'
 		| 'refetchOnMount'
 		| 'refetchOnReconnect'

@@ -138,6 +138,7 @@ export function useBooksQuery(
 		| 'staleTime'
 		| 'initialData'
 		| 'initialDataUpdatedAt'
+		| 'placeholderData'
 		| 'refetchInterval'
 		| 'refetchOnMount'
 		| 'refetchOnReconnect'

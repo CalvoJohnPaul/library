@@ -10,6 +10,7 @@ export function useStatsQuery(
 		| 'staleTime'
 		| 'initialData'
 		| 'initialDataUpdatedAt'
+		| 'placeholderData'
 		| 'refetchInterval'
 		| 'refetchOnMount'
 		| 'refetchOnReconnect'

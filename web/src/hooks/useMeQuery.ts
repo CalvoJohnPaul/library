@@ -10,6 +10,7 @@ export function useMeQuery(
 		| 'staleTime'
 		| 'initialData'
 		| 'initialDataUpdatedAt'
+		| 'placeholderData'
 		| 'refetchInterval'
 		| 'refetchOnMount'
 		| 'refetchOnReconnect'

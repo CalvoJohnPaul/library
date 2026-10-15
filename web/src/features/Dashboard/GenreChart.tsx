@@ -5,12 +5,12 @@ import {useDashboardContext} from './DashboardContext';
 const GENRE_SLICE_COUNT = 6;
 const GENRE_COLORS_MAP = [
 	'var(--color-blue-500)',
-	'var(--color-green-500)',
-	'var(--color-violet-500)',
-	'var(--color-orange-500)',
-	'var(--color-pink-500)',
+	'var(--color-emerald-500)',
+	'var(--color-purple-500)',
+	'var(--color-amber-500)',
+	'var(--color-rose-500)',
 	'var(--color-cyan-500)',
-	'var(--color-gray-400)',
+	'var(--color-stone-400)',
 ];
 
 export function GenreChart() {
@@ -46,12 +46,12 @@ export function GenreChart() {
 					nameKey="genre"
 					innerRadius="55%"
 					outerRadius="80%"
+					cornerRadius={4}
 					paddingAngle={2}
 					stroke="var(--color-white)"
 				/>
 				<Tooltip
 					contentStyle={{
-						border: '1px solid var(--color-gray-200)',
 						borderRadius: '0.5rem',
 						fontSize: '0.75rem',
 					}}

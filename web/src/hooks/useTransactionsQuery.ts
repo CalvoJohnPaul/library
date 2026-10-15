@@ -162,6 +162,7 @@ export function useTransactionsQuery(
 		| 'staleTime'
 		| 'initialData'
 		| 'initialDataUpdatedAt'
+		| 'placeholderData'
 		| 'refetchInterval'
 		| 'refetchOnMount'
 		| 'refetchOnReconnect'

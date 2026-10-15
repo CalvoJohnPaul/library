@@ -10,6 +10,7 @@ import {
 	YAxis,
 } from 'recharts';
 import {useDashboardContext} from './DashboardContext';
+import {roundedAxisMax} from './utils';
 
 export function ActivityChart() {
 	const data = useDashboardContext();
@@ -23,6 +24,8 @@ export function ActivityChart() {
 		borrowed: point.totalBooksBorrowed,
 		returned: point.totalBooksReturned,
 	}));
+
+	const axisMax = roundedAxisMax(activity.map((point) => Math.max(point.borrowed, point.returned)));
 
 	return (
 		<ResponsiveContainer width="100%" height={275}>
@@ -40,10 +43,10 @@ export function ActivityChart() {
 					tick={{fontSize: 11, fill: 'var(--color-gray-600)'}}
 					width={28}
 					allowDecimals={false}
+					domain={[0, axisMax]}
 				/>
 				<Tooltip
 					contentStyle={{
-						border: '1px solid var(--color-gray-200)',
 						borderRadius: '0.5rem',
 						fontSize: '0.75rem',
 					}}
@@ -53,16 +56,18 @@ export function ActivityChart() {
 				<Bar
 					dataKey="borrowed"
 					name="Borrowed"
-					fill="var(--color-blue-500)"
+					fill="var(--color-amber-500)"
 					radius={[4, 4, 0, 0]}
 					maxBarSize={20}
+					isAnimationActive
 				/>
 				<Bar
 					dataKey="returned"
 					name="Returned"
-					fill="var(--color-green-500)"
+					fill="var(--color-emerald-500)"
 					radius={[4, 4, 0, 0]}
 					maxBarSize={20}
+					isAnimationActive
 				/>
 			</BarChart>
 		</ResponsiveContainer>

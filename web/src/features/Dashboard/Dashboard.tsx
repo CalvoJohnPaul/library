@@ -1,4 +1,3 @@
-import {SpinnerIcon} from '@/components/icons/SpinnerIcon';
 import {useStatsQuery} from '@/hooks/useStatsQuery';
 import {ActivityChart} from './ActivityChart';
 import {DashboardCard} from './DashboardCard';
@@ -8,16 +7,17 @@ import {RankingChart} from './RankingChart';
 import {StatCards} from './StatCards';
 
 export function Dashboard() {
-	const query = useStatsQuery();
-
-	if (query.isLoading) {
-		return (
-			<div className="flex items-center gap-1.5">
-				<SpinnerIcon className="size-4.5 text-blue-500" />
-				<span className="text-gray-600">Loading.</span>
-			</div>
-		);
-	}
+	const query = useStatsQuery({
+		placeholderData: {
+			last14DaysActivity: [],
+			topBorrowedBooksThisMonth: [],
+			totalBookCopies: 0,
+			totalBookCopiesByGenre: [],
+			totalBooks: 0,
+			totalNewMembersThisMonth: 0,
+			totalOutstandingBorrows: 0,
+		},
+	});
 
 	if (!query.data) return null;
 

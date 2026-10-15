@@ -1,8 +1,8 @@
 import {
 	type BookCopy,
 	BookCopyDefinition,
-	HttpResponseDefinition,
 	type BorrowBookCopyInput,
+	HttpResponseDefinition,
 	type Transaction,
 	TransactionDefinition,
 } from '@library/types';
@@ -13,11 +13,7 @@ import {useCsrfQuery} from './useCsrfQuery';
 
 export function useBorrowBookCopyMutation(
 	options?: Pick<
-		UseMutationOptions<
-			{bookCopy: BookCopy; transaction: Transaction},
-			Error,
-			BorrowBookCopyInput
-		>,
+		UseMutationOptions<{bookCopy: BookCopy; transaction: Transaction}, Error, BorrowBookCopyInput>,
 		| 'gcTime'
 		| 'onMutate'
 		| 'onSettled'

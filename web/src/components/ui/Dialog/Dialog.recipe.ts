@@ -7,10 +7,10 @@ const anatomy = dialogAnatomy.extendWith('header', 'body', 'footer');
 export const dialogRecipe = tv({
 	slots: anatomyToRecipeSlots(anatomy, {
 		backdrop:
-			'fixed inset-0 z-backdrop ui-closed:animate-backdrop-out ui-open:animate-backdrop-in bg-black/50 backdrop-blur-xs',
+			'fixed inset-0 z-backdrop ui-closed:animate-backdrop-out ui-open:animate-backdrop-in bg-black/25 backdrop-blur-xs',
 		positioner: 'fixed inset-0 z-dialog flex items-center overflow-y-auto p-8',
 		content: [
-			'relative z-dialog mx-auto flex size-full h-auto w-full max-w-105 ui-closed:animate-dialog-out ui-open:animate-dialog-in flex-col rounded-lg bg-white',
+			'relative z-dialog mx-auto flex size-full h-auto w-full max-w-105 ui-closed:animate-dialog-out ui-open:animate-dialog-in flex-col rounded-lg bg-white shadow-lg',
 		],
 		header: 'relative flex gap-4 p-6 pb-8',
 		body: 'relative grow space-y-2.5 px-6 pb-8',
