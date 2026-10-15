@@ -1,10 +1,10 @@
 import {Portal} from '@ark-ui/react';
 import {useListCollection} from '@ark-ui/react/collection';
 import {useControllableState} from '@radix-ui/react-use-controllable-state';
+import {useDebouncedCallback} from '@tanstack/react-pacer';
 import {SearchIcon, XIcon} from 'lucide-react';
 import {useRef, useState} from 'react';
-import {useDebouncedCallback} from 'use-debounce';
-import {useBoolean, useTimeout} from 'usehooks-ts';
+import {useTimeout} from '@/hooks/useTimeout';
 import type {Option} from '@/types/index';
 import {Combobox} from '../ui/Combobox';
 import {Popover} from '../ui/Popover';
@@ -77,21 +77,24 @@ function AsyncComboboxField__single(props: AsyncComboboxField__singleProps) {
 
 	const loadSeqRef = useRef(0);
 
-	const loadOptions = useDebouncedCallback(async (inputValue: string, value: string) => {
-		const seq = ++loadSeqRef.current;
-		const l = await props.options(inputValue, value);
-		if (seq !== loadSeqRef.current) return;
-		set(l);
-	}, 250);
+	const loadOptions = useDebouncedCallback(
+		async (inputValue: string, value: string) => {
+			const seq = ++loadSeqRef.current;
+			const l = await props.options(inputValue, value);
+			if (seq !== loadSeqRef.current) return;
+			set(l);
+		},
+		{wait: 250},
+	);
 
-	const inited = useBoolean();
+	const [inited, setInited] = useState(false);
 
 	useTimeout(
 		() => {
-			inited.setTrue();
+			setInited(true);
 			loadOptions('', value);
 		},
-		!inited.value ? 1 : null,
+		!inited ? 1 : null,
 	);
 
 	const content = (
@@ -188,22 +191,25 @@ function AsyncComboboxField__multi(props: AsyncComboboxField__multiProps) {
 
 	const loadSeqRef = useRef(0);
 
-	const loadOptions = useDebouncedCallback(async (inputValue: string, value: string[]) => {
-		const seq = ++loadSeqRef.current;
-		const l = await props.options(inputValue, value);
-		if (seq !== loadSeqRef.current) return;
-		rememberLabels(l);
-		set(l);
-	}, 250);
+	const loadOptions = useDebouncedCallback(
+		async (inputValue: string, value: string[]) => {
+			const seq = ++loadSeqRef.current;
+			const l = await props.options(inputValue, value);
+			if (seq !== loadSeqRef.current) return;
+			rememberLabels(l);
+			set(l);
+		},
+		{wait: 250},
+	);
 
-	const inited = useBoolean();
+	const [inited, setInited] = useState(false);
 
 	useTimeout(
 		() => {
-			inited.setTrue();
+			setInited(true);
 			loadOptions('', value);
 		},
-		!inited.value ? 1 : null,
+		!inited ? 1 : null,
 	);
 
 	const content = (

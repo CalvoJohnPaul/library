@@ -4,8 +4,8 @@ import {useControllableState} from '@radix-ui/react-use-controllable-state';
 import {uniq} from 'es-toolkit';
 import type {Dispatch, ReactNode, SetStateAction} from 'react';
 import type {Merge} from 'type-fest';
-import {useLocalStorage} from 'usehooks-ts';
 import * as z from 'zod';
+import {useLocalStorage} from '@/hooks/useLocalStorage';
 import {splitProps} from '@/utils/splitProps';
 import type {
 	AsyncComboboxField__multiProps,
@@ -168,13 +168,13 @@ export function useDataTable<Data = any>({
 	});
 
 	const [columnsOrder, setColumnsOrder] = useLocalStorage<string[]>(
-		'expense-tracker/data-table/columns-order',
+		'library/data-table/columns-order',
 		props.columns.map((col) => col.id),
 		{
-			serializer(value) {
+			serialize(value) {
 				return JSON.stringify(value);
 			},
-			deserializer(value) {
+			deserialize(value) {
 				try {
 					return z.array(z.string()).parse(JSON.parse(value)).filter(Boolean);
 				} catch {
@@ -185,13 +185,13 @@ export function useDataTable<Data = any>({
 	);
 
 	const [hiddenColumns, setHiddenColumns] = useLocalStorage<string[]>(
-		'expense-tracker/data-table/hidden-columns',
+		'library/data-table/hidden-columns',
 		props.columns.filter((col) => col.defaultHidden).map((col) => col.id),
 		{
-			serializer(value) {
+			serialize(value) {
 				return JSON.stringify(uniq(value));
 			},
-			deserializer(value) {
+			deserialize(value) {
 				try {
 					return z.array(z.string()).parse(JSON.parse(value)).filter(Boolean);
 				} catch {

@@ -1,9 +1,9 @@
 import {Portal, Presence} from '@ark-ui/react';
 import {useControllableState} from '@radix-ui/react-use-controllable-state';
+import {useDebouncedCallback} from '@tanstack/react-pacer';
 import {omit} from 'es-toolkit';
 import {Settings2Icon} from 'lucide-react';
 import {useState} from 'react';
-import {useDebounceCallback} from 'usehooks-ts';
 import {AsyncComboboxField} from '../forms/AsyncComboboxField';
 import {ComboboxField} from '../forms/ComboboxField';
 import {DateRangeField} from '../forms/DateRangeField';
@@ -142,7 +142,7 @@ function DebouncedNumberRangeField({
 	});
 
 	const [value__internal, setValue__internal] = useState(value__external);
-	const setValue__debounced = useDebounceCallback(setValue__external, 300);
+	const setValue__debounced = useDebouncedCallback(setValue__external, {wait: 300});
 
 	return (
 		<NumberRangeField
@@ -164,7 +164,7 @@ function DebouncedTextField({value, defaultValue, onChange, ...props}: TextField
 	});
 
 	const [value__internal, setValue__internal] = useState(value__external);
-	const setValue__debounced = useDebounceCallback(setValue__external, 300);
+	const setValue__debounced = useDebouncedCallback(setValue__external, {wait: 300});
 
 	return (
 		<TextField

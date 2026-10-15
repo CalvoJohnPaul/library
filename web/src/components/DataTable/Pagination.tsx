@@ -1,7 +1,7 @@
 import {createListCollection, Portal} from '@ark-ui/react';
+import {useDebouncer} from '@tanstack/react-pacer';
 import {clamp} from 'es-toolkit';
 import {useEffect, useState} from 'react';
-import {useDebouncedCallback} from 'use-debounce';
 import {Pagination as ArkPagination} from '../ui/Pagination';
 import {Select} from '../ui/Select';
 import {useDataTableContext} from './DataTableContext';
@@ -18,7 +18,7 @@ export function Pagination() {
 	const totalPages = Math.ceil(total / pageSize);
 
 	const [optimisticPage, setOptimisticPage] = useState(page);
-	const commitPage = useDebouncedCallback(setPage, PAGE_COMMIT_DEBOUNCE);
+	const commitPage = useDebouncer(setPage, {wait: PAGE_COMMIT_DEBOUNCE});
 
 	useEffect(() => {
 		setOptimisticPage(page);
@@ -79,7 +79,7 @@ export function Pagination() {
 				pageSize={pageSize}
 				onPageChange={(details) => {
 					setOptimisticPage(details.page);
-					commitPage(details.page);
+					commitPage.maybeExecute(details.page);
 					setPageSize(details.pageSize);
 				}}
 				onPageSizeChange={(details) => {

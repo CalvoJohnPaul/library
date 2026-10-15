@@ -1,15 +1,16 @@
 import {Portal} from '@ark-ui/react';
 import {RefreshCcwIcon} from 'lucide-react';
-import {useBoolean, useTimeout} from 'usehooks-ts';
+import {useState} from 'react';
+import {useTimeout} from '@/hooks/useTimeout';
 import {IconButton} from '../ui/IconButton';
 import {Tooltip} from '../ui/Tooltip';
 import {useDataTableContext} from './DataTableContext';
 
 export function ReloadTrigger() {
 	const {onReload, loading} = useDataTableContext();
-	const pending = useBoolean();
+	const [pending, setPending] = useState(false);
 
-	useTimeout(pending.setFalse, pending.value && !loading ? 1000 : null);
+	useTimeout(() => setPending(false), pending && !loading ? 1000 : null);
 
 	if (onReload == null) return null;
 
@@ -20,12 +21,12 @@ export function ReloadTrigger() {
 					variant="outline"
 					accent="gray"
 					onClick={() => {
-						pending.setTrue();
+						setPending(true);
 						onReload?.();
 					}}
-					disabled={pending.value}
+					disabled={pending}
 				>
-					<RefreshCcwIcon className={pending.value ? 'animate-spin' : 'animate-none'} />
+					<RefreshCcwIcon className={pending ? 'animate-spin' : 'animate-none'} />
 				</IconButton>
 			</Tooltip.Trigger>
 			<Portal>
