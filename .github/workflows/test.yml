@@ -1,0 +1,85 @@
+name: Test
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  test:
+    name: Affected tests
+    runs-on: ubuntu-latest
+
+    # The API tests run against a real PostgreSQL database.
+    services:
+      postgres:
+        image: postgres:18-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: library
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          # Full history is required so Turborepo can detect affected packages.
+          fetch-depth: 0
+
+      - name: Determine the affected base
+        id: base
+        run: |
+          BEFORE="${{ github.event.before }}"
+
+          if [ "$GITHUB_EVENT_NAME" = "pull_request" ]; then
+            # Compare against the branch the pull request targets.
+            BASE="origin/${GITHUB_BASE_REF}"
+            git fetch origin "${GITHUB_BASE_REF}:${BASE}" --no-tags
+          elif [ "$GITHUB_EVENT_NAME" = "push" ] \
+            && [ -n "$BEFORE" ] \
+            && [ "$BEFORE" != "0000000000000000000000000000000000000000" ] \
+            && git rev-parse --verify "${BEFORE}^{commit}" >/dev/null 2>&1; then
+            # Compare against the commit the branch pointed at before the push,
+            # so every commit of the push is considered.
+            BASE="$BEFORE"
+          else
+            # Fallback for manual runs and unusual push events.
+            BASE="HEAD^1"
+          fi
+
+          echo "Using base: ${BASE}"
+          echo "ref=${BASE}" >> "$GITHUB_OUTPUT"
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 12.6.0
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 26
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Apply database migrations
+        working-directory: api
+        run: pnpm exec prisma migrate deploy
+
+      - name: Run tests for affected packages
+        run: pnpm exec turbo test --filter="...[${{ steps.base.outputs.ref }}]"
