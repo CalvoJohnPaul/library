@@ -1,6 +1,5 @@
 import {adventurer} from '@dicebear/collection';
 import {createAvatar} from '@dicebear/core';
-import {clamp} from 'es-toolkit';
 import {ProgressLinear} from '@/components/ui/ProgressLinear';
 import {useDashboardContext} from './DashboardContext';
 import {roundedBarMax} from './utils';
@@ -30,17 +29,20 @@ export function TopBorrowingMembers() {
 							/>
 							<div className="min-w-0 grow">
 								<div className="flex items-baseline justify-between gap-2">
-									<p className="flex min-w-0 items-baseline gap-1.5 font-medium text-sm">
+									<p className="flex min-w-0 items-baseline gap-1 font-medium text-sm">
 										<span className="truncate">{member.name}</span>
+										<span aria-hidden className="text-gray-300">
+											·
+										</span>
 										<span className="whitespace-nowrap text-gray-500 text-xs">
 											{member.externalId}
 										</span>
 									</p>
 									<p className="whitespace-nowrap text-gray-600 text-xs">{total} borrows</p>
 								</div>
-								<ProgressLinear.Root className="mt-1.5" value={clamp(total, 0, max)} max={max}>
+								<ProgressLinear.Root className="mt-1.5" value={total} max={max}>
 									<ProgressLinear.Track className="h-1.5 grow bg-gray-100">
-										<ProgressLinear.Range className="h-1.5 bg-emerald-400" />
+										<ProgressLinear.Range className="h-1.5 animate-progress-fill bg-emerald-400" />
 									</ProgressLinear.Track>
 								</ProgressLinear.Root>
 							</div>
