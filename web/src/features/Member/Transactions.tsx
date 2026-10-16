@@ -29,9 +29,9 @@ import {
 	getTransactionTypeOptions,
 } from '@/utils/common';
 import {toaster} from '@/utils/toaster';
-import {BookCopyProvider} from './BookCopyContext';
 import {useMemberContext} from './MemberContext';
 import {ReturnBookCopy} from './ReturnBookCopy';
+import {TransactionProvider} from './TransactionContext';
 
 interface State {
 	page: number;
@@ -305,9 +305,9 @@ export function Transactions() {
 								<Portal>
 									<Menu.Positioner>
 										<Menu.Content>
-											<BookCopyProvider value={transaction.bookCopy}>
+											<TransactionProvider value={transaction}>
 												<ReturnBookCopy />
-											</BookCopyProvider>
+											</TransactionProvider>
 										</Menu.Content>
 									</Menu.Positioner>
 								</Portal>

@@ -17,10 +17,11 @@ import {useReturnBookCopyMutation} from '@/hooks/useReturnBookCopyMutation';
 import {useTransactionsQuery} from '@/hooks/useTransactionsQuery';
 import {client} from '@/utils/client';
 import {toaster} from '@/utils/toaster';
-import {useBookCopyContext} from './BookCopyContext';
+import {useTransactionContext} from './TransactionContext';
 
 export function ReturnBookCopy() {
-	const copy = useBookCopyContext();
+	const transaction = useTransactionContext();
+	const copy = transaction.bookCopy;
 	const disclosure = useDisclosure();
 	const form = useForm({
 		resolver: zodResolver(ReturnBookCopyDataInputDefinition),

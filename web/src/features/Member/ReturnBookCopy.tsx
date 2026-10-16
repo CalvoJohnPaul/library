@@ -18,11 +18,12 @@ import {useReturnBookCopyMutation} from '@/hooks/useReturnBookCopyMutation';
 import {useTransactionsQuery} from '@/hooks/useTransactionsQuery';
 import {client} from '@/utils/client';
 import {toaster} from '@/utils/toaster';
-import {useBookCopyContext} from './BookCopyContext';
 import {useMemberContext} from './MemberContext';
+import {useTransactionContext} from './TransactionContext';
 
 export function ReturnBookCopy() {
-	const copy = useBookCopyContext();
+	const transaction = useTransactionContext();
+	const copy = transaction.bookCopy;
 	const member = useMemberContext();
 	const disclosure = useDisclosure();
 	const form = useForm({
