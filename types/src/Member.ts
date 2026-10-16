@@ -17,10 +17,7 @@ export const CreateMemberInputDefinition = z.object({
 		.string({error: 'External ID is required'})
 		.trim()
 		.min(1, {error: 'External ID is required'}),
-	name: z
-		.string({error: 'Name is required'})
-		.trim()
-		.min(1, {error: 'Name is required'}),
+	name: z.string({error: 'Name is required'}).trim().min(1, {error: 'Name is required'}),
 	course: z.string().optional().nullable(),
 	yearAndSection: z.string().optional().nullable(),
 });

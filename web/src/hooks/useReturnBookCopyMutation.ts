@@ -13,11 +13,7 @@ import {useCsrfQuery} from './useCsrfQuery';
 
 export function useReturnBookCopyMutation(
 	options?: Pick<
-		UseMutationOptions<
-			{bookCopy: BookCopy; transaction: Transaction},
-			Error,
-			ReturnBookCopyInput
-		>,
+		UseMutationOptions<{bookCopy: BookCopy; transaction: Transaction}, Error, ReturnBookCopyInput>,
 		| 'gcTime'
 		| 'onMutate'
 		| 'onSettled'

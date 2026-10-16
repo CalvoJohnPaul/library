@@ -1,4 +1,4 @@
 {
 	"extends": "fastify-tsconfig",
-	"include": ["src", "prisma", "scripts", "reset.d.ts"]
+	"include": ["src", "tests", "prisma", "scripts", "reset.d.ts"]
 }
