@@ -30,8 +30,8 @@ import {
 } from '@/utils/common';
 import {toaster} from '@/utils/toaster';
 import {useBookContext} from './BookContext';
-import {CopyProvider} from './CopyContext';
 import {ReturnCopy} from './ReturnCopy';
+import {TransactionProvider} from './TransactionContext';
 
 interface State {
 	page: number;
@@ -318,9 +318,9 @@ export function Transactions() {
 								<Portal>
 									<Menu.Positioner>
 										<Menu.Content>
-											<CopyProvider value={transaction.bookCopy}>
+											<TransactionProvider value={transaction}>
 												<ReturnCopy />
-											</CopyProvider>
+											</TransactionProvider>
 										</Menu.Content>
 									</Menu.Positioner>
 								</Portal>

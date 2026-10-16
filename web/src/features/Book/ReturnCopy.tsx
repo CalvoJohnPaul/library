@@ -18,9 +18,12 @@ import {useTransactionsQuery} from '@/hooks/useTransactionsQuery';
 import {client} from '@/utils/client';
 import {toaster} from '@/utils/toaster';
 import {useCopyContext} from './CopyContext';
+import {useTransactionContext} from './TransactionContext';
 
 export function ReturnCopy() {
-	const copy = useCopyContext();
+	const ctx1 = useCopyContext();
+	const ctx2 = useTransactionContext();
+	const {id} = ctx1 ?? ctx2.bookCopy;
 	const disclosure = useDisclosure();
 	const form = useForm({
 		resolver: zodResolver(ReturnBookCopyDataInputDefinition),
@@ -93,7 +96,7 @@ export function ReturnCopy() {
 						<form
 							onSubmit={form.handleSubmit((data) => {
 								mutation.mutate({
-									id: copy.id,
+									id,
 									data: {remarks: data.remarks || null},
 								});
 							})}
