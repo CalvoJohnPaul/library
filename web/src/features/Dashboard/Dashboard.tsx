@@ -1,10 +1,9 @@
 import {useStatsQuery} from '@/hooks/useStatsQuery';
-import {ActivityChart} from './ActivityChart';
-import {DashboardCard} from './DashboardCard';
+import {BooksByGenre} from './BooksByGenre';
+import {BorrowingActivity} from './BorrowingActivity';
 import {DashboardProvider} from './DashboardContext';
-import {GenreChart} from './GenreChart';
-import {RankingChart} from './RankingChart';
-import {StatCards} from './StatCards';
+import {Stats} from './Stats';
+import {TopBorrowedBooks} from './TopBorrowedBooks';
 
 export function Dashboard() {
 	const query = useStatsQuery({
@@ -31,22 +30,12 @@ export function Dashboard() {
 				</div>
 			</div>
 			<div className="flex flex-col gap-4">
-				<StatCards />
+				<Stats />
 				<div className="grid grid-cols-1 gap-4 xl:grid-cols-3">
-					<DashboardCard
-						title="Borrowing activity"
-						subtitle="Borrowed and returned copies over the last 14 days"
-						className="xl:col-span-2"
-					>
-						<ActivityChart />
-					</DashboardCard>
-					<DashboardCard title="Books by genre" subtitle="Distribution across the catalog">
-						<GenreChart />
-					</DashboardCard>
+					<BorrowingActivity />
+					<BooksByGenre />
 				</div>
-				<DashboardCard title="Top borrowed books" subtitle="Most borrowed this month">
-					<RankingChart />
-				</DashboardCard>
+				<TopBorrowedBooks />
 			</div>
 		</DashboardProvider>
 	);

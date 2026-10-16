@@ -17,7 +17,7 @@ const ACCENT_MAP = {
 	borrows: cx`border-amber-600/25 bg-amber-600/10 text-amber-700`,
 };
 
-export function StatCards() {
+export function Stats() {
 	const data = useDashboardContext();
 
 	const stats: {
