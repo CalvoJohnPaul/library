@@ -6,6 +6,11 @@ on:
       - main
   pull_request:
   workflow_dispatch:
+    inputs:
+      force:
+        description: Run the tests for real instead of replaying cached results
+        default: false
+        type: boolean
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -13,7 +18,7 @@ concurrency:
 
 jobs:
   test:
-    name: Affected tests
+    name: Tests
     runs-on: ubuntu-latest
 
     # The API tests run against a real PostgreSQL database.
@@ -35,33 +40,6 @@ jobs:
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
-        with:
-          # Full history is required so Turborepo can detect affected packages.
-          fetch-depth: 0
-
-      - name: Determine the affected base
-        id: base
-        run: |
-          BEFORE="${{ github.event.before }}"
-
-          if [ "$GITHUB_EVENT_NAME" = "pull_request" ]; then
-            # Compare against the branch the pull request targets.
-            BASE="origin/${GITHUB_BASE_REF}"
-            git fetch origin "${GITHUB_BASE_REF}:${BASE}" --no-tags
-          elif [ "$GITHUB_EVENT_NAME" = "push" ] \
-            && [ -n "$BEFORE" ] \
-            && [ "$BEFORE" != "0000000000000000000000000000000000000000" ] \
-            && git rev-parse --verify "${BEFORE}^{commit}" >/dev/null 2>&1; then
-            # Compare against the commit the branch pointed at before the push,
-            # so every commit of the push is considered.
-            BASE="$BEFORE"
-          else
-            # Fallback for manual runs and unusual push events.
-            BASE="HEAD^1"
-          fi
-
-          echo "Using base: ${BASE}"
-          echo "ref=${BASE}" >> "$GITHUB_OUTPUT"
 
       - name: Set up pnpm
         uses: pnpm/action-setup@v4
@@ -77,9 +55,17 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Cache turbo
+        uses: actions/cache@v4
+        with:
+          path: .turbo
+          key: ${{ runner.os }}-turbo-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-turbo-
+
       - name: Apply database migrations
         working-directory: api
         run: pnpm exec prisma migrate deploy
 
-      - name: Run tests for affected packages
-        run: pnpm exec turbo test --filter="...[${{ steps.base.outputs.ref }}]"
+      - name: Run tests
+        run: pnpm exec turbo test ${{ inputs.force && '--force' || '' }}
