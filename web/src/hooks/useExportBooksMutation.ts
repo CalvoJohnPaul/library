@@ -1,3 +1,4 @@
+import {FailedHttpResponseDefinition} from '@library/types';
 import {type UseMutationOptions, useMutation} from '@tanstack/react-query';
 import {API_BASE_URL} from '@/config/env';
 import {downloadFile} from '@/utils/downloadFile';
@@ -28,7 +29,17 @@ export function useExportBooksMutation(
 				credentials: 'include',
 			});
 
-			await downloadFile(res, `books-${Date.now()}.xlsx`);
+			if (!res.ok) {
+				const obj = FailedHttpResponseDefinition.parse(await res.json());
+				const err = new Error();
+				err.name = obj.error.name;
+				err.message = obj.error.message;
+				throw err;
+			}
+
+			const blob = await res.blob();
+
+			downloadFile(blob, `books-${Date.now()}.xlsx`);
 		},
 	});
 }
