@@ -53,7 +53,7 @@ function DeltaBadge({
 	return (
 		<span
 			className={cx(
-				'flex w-fit items-center gap-1 rounded-full border px-2 py-0.5 text-xs font-medium',
+				'flex w-fit items-center gap-1 rounded-full border px-2 py-0.5 font-medium text-xs',
 				DELTA_BADGE_ACCENTS[direction],
 				className,
 			)}
