@@ -102,7 +102,25 @@ describe('stats routes', () => {
 
 			assert.ok(activity.at(-1).totalBooksBorrowed >= 1);
 			assert.ok(Array.isArray(body.data.topBorrowedBooksThisMonth));
-			assert.ok(body.data.topBorrowedBooksThisMonth.length <= 5);
+			assert.ok(body.data.topBorrowedBooksThisMonth.length <= 30);
+			assert.equal(typeof body.data.topBorrowedBooksThisMonth[0]?.book.genre, 'string');
+
+			assert.ok(Array.isArray(body.data.topBorrowedMembersThisMonth));
+			assert.ok(body.data.topBorrowedMembersThisMonth.length <= 5);
+			assert.ok(body.data.topBorrowedMembersThisMonth[0]?.total >= 1);
+			assert.equal(typeof body.data.topBorrowedMembersThisMonth[0]?.member.externalId, 'string');
+
+			const monthOverMonth = body.data.monthOverMonth;
+
+			assert.equal(typeof monthOverMonth.newBooks.current, 'number');
+			assert.equal(typeof monthOverMonth.newBooks.previous, 'number');
+			assert.equal(typeof monthOverMonth.newCopies.current, 'number');
+			assert.equal(typeof monthOverMonth.newCopies.previous, 'number');
+			assert.equal(typeof monthOverMonth.newMembers.current, 'number');
+			assert.equal(typeof monthOverMonth.newMembers.previous, 'number');
+			assert.equal(typeof monthOverMonth.borrows.current, 'number');
+			assert.equal(typeof monthOverMonth.borrows.previous, 'number');
+			assert.ok(monthOverMonth.borrows.current >= 1);
 
 			const fantasy = body.data.totalBookCopiesByGenre.find(
 				(genre: {genre: string}) => genre.genre === 'FANTASY',
