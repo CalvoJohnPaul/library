@@ -7,10 +7,7 @@ import type {Merge} from 'type-fest';
 import * as z from 'zod';
 import {useLocalStorage} from '@/hooks/useLocalStorage';
 import {splitProps} from '@/utils/splitProps';
-import type {
-	AsyncComboboxField__multiProps,
-	AsyncComboboxField__singleProps,
-} from '../forms/AsyncComboboxField';
+import type {AsyncComboboxFieldProps} from '../forms/AsyncComboboxField';
 import type {ComboboxFieldProps} from '../forms/ComboboxField';
 import type {DateRangeFieldProps} from '../forms/DateRangeField';
 import type {NumberRangeFieldProps} from '../forms/NumberRangeField';
@@ -25,8 +22,8 @@ export type DataTableFilter =
 	| Merge<Extract<SelectFieldProps, {multiple?: false}>, {type: 'SELECT'}>
 	| Merge<Extract<ComboboxFieldProps, {multiple: true}>, {type: 'COMBOBOX'}>
 	| Merge<Extract<ComboboxFieldProps, {multiple?: false}>, {type: 'COMBOBOX'}>
-	| Merge<Extract<AsyncComboboxField__multiProps, {multiple: true}>, {type: 'ASYNC_COMBOBOX'}>
-	| Merge<Extract<AsyncComboboxField__singleProps, {multiple?: false}>, {type: 'ASYNC_COMBOBOX'}>
+	| Merge<Extract<AsyncComboboxFieldProps, {multiple: true}>, {type: 'ASYNC_COMBOBOX'}>
+	| Merge<Extract<AsyncComboboxFieldProps, {multiple?: false}>, {type: 'ASYNC_COMBOBOX'}>
 	| Merge<NumberRangeFieldProps, {type: 'NUMBER_RANGE'}>
 	| Merge<DateRangeFieldProps, {type: 'DATE_RANGE'}>;
 
