@@ -168,7 +168,7 @@ export function useDataTable<Data = any>({
 	});
 
 	const [columnsOrder, setColumnsOrder] = useLocalStorage<string[]>(
-		'library/data-table/columns-order',
+		`library/data-table/${id}/columns-order`,
 		props.columns.map((col) => col.id),
 		{
 			serialize(value) {
@@ -185,7 +185,7 @@ export function useDataTable<Data = any>({
 	);
 
 	const [hiddenColumns, setHiddenColumns] = useLocalStorage<string[]>(
-		'library/data-table/hidden-columns',
+		`library/data-table/${id}/hidden-columns`,
 		props.columns.filter((col) => col.defaultHidden).map((col) => col.id),
 		{
 			serialize(value) {

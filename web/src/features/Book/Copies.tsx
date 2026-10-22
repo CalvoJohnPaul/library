@@ -1,20 +1,20 @@
 import {createListCollection, Portal} from '@ark-ui/react';
-import {
-	type BookCopySortByInput,
-	BookCopySortByInputDefinition,
-	type BookCopyStatus,
-	BookCopyStatusDefinition,
-	type SortOrder,
-} from '@library/types';
+import {BookCopySortByInputDefinition, BookCopyStatusDefinition, SortOrderDefinition} from '@library/types';
 import {format} from 'date-fns';
 import {SettingsIcon} from 'lucide-react';
-import {useReducer} from 'react';
+import {
+	parseAsInteger,
+	parseAsIsoDate,
+	parseAsNativeArrayOf,
+	parseAsString,
+	parseAsStringEnum,
+	useQueryStates,
+} from 'nuqs';
 import {DataTable} from '@/components/DataTable';
 import {Badge} from '@/components/ui/Badge';
 import {Menu} from '@/components/ui/Menu';
 import {type BookCopiesInput, useBookCopiesQuery} from '@/hooks/useBookCopiesQuery';
 import {useExportBookCopiesMutation} from '@/hooks/useExportBookCopiesMutation';
-import type {DateRange} from '@/types/index';
 import {getBookCopyStatusLabel, getBookCopyStatusOptions} from '@/utils/common';
 import {toaster} from '@/utils/toaster';
 import {useBookContext} from './BookContext';
@@ -24,27 +24,21 @@ import {DeleteCopy} from './DeleteCopy';
 import {EditCopy} from './EditCopy';
 import {ReturnCopy} from './ReturnCopy';
 
-interface State {
-	page: number;
-	pageSize: number;
-	isbn?: string | null;
-	status?: BookCopyStatus[] | null;
-	sortBy?: BookCopySortByInput | null;
-	dateTimeCreated?: DateRange | null;
-	dateTimeUpdated?: DateRange | null;
-	sortOrder?: SortOrder | null;
-}
-
 export function Copies() {
 	const book = useBookContext();
 
-	const [state, setState] = useReducer(
-		(prev: State, next: Partial<State>) => ({...prev, ...next}),
-		{
-			page: 1,
-			pageSize: 10,
-		},
-	);
+	const [state, setState] = useQueryStates({
+		page: parseAsInteger.withDefault(1),
+		pageSize: parseAsInteger.withDefault(10),
+		isbn: parseAsString,
+		status: parseAsNativeArrayOf(parseAsStringEnum(BookCopyStatusDefinition.options)),
+		sortBy: parseAsStringEnum(BookCopySortByInputDefinition.options),
+		dateTimeCreated__from: parseAsIsoDate,
+		dateTimeCreated__to: parseAsIsoDate,
+		dateTimeUpdated__from: parseAsIsoDate,
+		dateTimeUpdated__to: parseAsIsoDate,
+		sortOrder: parseAsStringEnum(SortOrderDefinition.options),
+	});
 
 	const filters = {
 		page: state.page,
@@ -62,16 +56,16 @@ export function Copies() {
 				in: state.status,
 			},
 		}),
-		...((state.dateTimeCreated?.from || state.dateTimeCreated?.to) && {
+		...((state.dateTimeCreated__from != null || state.dateTimeCreated__to != null) && {
 			dateTimeCreated: {
-				gte: state.dateTimeCreated.from,
-				lte: state.dateTimeCreated.to,
+				gte: state.dateTimeCreated__from ?? null,
+				lte: state.dateTimeCreated__to ?? null,
 			},
 		}),
-		...((state.dateTimeUpdated?.from || state.dateTimeUpdated?.to) && {
+		...((state.dateTimeUpdated__from != null || state.dateTimeUpdated__to != null) && {
 			dateTimeUpdated: {
-				gte: state.dateTimeUpdated.from,
-				lte: state.dateTimeUpdated.to,
+				gte: state.dateTimeUpdated__from ?? null,
+				lte: state.dateTimeUpdated__to ?? null,
 			},
 		}),
 		...(state.sortBy && {
@@ -111,7 +105,7 @@ export function Copies() {
 						type: 'TEXT',
 						placeholder: 'Enter ISBN',
 						value: state.isbn ?? '',
-						onChange: (value) => setState({isbn: value}),
+						onChange: (value) => setState({isbn: value || null}),
 					},
 				},
 				{
@@ -147,8 +141,16 @@ export function Copies() {
 					filter: {
 						type: 'DATE_RANGE',
 						placeholder: 'Select date',
-						value: state.dateTimeCreated ?? null,
-						onChange: (dateTimeCreated) => setState({dateTimeCreated}),
+						value: {
+							from: state.dateTimeCreated__from ?? null,
+							to: state.dateTimeCreated__to ?? null,
+						},
+						onChange: (dateTimeCreated) => {
+							setState({
+								dateTimeCreated__from: dateTimeCreated?.from ?? null,
+								dateTimeCreated__to: dateTimeCreated?.to ?? null,
+							});
+						},
 					},
 					sortable: true,
 				},
@@ -161,8 +163,16 @@ export function Copies() {
 					filter: {
 						type: 'DATE_RANGE',
 						placeholder: 'Select date',
-						value: state.dateTimeUpdated ?? null,
-						onChange: (dateTimeUpdated) => setState({dateTimeUpdated}),
+						value: {
+							from: state.dateTimeUpdated__from ?? null,
+							to: state.dateTimeUpdated__to ?? null,
+						},
+						onChange: (dateTimeUpdated) => {
+							setState({
+								dateTimeUpdated__from: dateTimeUpdated?.from ?? null,
+								dateTimeUpdated__to: dateTimeUpdated?.to ?? null,
+							});
+						},
 					},
 					sortable: true,
 				},

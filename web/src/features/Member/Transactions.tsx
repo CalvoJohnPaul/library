@@ -1,17 +1,21 @@
 import {createListCollection, Portal} from '@ark-ui/react';
 import {
-	type SortOrder,
-	type TransactionSortByInput,
+	SortOrderDefinition,
 	TransactionSortByInputDefinition,
-	type TransactionStatus,
 	TransactionStatusDefinition,
-	type TransactionType,
 	TransactionTypeDefinition,
 } from '@library/types';
 import {addDays, differenceInDays, format} from 'date-fns';
 import {clamp} from 'es-toolkit';
 import {AlertTriangleIcon, SettingsIcon} from 'lucide-react';
-import {useReducer} from 'react';
+import {
+	parseAsInteger,
+	parseAsIsoDate,
+	parseAsNativeArrayOf,
+	parseAsString,
+	parseAsStringEnum,
+	useQueryStates,
+} from 'nuqs';
 import {Link} from 'react-router';
 import {DataTable} from '@/components/DataTable';
 import {Badge} from '@/components/ui/Badge';
@@ -20,7 +24,6 @@ import {Tooltip} from '@/components/ui/Tooltip';
 import {type BooksInput, useBooksQuery} from '@/hooks/useBooksQuery';
 import {useExportTransactionsMutation} from '@/hooks/useExportTransactionsMutation';
 import {type TransactionsInput, useTransactionsQuery} from '@/hooks/useTransactionsQuery';
-import type {DateRange} from '@/types/index';
 import {client} from '@/utils/client';
 import {
 	getTransactionStatusLabel,
@@ -33,27 +36,20 @@ import {useMemberContext} from './MemberContext';
 import {ReturnBookCopy} from './ReturnBookCopy';
 import {TransactionProvider} from './TransactionContext';
 
-interface State {
-	page: number;
-	pageSize: number;
-	ticket?: string | null;
-	type?: TransactionType[] | null;
-	status?: TransactionStatus[] | null;
-	book?: string[] | null;
-	dateTimeCreated?: DateRange | null;
-	sortBy?: TransactionSortByInput | null;
-	sortOrder?: SortOrder | null;
-}
-
 export function Transactions() {
 	const member = useMemberContext();
-	const [state, setState] = useReducer(
-		(prev: State, next: Partial<State>) => ({...prev, ...next}),
-		{
-			page: 1,
-			pageSize: 10,
-		},
-	);
+	const [state, setState] = useQueryStates({
+		page: parseAsInteger.withDefault(1),
+		pageSize: parseAsInteger.withDefault(10),
+		ticket: parseAsString,
+		type: parseAsNativeArrayOf(parseAsStringEnum(TransactionTypeDefinition.options)),
+		status: parseAsNativeArrayOf(parseAsStringEnum(TransactionStatusDefinition.options)),
+		book: parseAsNativeArrayOf(parseAsString),
+		dateTimeCreated__from: parseAsIsoDate,
+		dateTimeCreated__to: parseAsIsoDate,
+		sortBy: parseAsStringEnum(TransactionSortByInputDefinition.options),
+		sortOrder: parseAsStringEnum(SortOrderDefinition.options),
+	});
 
 	const filters = {
 		page: state.page,
@@ -81,10 +77,10 @@ export function Transactions() {
 				in: state.book,
 			},
 		}),
-		...((state.dateTimeCreated?.from || state.dateTimeCreated?.to) && {
+		...((state.dateTimeCreated__from != null || state.dateTimeCreated__to != null) && {
 			dateTimeCreated: {
-				gte: state.dateTimeCreated?.from,
-				lte: state.dateTimeCreated?.to,
+				gte: state.dateTimeCreated__from ?? null,
+				lte: state.dateTimeCreated__to ?? null,
 			},
 		}),
 		...(state.sortBy && {
@@ -144,7 +140,7 @@ export function Transactions() {
 						type: 'TEXT',
 						placeholder: 'Enter ticket',
 						value: state.ticket ?? '',
-						onChange: (value) => setState({ticket: value}),
+						onChange: (value) => setState({ticket: value || null}),
 					},
 				},
 				{
@@ -189,16 +185,23 @@ export function Transactions() {
 					},
 					filter: {
 						type: 'ASYNC_COMBOBOX',
-						options: async (search) => {
-							if (search.trim() === '') return [];
+						options: async (search, value) => {
+							let input: BooksInput;
 
-							try {
-								const input: BooksInput = {
+							if (search.trim() === '' && value.length > 0) {
+								input = {
+									title: {in: value},
+									page: 1,
+								};
+							} else {
+								input = {
 									title: {contains: search},
 									page: 1,
 									pageSize: 25,
 								};
+							}
 
+							try {
 								const data = await client.query({
 									queryFn: useBooksQuery.getQueryFn(input),
 									queryKey: useBooksQuery.getQueryKey(input),
@@ -283,8 +286,16 @@ export function Transactions() {
 					filter: {
 						type: 'DATE_RANGE',
 						placeholder: 'Select date',
-						value: state.dateTimeCreated ?? null,
-						onChange: (dateTimeCreated) => setState({dateTimeCreated}),
+						value: {
+							from: state.dateTimeCreated__from ?? null,
+							to: state.dateTimeCreated__to ?? null,
+						},
+						onChange: (dateTimeCreated) => {
+							setState({
+								dateTimeCreated__from: dateTimeCreated?.from ?? null,
+								dateTimeCreated__to: dateTimeCreated?.to ?? null,
+							});
+						},
 					},
 					sortable: true,
 					hideable: true,

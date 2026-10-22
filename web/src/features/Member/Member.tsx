@@ -1,5 +1,6 @@
 import {ArrowLeftIcon} from 'lucide-react';
-import {Link, useParams} from 'react-router';
+import {Link, useNavigate, useParams, useSearchParams} from 'react-router';
+import * as z from 'zod';
 import {SpinnerIcon} from '@/components/icons/SpinnerIcon';
 import {Button} from '@/components/ui/Button/Button';
 import {Tabs} from '@/components/ui/Tabs';
@@ -8,9 +9,23 @@ import {MemberProvider} from './MemberContext';
 import {Settings} from './Settings';
 import {Transactions} from './Transactions';
 
+const TabDefinition = z.enum(['transactions', 'settings']).catch('transactions');
+
 export function Member() {
 	const {id} = useParams<{id: string}>();
 	const query = useMemberQuery(id ? parseInt(id, 10) : null);
+	const navigate = useNavigate();
+	const [search] = useSearchParams();
+	const tab = TabDefinition.parse(search.get('tab'));
+	const setTab = (value: string) => {
+		const tab = TabDefinition.parse(value);
+
+		if (tab === 'transactions') {
+			navigate(`/members/${id}`);
+		} else {
+			navigate(`/members/${id}?tab=${tab}`);
+		}
+	};
 
 	if (!id) return null;
 
@@ -59,7 +74,14 @@ export function Member() {
 					</div>
 				</div>
 
-				<Tabs.Root defaultValue="transactions" lazyMount unmountOnExit>
+				<Tabs.Root
+					value={tab}
+					onValueChange={(details) => {
+						setTab(details.value);
+					}}
+					lazyMount
+					unmountOnExit
+				>
 					<Tabs.List className="mb-8 w-100">
 						<Tabs.Trigger value="transactions">Transactions</Tabs.Trigger>
 						<Tabs.Trigger value="settings">Settings</Tabs.Trigger>

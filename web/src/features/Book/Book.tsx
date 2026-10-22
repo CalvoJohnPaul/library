@@ -1,5 +1,6 @@
 import {ArrowLeftIcon} from 'lucide-react';
-import {Link, useParams} from 'react-router';
+import {Link, useNavigate, useParams, useSearchParams} from 'react-router';
+import * as z from 'zod';
 import {SpinnerIcon} from '@/components/icons/SpinnerIcon';
 import {Button} from '@/components/ui/Button';
 import {Tabs} from '@/components/ui/Tabs';
@@ -10,9 +11,23 @@ import {Copies} from './Copies';
 import {Settings} from './Settings';
 import {Transactions} from './Transactions';
 
+const TabDefinition = z.enum(['copies', 'transactions', 'settings']).catch('copies');
+
 export function Book() {
 	const {id} = useParams<{id: string}>();
 	const query = useBookQuery(id ? parseInt(id, 10) : null);
+	const navigate = useNavigate();
+	const [search] = useSearchParams();
+	const tab = TabDefinition.parse(search.get('tab'));
+	const setTab = (value: string) => {
+		const tab = TabDefinition.parse(value);
+
+		if (tab === 'copies') {
+			navigate(`/books/${id}`);
+		} else {
+			navigate(`/books/${id}?tab=${tab}`);
+		}
+	};
 
 	if (!id) return null;
 
@@ -47,7 +62,14 @@ export function Book() {
 		<>
 			<title>{`${query.data.title} | read.`}</title>
 			<BookProvider value={query.data}>
-				<Tabs.Root defaultValue="copies" lazyMount unmountOnExit>
+				<Tabs.Root
+					value={tab}
+					onValueChange={(details) => {
+						setTab(details.value);
+					}}
+					lazyMount
+					unmountOnExit
+				>
 					<div>
 						<Link to="/books" className="flex items-center gap-1 text-blue-500 text-xs">
 							<ArrowLeftIcon className="size-3.5" />

@@ -1,9 +1,16 @@
 import {createListCollection, Portal} from '@ark-ui/react';
-import {type MemberSortByInput, MemberSortByInputDefinition, type SortOrder} from '@library/types';
+import {MemberSortByInputDefinition, SortOrderDefinition} from '@library/types';
 import {format} from 'date-fns';
 import {uniq} from 'es-toolkit/compat';
 import {PlusIcon, SettingsIcon} from 'lucide-react';
-import {useReducer} from 'react';
+import {
+	parseAsInteger,
+	parseAsIsoDate,
+	parseAsNativeArrayOf,
+	parseAsString,
+	parseAsStringEnum,
+	useQueryStates,
+} from 'nuqs';
 import {Link} from 'react-router';
 import {DataTable} from '@/components/DataTable';
 import {IconButton} from '@/components/ui/IconButton';
@@ -11,7 +18,6 @@ import {Menu} from '@/components/ui/Menu';
 import {Tooltip} from '@/components/ui/Tooltip';
 import {useExportMembersMutation} from '@/hooks/useExportMembersMutation';
 import {type MembersInput, useMembersQuery} from '@/hooks/useMembersQuery';
-import type {DateRange} from '@/types/index';
 import {client} from '@/utils/client';
 import {getMemberCourseOptions, getMemberYearAndSectionOptions} from '@/utils/common';
 import {toaster} from '@/utils/toaster';
@@ -20,28 +26,23 @@ import {DeleteMember} from './DeleteMember';
 import {EditMember} from './EditMember';
 import {MemberProvider} from './MemberContext';
 
-interface State {
-	page: number;
-	pageSize: number;
-	externalId?: string[] | null;
-	name?: string[] | null;
-	course?: string[] | null;
-	yearAndSection?: string[] | null;
-	dateTimeLastBorrowedBook?: DateRange | null;
-	dateTimeCreated?: DateRange | null;
-	dateTimeUpdated?: DateRange | null;
-	sortBy?: MemberSortByInput | null;
-	sortOrder?: SortOrder | null;
-}
-
 export function Members() {
-	const [state, setState] = useReducer(
-		(prev: State, next: Partial<State>) => ({...prev, ...next}),
-		{
-			page: 1,
-			pageSize: 10,
-		},
-	);
+	const [state, setState] = useQueryStates({
+		page: parseAsInteger.withDefault(1),
+		pageSize: parseAsInteger.withDefault(10),
+		externalId: parseAsNativeArrayOf(parseAsString),
+		name: parseAsNativeArrayOf(parseAsString),
+		course: parseAsNativeArrayOf(parseAsString),
+		yearAndSection: parseAsNativeArrayOf(parseAsString),
+		dateTimeLastBorrowedBook__from: parseAsIsoDate,
+		dateTimeLastBorrowedBook__to: parseAsIsoDate,
+		dateTimeCreated__from: parseAsIsoDate,
+		dateTimeCreated__to: parseAsIsoDate,
+		dateTimeUpdated__from: parseAsIsoDate,
+		dateTimeUpdated__to: parseAsIsoDate,
+		sortBy: parseAsStringEnum(MemberSortByInputDefinition.options),
+		sortOrder: parseAsStringEnum(SortOrderDefinition.options),
+	});
 
 	const id = uniq([...(state.name ?? []), ...(state.externalId ?? [])]);
 
@@ -63,22 +64,23 @@ export function Members() {
 				in: state.yearAndSection,
 			},
 		}),
-		...((state.dateTimeLastBorrowedBook?.from || state.dateTimeLastBorrowedBook?.to) && {
+		...((state.dateTimeLastBorrowedBook__from != null ||
+			state.dateTimeLastBorrowedBook__to != null) && {
 			dateTimeLastBorrowedBook: {
-				gte: state.dateTimeLastBorrowedBook?.from,
-				lte: state.dateTimeLastBorrowedBook?.to,
+				gte: state.dateTimeLastBorrowedBook__from ?? null,
+				lte: state.dateTimeLastBorrowedBook__to ?? null,
 			},
 		}),
-		...((state.dateTimeCreated?.from || state.dateTimeCreated?.to) && {
+		...((state.dateTimeCreated__from != null || state.dateTimeCreated__to != null) && {
 			dateTimeCreated: {
-				gte: state.dateTimeCreated?.from,
-				lte: state.dateTimeCreated?.to,
+				gte: state.dateTimeCreated__from ?? null,
+				lte: state.dateTimeCreated__to ?? null,
 			},
 		}),
-		...((state.dateTimeUpdated?.from || state.dateTimeUpdated?.to) && {
+		...((state.dateTimeUpdated__from != null || state.dateTimeUpdated__to != null) && {
 			dateTimeUpdated: {
-				gte: state.dateTimeUpdated?.from,
-				lte: state.dateTimeUpdated?.to,
+				gte: state.dateTimeUpdated__from ?? null,
+				lte: state.dateTimeUpdated__to ?? null,
 			},
 		}),
 		...(state.sortBy && {
@@ -132,16 +134,23 @@ export function Members() {
 							placeholder: 'Enter ID',
 							value: state.externalId ?? [],
 							onChange: (externalId) => setState({externalId}),
-							options: async (search) => {
-								if (search.trim() === '') return [];
+							options: async (search, value) => {
+								let input: MembersInput;
 
-								try {
-									const input: MembersInput = {
+								if (search.trim() === '' && value.length > 0) {
+									input = {
+										id: {in: value},
+										page: 1,
+									};
+								} else {
+									input = {
 										externalId: {contains: search},
 										page: 1,
 										pageSize: 25,
 									};
+								}
 
+								try {
 									const data = await client.query({
 										queryKey: useMembersQuery.getQueryKey(input),
 										queryFn: useMembersQuery.getQueryFn(input),
@@ -166,16 +175,23 @@ export function Members() {
 						filter: {
 							type: 'ASYNC_COMBOBOX',
 							multiple: true,
-							options: async (search) => {
-								if (search.trim() === '') return [];
+							options: async (search, value) => {
+								let input: MembersInput;
 
-								try {
-									const input: MembersInput = {
+								if (search.trim() === '' && value.length > 0) {
+									input = {
+										id: {in: value},
+										page: 1,
+									};
+								} else {
+									input = {
 										name: {contains: search},
 										page: 1,
 										pageSize: 25,
 									};
+								}
 
+								try {
 									const data = await client.query({
 										queryKey: useMembersQuery.getQueryKey(input),
 										queryFn: useMembersQuery.getQueryFn(input),
@@ -236,8 +252,16 @@ export function Members() {
 						filter: {
 							type: 'DATE_RANGE',
 							placeholder: 'Select date',
-							value: state.dateTimeLastBorrowedBook ?? null,
-							onChange: (dateTimeLastBorrowedBook) => setState({dateTimeLastBorrowedBook}),
+							value: {
+								from: state.dateTimeLastBorrowedBook__from ?? null,
+								to: state.dateTimeLastBorrowedBook__to ?? null,
+							},
+							onChange: (dateTimeLastBorrowedBook) => {
+								setState({
+									dateTimeLastBorrowedBook__from: dateTimeLastBorrowedBook?.from ?? null,
+									dateTimeLastBorrowedBook__to: dateTimeLastBorrowedBook?.to ?? null,
+								});
+							},
 						},
 						sortable: true,
 						hideable: true,
@@ -250,8 +274,16 @@ export function Members() {
 						filter: {
 							type: 'DATE_RANGE',
 							placeholder: 'Select date',
-							value: state.dateTimeCreated ?? null,
-							onChange: (dateTimeCreated) => setState({dateTimeCreated}),
+							value: {
+								from: state.dateTimeCreated__from ?? null,
+								to: state.dateTimeCreated__to ?? null,
+							},
+							onChange: (dateTimeCreated) => {
+								setState({
+									dateTimeCreated__from: dateTimeCreated?.from ?? null,
+									dateTimeCreated__to: dateTimeCreated?.to ?? null,
+								});
+							},
 						},
 						sortable: true,
 						hideable: true,
@@ -264,8 +296,16 @@ export function Members() {
 						filter: {
 							type: 'DATE_RANGE',
 							placeholder: 'Select date',
-							value: state.dateTimeUpdated ?? null,
-							onChange: (dateTimeUpdated) => setState({dateTimeUpdated}),
+							value: {
+								from: state.dateTimeUpdated__from ?? null,
+								to: state.dateTimeUpdated__to ?? null,
+							},
+							onChange: (dateTimeUpdated) => {
+								setState({
+									dateTimeUpdated__from: dateTimeUpdated?.from ?? null,
+									dateTimeUpdated__to: dateTimeUpdated?.to ?? null,
+								});
+							},
 						},
 						sortable: true,
 						hideable: true,

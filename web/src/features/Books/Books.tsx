@@ -140,16 +140,23 @@ export function Books() {
 							onChange(title) {
 								setState({title});
 							},
-							options: async (search) => {
-								if (search.trim() === '') return [];
+							options: async (search, value) => {
+								let input: BooksInput;
 
-								try {
-									const input: BooksInput = {
+								if (search.trim() === '' && value.length > 0) {
+									input = {
+										id: {in: value},
+										page: 1,
+									};
+								} else {
+									input = {
 										title: {contains: search},
 										page: 1,
 										pageSize: 25,
 									};
+								}
 
+								try {
 									const data = await client.query({
 										queryKey: useBooksQuery.getQueryKey(input),
 										queryFn: useBooksQuery.getQueryFn(input),
