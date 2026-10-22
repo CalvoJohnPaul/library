@@ -1,15 +1,17 @@
 import {createListCollection, Portal} from '@ark-ui/react';
-import {
-	type BookGenre,
-	BookGenreDefinition,
-	type BookSortByInput,
-	BookSortByInputDefinition,
-	type SortOrder,
-} from '@library/types';
+import {BookGenreDefinition, BookSortByInputDefinition, SortOrderDefinition} from '@library/types';
 import {format} from 'date-fns';
 import {uniq} from 'es-toolkit';
 import {CheckIcon, PlusIcon, SettingsIcon, XIcon} from 'lucide-react';
-import {useReducer} from 'react';
+import {
+	parseAsBoolean,
+	parseAsInteger,
+	parseAsIsoDate,
+	parseAsNativeArrayOf,
+	parseAsString,
+	parseAsStringEnum,
+	useQueryStates,
+} from 'nuqs';
 import {Link} from 'react-router';
 import {DataTable} from '@/components/DataTable';
 import {Badge} from '@/components/ui/Badge';
@@ -18,7 +20,6 @@ import {Menu} from '@/components/ui/Menu';
 import {Tooltip} from '@/components/ui/Tooltip';
 import {type BooksInput, useBooksQuery} from '@/hooks/useBooksQuery';
 import {useExportBooksMutation} from '@/hooks/useExportBooksMutation';
-import type {DateRange} from '@/types/index';
 import {client} from '@/utils/client';
 import {getBookGenreLabel, getBookGenreOptions, getBookYearPublishedOptions} from '@/utils/common';
 import {toaster} from '@/utils/toaster';
@@ -27,31 +28,22 @@ import {BookProvider} from './BookContext';
 import {DeleteBook} from './DeleteBook';
 import {EditBook} from './EditBook';
 
-interface State {
-	page: number;
-	pageSize: number;
-	title?: string[] | null;
-	author?: string | null;
-	genre?: BookGenre[] | null;
-	yearPublished?: number[] | null;
-	available?: boolean | null;
-	dateTimeCreated?: DateRange | null;
-	dateTimeUpdated?: DateRange | null;
-	sortBy?: BookSortByInput | null;
-	sortOrder?: SortOrder | null;
-}
-
 export function Books() {
-	const [state, setState] = useReducer(
-		(prev: State, next: Partial<State>) => ({
-			...prev,
-			...next,
-		}),
-		{
-			page: 1,
-			pageSize: 10,
-		},
-	);
+	const [state, setState] = useQueryStates({
+		page: parseAsInteger.withDefault(1),
+		pageSize: parseAsInteger.withDefault(10),
+		title: parseAsNativeArrayOf(parseAsString),
+		author: parseAsString,
+		genre: parseAsNativeArrayOf(parseAsStringEnum(BookGenreDefinition.options)),
+		yearPublished: parseAsNativeArrayOf(parseAsInteger),
+		available: parseAsBoolean,
+		dateTimeCreated__from: parseAsIsoDate,
+		dateTimeCreated__to: parseAsIsoDate,
+		dateTimeUpdated__from: parseAsIsoDate,
+		dateTimeUpdated__to: parseAsIsoDate,
+		sortBy: parseAsStringEnum(BookSortByInputDefinition.options),
+		sortOrder: parseAsStringEnum(SortOrderDefinition.options),
+	});
 
 	const id = uniq([...(state.title ?? []) /* merge ids here */]);
 	const filters = {
@@ -82,16 +74,16 @@ export function Books() {
 				eq: state.available,
 			},
 		}),
-		...((state.dateTimeCreated?.from != null || state.dateTimeCreated?.to != null) && {
+		...((state.dateTimeCreated__from != null || state.dateTimeCreated__to != null) && {
 			dateTimeCreated: {
-				gte: state.dateTimeCreated?.from ?? null,
-				lte: state.dateTimeCreated?.to ?? null,
+				gte: state.dateTimeCreated__from ?? null,
+				lte: state.dateTimeCreated__to ?? null,
 			},
 		}),
-		...((state.dateTimeUpdated?.from != null || state.dateTimeUpdated?.to != null) && {
+		...((state.dateTimeUpdated__from != null || state.dateTimeUpdated__to != null) && {
 			dateTimeUpdated: {
-				gte: state.dateTimeUpdated?.from ?? null,
-				lte: state.dateTimeUpdated?.to ?? null,
+				gte: state.dateTimeUpdated__from ?? null,
+				lte: state.dateTimeUpdated__to ?? null,
 			},
 		}),
 		...(state.sortBy && {
@@ -184,7 +176,7 @@ export function Books() {
 							placeholder: 'Enter author',
 							value: state.author ?? '',
 							onChange(author) {
-								setState({author});
+								setState({author: author || null});
 							},
 						},
 						hideable: true,
@@ -283,9 +275,15 @@ export function Books() {
 						filter: {
 							type: 'DATE_RANGE',
 							placeholder: 'Pick a date',
-							value: state.dateTimeCreated ?? null,
+							value: {
+								from: state.dateTimeCreated__from ?? null,
+								to: state.dateTimeCreated__to ?? null,
+							},
 							onChange: (dateTimeCreated) => {
-								setState({dateTimeCreated});
+								setState({
+									dateTimeCreated__from: dateTimeCreated?.from ?? null,
+									dateTimeCreated__to: dateTimeCreated?.to ?? null,
+								});
 							},
 						},
 						sortable: true,
@@ -301,9 +299,15 @@ export function Books() {
 						filter: {
 							type: 'DATE_RANGE',
 							placeholder: 'Pick a date',
-							value: state.dateTimeUpdated ?? null,
+							value: {
+								from: state.dateTimeUpdated__from ?? null,
+								to: state.dateTimeUpdated__to ?? null,
+							},
 							onChange: (dateTimeUpdated) => {
-								setState({dateTimeUpdated});
+								setState({
+									dateTimeUpdated__from: dateTimeUpdated?.from ?? null,
+									dateTimeUpdated__to: dateTimeUpdated?.to ?? null,
+								});
 							},
 						},
 						sortable: true,
