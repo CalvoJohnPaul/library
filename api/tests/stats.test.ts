@@ -22,7 +22,6 @@ describe('stats routes', () => {
 	const EMAIL_PREFIX = 'route-tests+stats+';
 	const BOOK_TITLE_PREFIX = 'Route Tests Stats Book ';
 	const MEMBER_EXTERNAL_ID_PREFIX = 'Route Tests Stats Member ';
-	const ISBN_PREFIX = 'route-tests-stats-';
 
 	let server: FastifyInstance;
 	let account: TestAccount;
@@ -44,7 +43,7 @@ describe('stats routes', () => {
 		}));
 		book = await createTestBook(BOOK_TITLE_PREFIX);
 		member = await createTestMember(MEMBER_EXTERNAL_ID_PREFIX);
-		copy = await createTestBookCopy(ISBN_PREFIX, book.id);
+		copy = await createTestBookCopy(book.id);
 	});
 
 	after(async () => {
@@ -122,11 +121,11 @@ describe('stats routes', () => {
 			assert.equal(typeof monthOverMonth.borrows.previous, 'number');
 			assert.ok(monthOverMonth.borrows.current >= 1);
 
-			const fantasy = body.data.totalBookCopiesByGenre.find(
-				(genre: {genre: string}) => genre.genre === 'FANTASY',
+			const genre = body.data.totalBookCopiesByGenre.find(
+				(point: {genre: string}) => point.genre === book.genre,
 			);
 
-			assert.ok(fantasy?.total >= 1);
+			assert.ok(genre?.total >= 1);
 		});
 	});
 });

@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import {after, before, describe, it} from 'node:test';
 import type {FastifyInstance} from 'fastify';
+import {faker} from '@faker-js/faker';
 import {prisma} from '../src/config/prisma';
 import {
 	buildServer,
@@ -12,6 +13,7 @@ import {
 	deleteTestBooks,
 	deleteTestMembers,
 	disconnectPrisma,
+	fakeMemberInput,
 	login,
 	type TestAccount,
 	type TestMember,
@@ -21,13 +23,13 @@ describe('member routes', () => {
 	const EMAIL_PREFIX = 'route-tests+members+';
 	const MEMBER_EXTERNAL_ID_PREFIX = 'Route Tests Member ';
 	const BOOK_TITLE_PREFIX = 'Route Tests Member Book ';
-	const ISBN_PREFIX = 'route-tests-member-';
 
 	let server: FastifyInstance;
 	let account: TestAccount;
 	let cookie: string | undefined;
 	let token: string;
 	let member: TestMember;
+	let createdMemberExternalId: string;
 
 	before(async () => {
 		server = await buildServer();
@@ -56,7 +58,7 @@ describe('member routes', () => {
 				method: 'POST',
 				url: '/members',
 				headers: {'content-type': 'application/json'},
-				payload: {externalId: 'Route Tests Member', name: 'Route Tests'},
+				payload: fakeMemberInput(),
 			});
 
 			assert.equal(response.statusCode, 403);
@@ -79,33 +81,30 @@ describe('member routes', () => {
 		});
 
 		it('creates a member', async () => {
+			const input = fakeMemberInput(MEMBER_EXTERNAL_ID_PREFIX);
 			const response = await server.inject({
 				method: 'POST',
 				url: '/members',
 				headers: {cookie, 'x-csrf-token': token, 'content-type': 'application/json'},
-				payload: {
-					externalId: `${MEMBER_EXTERNAL_ID_PREFIX}Created`,
-					name: 'Route Tests Member',
-					course: 'BS Information Technology',
-					yearAndSection: '2-1',
-				},
+				payload: input,
 			});
 			const body = response.json();
 
 			assert.equal(response.statusCode, 201);
 			assert.equal(body.ok, true);
-			assert.equal(body.data.externalId, `${MEMBER_EXTERNAL_ID_PREFIX}Created`);
-			assert.equal(body.data.name, 'Route Tests Member');
-			assert.equal(body.data.course, 'BS Information Technology');
-			assert.equal(body.data.yearAndSection, '2-1');
+			assert.equal(body.data.externalId, input.externalId);
+			assert.equal(body.data.name, input.name);
+			assert.equal(body.data.course, input.course);
+			assert.equal(body.data.yearAndSection, input.yearAndSection);
 			assert.equal(body.data.dateTimeLastBorrowedBook, null);
 
 			const stored = await prisma.member.findUnique({
-				where: {externalId: `${MEMBER_EXTERNAL_ID_PREFIX}Created`},
+				where: {externalId: input.externalId},
 				select: {name: true},
 			});
 
-			assert.equal(stored?.name, 'Route Tests Member');
+			assert.equal(stored?.name, input.name);
+			createdMemberExternalId = input.externalId;
 		});
 
 		it('rejects a duplicate external id', async () => {
@@ -113,7 +112,7 @@ describe('member routes', () => {
 				method: 'POST',
 				url: '/members',
 				headers: {cookie, 'x-csrf-token': token, 'content-type': 'application/json'},
-				payload: {externalId: `${MEMBER_EXTERNAL_ID_PREFIX}Created`, name: 'Duplicate'},
+				payload: {externalId: createdMemberExternalId, name: faker.person.fullName()},
 			});
 
 			assert.equal(response.statusCode, 409);
@@ -189,7 +188,7 @@ describe('member routes', () => {
 				method: 'PATCH',
 				url: '/members/999999999',
 				headers: {cookie, 'x-csrf-token': token, 'content-type': 'application/json'},
-				payload: {name: 'Updated Name'},
+				payload: {name: faker.person.fullName()},
 			});
 
 			assert.equal(response.statusCode, 404);
@@ -204,7 +203,7 @@ describe('member routes', () => {
 				method: 'PATCH',
 				url: `/members/${member.id}`,
 				headers: {cookie, 'x-csrf-token': token, 'content-type': 'application/json'},
-				payload: {externalId: `${MEMBER_EXTERNAL_ID_PREFIX}Created`},
+				payload: {externalId: createdMemberExternalId},
 			});
 
 			assert.equal(response.statusCode, 409);
@@ -215,34 +214,35 @@ describe('member routes', () => {
 		});
 
 		it('updates a member', async () => {
+			const input = fakeMemberInput();
 			const response = await server.inject({
 				method: 'PATCH',
 				url: `/members/${member.id}`,
 				headers: {cookie, 'x-csrf-token': token, 'content-type': 'application/json'},
-				payload: {name: 'Updated Name', course: 'BS Data Science'},
+				payload: {name: input.name, course: input.course},
 			});
 			const body = response.json();
 
 			assert.equal(response.statusCode, 200);
 			assert.equal(body.ok, true);
 			assert.equal(body.data.id, member.id);
-			assert.equal(body.data.name, 'Updated Name');
-			assert.equal(body.data.course, 'BS Data Science');
+			assert.equal(body.data.name, input.name);
+			assert.equal(body.data.course, input.course);
 
 			const stored = await prisma.member.findUnique({
 				where: {id: member.id},
 				select: {name: true, course: true},
 			});
 
-			assert.equal(stored?.name, 'Updated Name');
-			assert.equal(stored?.course, 'BS Data Science');
+			assert.equal(stored?.name, input.name);
+			assert.equal(stored?.course, input.course);
 		});
 	});
 
 	describe('DELETE /members/:id', () => {
 		it('deletes a member', async () => {
 			const created = await prisma.member.findUnique({
-				where: {externalId: `${MEMBER_EXTERNAL_ID_PREFIX}Created`},
+				where: {externalId: createdMemberExternalId},
 				select: {id: true},
 			});
 
@@ -265,7 +265,7 @@ describe('member routes', () => {
 
 		it('releases borrowed copies when a member is deleted', async () => {
 			const book = await createTestBook(BOOK_TITLE_PREFIX);
-			const copy = await createTestBookCopy(ISBN_PREFIX, book.id);
+			const copy = await createTestBookCopy(book.id);
 			const borrower = await createTestMember(MEMBER_EXTERNAL_ID_PREFIX);
 
 			const borrow = await server.inject({

@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import {after, before, describe, it} from 'node:test';
 import type {FastifyInstance} from 'fastify';
+import {faker} from '@faker-js/faker';
 import {prisma} from '../src/config/prisma';
 import {
 	buildServer,
@@ -12,6 +13,7 @@ import {
 	deleteTestBooks,
 	deleteTestMembers,
 	disconnectPrisma,
+	fakeIsbn,
 	login,
 	type TestAccount,
 	type TestBook,
@@ -23,7 +25,6 @@ describe('book copy routes', () => {
 	const EMAIL_PREFIX = 'route-tests+book-copies+';
 	const BOOK_TITLE_PREFIX = 'Route Tests Copy Book ';
 	const MEMBER_EXTERNAL_ID_PREFIX = 'Route Tests Copy Member ';
-	const ISBN_PREFIX = 'route-tests-copy-';
 
 	let server: FastifyInstance;
 	let account: TestAccount;
@@ -34,6 +35,7 @@ describe('book copy routes', () => {
 	let copy: TestBookCopy;
 	let patchableCopy: TestBookCopy;
 	let borrowableCopy: TestBookCopy;
+	let createdIsbn: string;
 
 	before(async () => {
 		server = await buildServer();
@@ -47,9 +49,9 @@ describe('book copy routes', () => {
 		}));
 		book = await createTestBook(BOOK_TITLE_PREFIX);
 		member = await createTestMember(MEMBER_EXTERNAL_ID_PREFIX);
-		copy = await createTestBookCopy(ISBN_PREFIX, book.id);
-		patchableCopy = await createTestBookCopy(ISBN_PREFIX, book.id);
-		borrowableCopy = await createTestBookCopy(ISBN_PREFIX, book.id);
+		copy = await createTestBookCopy(book.id);
+		patchableCopy = await createTestBookCopy(book.id);
+		borrowableCopy = await createTestBookCopy(book.id);
 	});
 
 	after(async () => {
@@ -129,7 +131,7 @@ describe('book copy routes', () => {
 				method: 'POST',
 				url: '/book-copies',
 				headers: {'content-type': 'application/json'},
-				payload: {isbn: `${ISBN_PREFIX}created`, bookId: book.id},
+				payload: {isbn: fakeIsbn(), bookId: book.id},
 			});
 
 			assert.equal(response.statusCode, 403);
@@ -144,7 +146,7 @@ describe('book copy routes', () => {
 				method: 'POST',
 				url: '/book-copies',
 				headers: {cookie, 'x-csrf-token': token, 'content-type': 'application/json'},
-				payload: {isbn: `${ISBN_PREFIX}invalid`},
+				payload: {isbn: fakeIsbn()},
 			});
 
 			assert.equal(response.statusCode, 400);
@@ -156,7 +158,7 @@ describe('book copy routes', () => {
 				method: 'POST',
 				url: '/book-copies',
 				headers: {cookie, 'x-csrf-token': token, 'content-type': 'application/json'},
-				payload: {isbn: `${ISBN_PREFIX}unknown-book`, bookId: 999999999},
+				payload: {isbn: fakeIsbn(), bookId: 999999999},
 			});
 
 			assert.equal(response.statusCode, 400);
@@ -167,22 +169,23 @@ describe('book copy routes', () => {
 		});
 
 		it('creates a book copy', async () => {
+			createdIsbn = fakeIsbn();
 			const response = await server.inject({
 				method: 'POST',
 				url: '/book-copies',
 				headers: {cookie, 'x-csrf-token': token, 'content-type': 'application/json'},
-				payload: {isbn: `${ISBN_PREFIX}created`, bookId: book.id},
+				payload: {isbn: createdIsbn, bookId: book.id},
 			});
 			const body = response.json();
 
 			assert.equal(response.statusCode, 201);
 			assert.equal(body.ok, true);
-			assert.equal(body.data.isbn, `${ISBN_PREFIX}created`);
+			assert.equal(body.data.isbn, createdIsbn);
 			assert.equal(body.data.status, 'AVAILABLE');
 			assert.equal(body.data.book.id, book.id);
 
 			const stored = await prisma.bookCopy.findUnique({
-				where: {isbn: `${ISBN_PREFIX}created`},
+				where: {isbn: createdIsbn},
 				select: {bookId: true, status: true},
 			});
 
@@ -195,7 +198,7 @@ describe('book copy routes', () => {
 				method: 'POST',
 				url: '/book-copies',
 				headers: {cookie, 'x-csrf-token': token, 'content-type': 'application/json'},
-				payload: {isbn: `${ISBN_PREFIX}created`, bookId: book.id},
+				payload: {isbn: createdIsbn, bookId: book.id},
 			});
 
 			assert.equal(response.statusCode, 409);
@@ -212,7 +215,7 @@ describe('book copy routes', () => {
 				method: 'PATCH',
 				url: '/book-copies/999999999',
 				headers: {cookie, 'x-csrf-token': token, 'content-type': 'application/json'},
-				payload: {isbn: `${ISBN_PREFIX}patched`},
+				payload: {isbn: fakeIsbn()},
 			});
 
 			assert.equal(response.statusCode, 404);
@@ -253,24 +256,25 @@ describe('book copy routes', () => {
 		});
 
 		it('updates a book copy', async () => {
+			const isbn = fakeIsbn();
 			const response = await server.inject({
 				method: 'PATCH',
 				url: `/book-copies/${patchableCopy.id}`,
 				headers: {cookie, 'x-csrf-token': token, 'content-type': 'application/json'},
-				payload: {isbn: `${ISBN_PREFIX}patched`},
+				payload: {isbn},
 			});
 			const body = response.json();
 
 			assert.equal(response.statusCode, 200);
 			assert.equal(body.ok, true);
-			assert.equal(body.data.isbn, `${ISBN_PREFIX}patched`);
+			assert.equal(body.data.isbn, isbn);
 
 			const stored = await prisma.bookCopy.findUnique({
 				where: {id: patchableCopy.id},
 				select: {isbn: true},
 			});
 
-			assert.equal(stored?.isbn, `${ISBN_PREFIX}patched`);
+			assert.equal(stored?.isbn, isbn);
 		});
 	});
 
@@ -341,11 +345,12 @@ describe('book copy routes', () => {
 		});
 
 		it('borrows a book copy', async () => {
+			const remarks = faker.lorem.sentence();
 			const response = await server.inject({
 				method: 'POST',
 				url: `/book-copies/${borrowableCopy.id}/borrow`,
 				headers: {cookie, 'x-csrf-token': token, 'content-type': 'application/json'},
-				payload: {memberId: member.id, remarks: 'Route test borrow'},
+				payload: {memberId: member.id, remarks},
 			});
 			const body = response.json();
 
@@ -356,7 +361,7 @@ describe('book copy routes', () => {
 			assert.equal(body.data.transaction.type, 'BORROW');
 			assert.equal(body.data.transaction.status, 'PENDING');
 			assert.match(body.data.transaction.ticket, /^\d{4}-[A-Z0-9]{4}-\d{8}$/);
-			assert.equal(body.data.transaction.remarks, 'Route test borrow');
+			assert.equal(body.data.transaction.remarks, remarks);
 			assert.equal(body.data.transaction.member.id, member.id);
 			assert.equal(body.data.transaction.bookCopy.id, borrowableCopy.id);
 
@@ -391,6 +396,7 @@ describe('book copy routes', () => {
 		});
 
 		it('returns a borrowed book copy', async () => {
+			const remarks = faker.lorem.sentence();
 			const borrow = await prisma.transaction.findFirst({
 				where: {bookCopyId: borrowableCopy.id, type: 'BORROW', status: 'PENDING'},
 				select: {ticket: true},
@@ -400,7 +406,7 @@ describe('book copy routes', () => {
 				method: 'POST',
 				url: `/book-copies/${borrowableCopy.id}/return`,
 				headers: {cookie, 'x-csrf-token': token, 'content-type': 'application/json'},
-				payload: {remarks: 'Route test return'},
+				payload: {remarks},
 			});
 			const body = response.json();
 
@@ -410,7 +416,7 @@ describe('book copy routes', () => {
 			assert.equal(body.data.transaction.type, 'RETURN');
 			assert.equal(body.data.transaction.status, 'COMPLETED');
 			assert.equal(body.data.transaction.ticket, borrow?.ticket);
-			assert.equal(body.data.transaction.remarks, 'Route test return');
+			assert.equal(body.data.transaction.remarks, remarks);
 			assert.equal(body.data.transaction.member.id, member.id);
 
 			const storedCopy = await prisma.bookCopy.findUnique({

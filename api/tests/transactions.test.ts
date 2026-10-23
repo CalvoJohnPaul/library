@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import {after, before, describe, it} from 'node:test';
 import type {FastifyInstance} from 'fastify';
+import {faker} from '@faker-js/faker';
 import {
 	buildServer,
 	createTestAccount,
@@ -24,8 +25,6 @@ describe('transaction routes', () => {
 	const EMAIL_PREFIX = 'route-tests+transactions+';
 	const BOOK_TITLE_PREFIX = 'Route Tests Transaction Book ';
 	const MEMBER_EXTERNAL_ID_PREFIX = 'Route Tests Transaction Member ';
-	const ISBN_PREFIX = 'route-tests-transaction-';
-	const TICKET_PREFIX = 'route-tests-transaction-';
 
 	let server: FastifyInstance;
 	let account: TestAccount;
@@ -48,15 +47,15 @@ describe('transaction routes', () => {
 		}));
 		book = await createTestBook(BOOK_TITLE_PREFIX);
 		member = await createTestMember(MEMBER_EXTERNAL_ID_PREFIX);
-		copy = await createTestBookCopy(ISBN_PREFIX, book.id);
-		borrow = await createTestTransaction(TICKET_PREFIX, {
+		copy = await createTestBookCopy(book.id);
+		borrow = await createTestTransaction({
 			type: 'BORROW',
 			status: 'PENDING',
-			remarks: 'Route test borrow',
+			remarks: faker.lorem.sentence(),
 			memberId: member.id,
 			bookCopyId: copy.id,
 		});
-		returned = await createTestTransaction(TICKET_PREFIX, {
+		returned = await createTestTransaction({
 			type: 'RETURN',
 			status: 'COMPLETED',
 			remarks: null,
@@ -101,7 +100,7 @@ describe('transaction routes', () => {
 
 			assert.equal(borrowRow.type, 'BORROW');
 			assert.equal(borrowRow.status, 'PENDING');
-			assert.equal(borrowRow.remarks, 'Route test borrow');
+			assert.equal(borrowRow.remarks, borrow.remarks);
 			assert.equal(borrowRow.member.id, member.id);
 			assert.equal(borrowRow.member.externalId, member.externalId);
 			assert.equal(borrowRow.member.name, member.name);

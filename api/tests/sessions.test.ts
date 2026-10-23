@@ -1,11 +1,13 @@
 import assert from 'node:assert/strict';
 import {after, before, describe, it} from 'node:test';
 import type {FastifyInstance} from 'fastify';
+import {faker} from '@faker-js/faker';
 import {
 	buildServer,
 	createTestAccount,
 	deleteTestAccounts,
 	disconnectPrisma,
+	fakePassword,
 	getCsrf,
 	login,
 	type TestAccount,
@@ -49,7 +51,10 @@ describe('session routes', () => {
 				method: 'POST',
 				url: '/sessions',
 				headers: {cookie, 'x-csrf-token': token, 'content-type': 'application/json'},
-				payload: {email: 'unknown@library.test', password: 'password123'},
+				payload: {
+					email: faker.internet.email({provider: 'library.test'}),
+					password: fakePassword(),
+				},
 			});
 
 			assert.equal(response.statusCode, 401);
@@ -65,7 +70,7 @@ describe('session routes', () => {
 				method: 'POST',
 				url: '/sessions',
 				headers: {cookie, 'x-csrf-token': token, 'content-type': 'application/json'},
-				payload: {email: account.email, password: 'wrong-password'},
+				payload: {email: account.email, password: fakePassword()},
 			});
 
 			assert.equal(response.statusCode, 401);

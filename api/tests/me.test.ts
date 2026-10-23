@@ -1,12 +1,14 @@
 import assert from 'node:assert/strict';
 import {after, before, describe, it} from 'node:test';
 import type {FastifyInstance} from 'fastify';
+import {faker} from '@faker-js/faker';
 import {prisma} from '../src/config/prisma';
 import {
 	buildServer,
 	createTestAccount,
 	deleteTestAccounts,
 	disconnectPrisma,
+	fakePassword,
 	getCsrf,
 	login,
 	type TestAccount,
@@ -69,7 +71,7 @@ describe('/me routes', () => {
 				method: 'PATCH',
 				url: '/me',
 				headers: {'content-type': 'application/json'},
-				payload: {name: 'Updated Name'},
+				payload: {name: faker.person.fullName()},
 			});
 
 			assert.equal(response.statusCode, 403);
@@ -85,7 +87,7 @@ describe('/me routes', () => {
 				method: 'PATCH',
 				url: '/me',
 				headers: {cookie, 'x-csrf-token': token, 'content-type': 'application/json'},
-				payload: {name: 'Updated Name'},
+				payload: {name: faker.person.fullName()},
 			});
 
 			assert.equal(response.statusCode, 401);
@@ -104,7 +106,7 @@ describe('/me routes', () => {
 				method: 'PATCH',
 				url: '/me',
 				headers: {cookie, 'x-csrf-token': token, 'content-type': 'application/json'},
-				payload: {newPassword: 'new-password-123'},
+				payload: {newPassword: fakePassword()},
 			});
 
 			assert.equal(response.statusCode, 400);
@@ -112,6 +114,7 @@ describe('/me routes', () => {
 		});
 
 		it('updates the account name', async () => {
+			const name = faker.person.fullName();
 			const {cookie, token} = await login(server, {
 				email: account.email,
 				password: account.password,
@@ -120,14 +123,14 @@ describe('/me routes', () => {
 				method: 'PATCH',
 				url: '/me',
 				headers: {cookie, 'x-csrf-token': token, 'content-type': 'application/json'},
-				payload: {name: 'Updated Name'},
+				payload: {name},
 			});
 			const body = response.json();
 
 			assert.equal(response.statusCode, 200);
 			assert.equal(body.ok, true);
 			assert.equal(body.data.id, account.id);
-			assert.equal(body.data.name, 'Updated Name');
+			assert.equal(body.data.name, name);
 			assert.equal(body.data.email, account.email);
 
 			const stored = await prisma.account.findUnique({
@@ -135,7 +138,7 @@ describe('/me routes', () => {
 				select: {name: true},
 			});
 
-			assert.equal(stored?.name, 'Updated Name');
+			assert.equal(stored?.name, name);
 		});
 
 		it('rejects a password change with a wrong old password', async () => {
@@ -147,7 +150,7 @@ describe('/me routes', () => {
 				method: 'PATCH',
 				url: '/me',
 				headers: {cookie, 'x-csrf-token': token, 'content-type': 'application/json'},
-				payload: {oldPassword: 'wrong-password', newPassword: 'new-password-123'},
+				payload: {oldPassword: fakePassword(), newPassword: fakePassword()},
 			});
 
 			assert.equal(response.statusCode, 403);
@@ -163,11 +166,12 @@ describe('/me routes', () => {
 				email: target.email,
 				password: target.password,
 			});
+			const newPassword = fakePassword();
 			const response = await server.inject({
 				method: 'PATCH',
 				url: '/me',
 				headers: {cookie, 'x-csrf-token': token, 'content-type': 'application/json'},
-				payload: {oldPassword: target.password, newPassword: 'new-password-123'},
+				payload: {oldPassword: target.password, newPassword},
 			});
 
 			assert.equal(response.statusCode, 200);
@@ -177,13 +181,13 @@ describe('/me routes', () => {
 				email: target.email,
 				password: target.password,
 			});
-			const newPassword = await login(server, {
+			const changedPassword = await login(server, {
 				email: target.email,
-				password: 'new-password-123',
+				password: newPassword,
 			});
 
 			assert.equal(oldPassword.response.statusCode, 401);
-			assert.equal(newPassword.response.statusCode, 201);
+			assert.equal(changedPassword.response.statusCode, 201);
 		});
 
 		it('rejects an email that already exists', async () => {

@@ -1,15 +1,18 @@
 import assert from 'node:assert/strict';
-import {randomUUID} from 'node:crypto';
 import {after, before, describe, it} from 'node:test';
 import type {FastifyInstance} from 'fastify';
+import {faker} from '@faker-js/faker';
 import {prisma} from '../src/config/prisma';
 import {
 	buildServer,
 	createTestAccount,
 	createTestBook,
+	createTestBookCopy,
 	deleteTestAccounts,
 	deleteTestBooks,
 	disconnectPrisma,
+	fakeBookGenre,
+	fakeBookInput,
 	login,
 	type TestAccount,
 	type TestBook,
@@ -34,10 +37,12 @@ describe('book routes', () => {
 			email: account.email,
 			password: account.password,
 		}));
+		// The genre filter test expects every seeded book to share a genre.
+		const genre = fakeBookGenre();
 		books = [
-			await createTestBook(BOOK_TITLE_PREFIX),
-			await createTestBook(BOOK_TITLE_PREFIX),
-			await createTestBook(BOOK_TITLE_PREFIX),
+			await createTestBook(BOOK_TITLE_PREFIX, genre),
+			await createTestBook(BOOK_TITLE_PREFIX, genre),
+			await createTestBook(BOOK_TITLE_PREFIX, genre),
 		];
 	});
 
@@ -54,12 +59,7 @@ describe('book routes', () => {
 				method: 'POST',
 				url: '/books',
 				headers: {'content-type': 'application/json'},
-				payload: {
-					title: 'New Book',
-					author: 'Author',
-					genre: 'FANTASY',
-					yearPublished: 2024,
-				},
+				payload: fakeBookInput(),
 			});
 
 			assert.equal(response.statusCode, 403);
@@ -74,12 +74,7 @@ describe('book routes', () => {
 				method: 'POST',
 				url: '/books',
 				headers: {cookie, 'x-csrf-token': 'invalid-token', 'content-type': 'application/json'},
-				payload: {
-					title: 'New Book',
-					author: 'Author',
-					genre: 'FANTASY',
-					yearPublished: 2024,
-				},
+				payload: fakeBookInput(),
 			});
 
 			assert.equal(response.statusCode, 403);
@@ -102,24 +97,21 @@ describe('book routes', () => {
 		});
 
 		it('creates a book', async () => {
+			const input = fakeBookInput(BOOK_TITLE_PREFIX);
 			const response = await server.inject({
 				method: 'POST',
 				url: '/books',
 				headers: {cookie, 'x-csrf-token': token, 'content-type': 'application/json'},
-				payload: {
-					title: `${BOOK_TITLE_PREFIX}Created ${randomUUID()}`,
-					author: 'Route Tests Author',
-					genre: 'FANTASY',
-					yearPublished: 2024,
-				},
+				payload: input,
 			});
 			const body = response.json();
 
 			assert.equal(response.statusCode, 201);
 			assert.equal(body.ok, true);
-			assert.equal(body.data.author, 'Route Tests Author');
-			assert.equal(body.data.genre, 'FANTASY');
-			assert.equal(body.data.yearPublished, 2024);
+			assert.equal(body.data.title, input.title);
+			assert.equal(body.data.author, input.author);
+			assert.equal(body.data.genre, input.genre);
+			assert.equal(body.data.yearPublished, input.yearPublished);
 			assert.equal(body.data.totalCopies, 0);
 			assert.equal(body.data.available, false);
 
@@ -128,7 +120,7 @@ describe('book routes', () => {
 				select: {author: true},
 			});
 
-			assert.equal(stored?.author, 'Route Tests Author');
+			assert.equal(stored?.author, input.author);
 		});
 	});
 
@@ -184,7 +176,10 @@ describe('book routes', () => {
 			const response = await server.inject({
 				method: 'GET',
 				url: '/books',
-				query: {id__in: books.map((book) => book.id.toString()), genre__eq: 'FANTASY'},
+				query: {
+					id__in: books.map((book) => book.id.toString()),
+					genre__eq: books[0].genre,
+				},
 				headers: {cookie},
 			});
 
@@ -193,12 +188,7 @@ describe('book routes', () => {
 		});
 
 		it('filters books by availability', async () => {
-			await prisma.bookCopy.create({
-				data: {
-					isbn: `route-tests-book-${books[0].id}-${randomUUID()}`,
-					bookId: books[0].id,
-				},
-			});
+			await createTestBookCopy(books[0].id);
 
 			const available = await server.inject({
 				method: 'GET',
@@ -282,7 +272,7 @@ describe('book routes', () => {
 				method: 'PATCH',
 				url: '/books/999999999',
 				headers: {cookie, 'x-csrf-token': token, 'content-type': 'application/json'},
-				payload: {title: `${BOOK_TITLE_PREFIX}Updated`},
+				payload: {title: faker.book.title()},
 			});
 
 			assert.equal(response.statusCode, 404);
@@ -293,27 +283,29 @@ describe('book routes', () => {
 		});
 
 		it('updates a book', async () => {
+			const author = faker.book.author();
+			const genre = fakeBookGenre();
 			const response = await server.inject({
 				method: 'PATCH',
 				url: `/books/${books[1].id}`,
 				headers: {cookie, 'x-csrf-token': token, 'content-type': 'application/json'},
-				payload: {author: 'Updated Author', genre: 'SCIENCE_FICTION'},
+				payload: {author, genre},
 			});
 			const body = response.json();
 
 			assert.equal(response.statusCode, 200);
 			assert.equal(body.ok, true);
 			assert.equal(body.data.id, books[1].id);
-			assert.equal(body.data.author, 'Updated Author');
-			assert.equal(body.data.genre, 'SCIENCE_FICTION');
+			assert.equal(body.data.author, author);
+			assert.equal(body.data.genre, genre);
 
 			const stored = await prisma.book.findUnique({
 				where: {id: books[1].id},
 				select: {author: true, genre: true},
 			});
 
-			assert.equal(stored?.author, 'Updated Author');
-			assert.equal(stored?.genre, 'SCIENCE_FICTION');
+			assert.equal(stored?.author, author);
+			assert.equal(stored?.genre, genre);
 		});
 	});
 

@@ -1,9 +1,16 @@
 import assert from 'node:assert/strict';
 import {after, before, describe, it} from 'node:test';
 import type {FastifyInstance} from 'fastify';
-import {buildServer, getCsrf} from './helpers';
+import {faker} from '@faker-js/faker';
+import {buildServer, fakePassword, getCsrf} from './helpers';
 
 describe('CSRF', () => {
+	// Credentials for an account that is guaranteed not to exist.
+	const unknownCredentials = {
+		email: faker.internet.email({provider: 'library.test'}),
+		password: fakePassword(),
+	};
+
 	let server: FastifyInstance;
 
 	before(async () => {
@@ -46,7 +53,7 @@ describe('CSRF', () => {
 				method: 'POST',
 				url: '/sessions',
 				headers: {'content-type': 'application/json'},
-				payload: {email: 'unknown@library.test', password: 'password123'},
+				payload: unknownCredentials,
 			});
 
 			assert.equal(response.statusCode, 403);
@@ -62,7 +69,7 @@ describe('CSRF', () => {
 				method: 'POST',
 				url: '/sessions',
 				headers: {cookie, 'x-csrf-token': 'invalid-token', 'content-type': 'application/json'},
-				payload: {email: 'unknown@library.test', password: 'password123'},
+				payload: unknownCredentials,
 			});
 
 			assert.equal(response.statusCode, 403);
@@ -78,7 +85,7 @@ describe('CSRF', () => {
 				method: 'POST',
 				url: '/sessions',
 				headers: {cookie, 'x-csrf-token': token, 'content-type': 'application/json'},
-				payload: {email: 'unknown@library.test', password: 'password123'},
+				payload: unknownCredentials,
 			});
 
 			// The csrf check passes, so the request fails later on the unknown account instead.
