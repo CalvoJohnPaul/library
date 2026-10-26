@@ -19,7 +19,11 @@ import {toaster} from './utils/toaster';
 
 export function App() {
 	return (
-		<NuqsAdapter>
+		<NuqsAdapter
+			defaultOptions={{
+				history: 'push',
+			}}
+		>
 			<QueryClientProvider client={client}>
 				<Suspense fallback={null}>
 					<BrowserRouter>
