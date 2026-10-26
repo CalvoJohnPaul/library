@@ -7,6 +7,28 @@
 - Build order matters: the API and web consume `@library/types`; `pnpm build` uses Turbo’s dependency graph to build `types` first.
 - API entrypoint is `api/src/main.ts` (port 8080); web entrypoint is `web/src/main.tsx` (Vite serves on port 80 and opens a browser).
 
+## Module structure
+
+- `api/`
+	- `src/main.ts` and `src/createApp.ts` wire the Fastify server.
+	- `src/routes/` contains API routes.
+	- `src/plugins/` contains integrations.
+	- `src/config/` contains shared configuration.
+	- `src/helpers/` contains utilities.
+	- `src/types/` contains API types.
+	- `prisma/` contains the schema, migrations, seed, and generated client.
+	- `scripts/` contains interactive scripts.
+- `types/`
+	- `src/` contains shared contracts and schemas.
+	- `src/index.ts` is the package entrypoint.
+- `web/`
+	- `src/main.tsx` and `src/App.tsx` are the app entrypoints.
+	- `src/features/` contains domain screens and feature state.
+	- `src/components/` contains reusable UI, form, and data-table components.
+	- `src/hooks/` contains shared React hooks.
+	- `src/utils/`, `src/config/`, and `src/types/` contain shared support code.
+	- `public/` contains static assets.
+
 ## Commands
 
 - `pnpm dev` starts all three package dev tasks; use `pnpm --filter @library/web dev`, `pnpm --filter @library/api dev`, or `pnpm --filter @library/types dev` for one package.
