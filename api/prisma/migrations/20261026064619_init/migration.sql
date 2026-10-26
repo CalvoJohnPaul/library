@@ -7,6 +7,9 @@ CREATE TYPE "BookGenre" AS ENUM ('FICTION', 'NON_FICTION', 'ROMANCE', 'FANTASY',
 -- CreateEnum
 CREATE TYPE "TransactionType" AS ENUM ('BORROW', 'RETURN');
 
+-- CreateEnum
+CREATE TYPE "TransactionStatus" AS ENUM ('PENDING', 'COMPLETED');
+
 -- CreateTable
 CREATE TABLE "Account" (
     "id" SERIAL NOT NULL,
@@ -45,25 +48,27 @@ CREATE TABLE "BookCopy" (
 );
 
 -- CreateTable
-CREATE TABLE "Student" (
+CREATE TABLE "Member" (
     "id" SERIAL NOT NULL,
     "externalId" TEXT NOT NULL,
-    "firstName" TEXT NOT NULL,
-    "lastName" TEXT NOT NULL,
-    "course" TEXT NOT NULL,
-    "yearAndSection" TEXT NOT NULL,
+    "name" TEXT NOT NULL,
+    "course" TEXT,
+    "yearAndSection" TEXT,
+    "dateTimeLastBorrowedBook" TIMESTAMP(3),
     "dateTimeCreated" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "dateTimeUpdated" TIMESTAMP(3) NOT NULL,
 
-    CONSTRAINT "Student_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "Member_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "Transaction" (
     "id" SERIAL NOT NULL,
     "type" "TransactionType" NOT NULL,
+    "status" "TransactionStatus" NOT NULL DEFAULT 'PENDING',
     "ticket" TEXT NOT NULL,
-    "studentId" INTEGER NOT NULL,
+    "remarks" TEXT,
+    "memberId" INTEGER NOT NULL,
     "bookCopyId" INTEGER NOT NULL,
     "dateTimeCreated" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "dateTimeUpdated" TIMESTAMP(3) NOT NULL,
@@ -75,10 +80,58 @@ CREATE TABLE "Transaction" (
 CREATE UNIQUE INDEX "Account_email_key" ON "Account"("email");
 
 -- CreateIndex
+CREATE INDEX "Book_dateTimeCreated_idx" ON "Book"("dateTimeCreated");
+
+-- CreateIndex
+CREATE INDEX "Book_dateTimeUpdated_idx" ON "Book"("dateTimeUpdated");
+
+-- CreateIndex
+CREATE INDEX "Book_genre_idx" ON "Book"("genre");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "BookCopy_isbn_key" ON "BookCopy"("isbn");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Student_externalId_key" ON "Student"("externalId");
+CREATE INDEX "BookCopy_status_idx" ON "BookCopy"("status");
+
+-- CreateIndex
+CREATE INDEX "BookCopy_dateTimeCreated_idx" ON "BookCopy"("dateTimeCreated");
+
+-- CreateIndex
+CREATE INDEX "BookCopy_dateTimeUpdated_idx" ON "BookCopy"("dateTimeUpdated");
+
+-- CreateIndex
+CREATE INDEX "BookCopy_bookId_idx" ON "BookCopy"("bookId");
+
+-- CreateIndex
+CREATE INDEX "BookCopy_bookId_status_idx" ON "BookCopy"("bookId", "status");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Member_externalId_key" ON "Member"("externalId");
+
+-- CreateIndex
+CREATE INDEX "Member_dateTimeCreated_idx" ON "Member"("dateTimeCreated");
+
+-- CreateIndex
+CREATE INDEX "Member_dateTimeUpdated_idx" ON "Member"("dateTimeUpdated");
+
+-- CreateIndex
+CREATE INDEX "Member_dateTimeLastBorrowedBook_idx" ON "Member"("dateTimeLastBorrowedBook");
+
+-- CreateIndex
+CREATE INDEX "Transaction_type_dateTimeCreated_idx" ON "Transaction"("type", "dateTimeCreated");
+
+-- CreateIndex
+CREATE INDEX "Transaction_status_dateTimeCreated_idx" ON "Transaction"("status", "dateTimeCreated");
+
+-- CreateIndex
+CREATE INDEX "Transaction_dateTimeUpdated_idx" ON "Transaction"("dateTimeUpdated");
+
+-- CreateIndex
+CREATE INDEX "Transaction_memberId_type_dateTimeCreated_idx" ON "Transaction"("memberId", "type", "dateTimeCreated");
+
+-- CreateIndex
+CREATE INDEX "Transaction_bookCopyId_type_dateTimeCreated_idx" ON "Transaction"("bookCopyId", "type", "dateTimeCreated");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Transaction_ticket_type_key" ON "Transaction"("ticket", "type");
@@ -87,7 +140,7 @@ CREATE UNIQUE INDEX "Transaction_ticket_type_key" ON "Transaction"("ticket", "ty
 ALTER TABLE "BookCopy" ADD CONSTRAINT "BookCopy_bookId_fkey" FOREIGN KEY ("bookId") REFERENCES "Book"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Transaction" ADD CONSTRAINT "Transaction_studentId_fkey" FOREIGN KEY ("studentId") REFERENCES "Student"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "Transaction" ADD CONSTRAINT "Transaction_memberId_fkey" FOREIGN KEY ("memberId") REFERENCES "Member"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Transaction" ADD CONSTRAINT "Transaction_bookCopyId_fkey" FOREIGN KEY ("bookCopyId") REFERENCES "BookCopy"("id") ON DELETE CASCADE ON UPDATE CASCADE;

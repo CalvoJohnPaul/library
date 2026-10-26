@@ -1,3 +1,0 @@
--- AlterTable
-ALTER TABLE "Member" ALTER COLUMN "course" DROP NOT NULL,
-ALTER COLUMN "yearAndSection" DROP NOT NULL;
