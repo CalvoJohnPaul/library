@@ -7,9 +7,7 @@
 		"start": "node -r dotenv/config dist/main.cjs",
 		"build": "tsdown",
 		"postinstall": "prisma generate",
-		"create-account": "tsx --env-file=.env -- ./scripts/createAccount.ts",
-		"seed": "tsx --env-file=.env -- ./prisma/seed.ts",
-		"test": "tsx --env-file=.env --no-warnings --test tests/**/*.test.ts"
+		"create-account": "tsx --env-file=.env -- ./scripts/createAccount.ts"
 	},
 	"dependencies": {
 		"@fastify/autoload": "6.5.1",
