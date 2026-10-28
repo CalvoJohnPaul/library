@@ -6,6 +6,7 @@
 		"dev": "tsx watch --include=\\\"./src/**/*\\\" --include=\\\"../types/dist/**/*\\\" --no-warnings --env-file=.env --clear-screen=false ./src/main.ts",
 		"start": "node -r dotenv/config dist/main.cjs",
 		"build": "tsdown",
+		"test": "vitest run",
 		"postinstall": "prisma generate",
 		"create-account": "tsx --env-file=.env -- ./scripts/createAccount.ts"
 	},
@@ -45,6 +46,7 @@
 		"prisma": "7.10.0",
 		"tsdown": "0.23.1",
 		"tsx": "4.23.15",
-		"typescript": "catalog:"
+		"typescript": "catalog:",
+		"vitest": "5.0.5"
 	}
 }
