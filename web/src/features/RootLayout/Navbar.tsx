@@ -1,4 +1,4 @@
-import {ark, Portal} from '@ark-ui/react';
+import {Portal} from '@ark-ui/react';
 import {funEmoji} from '@dicebear/collection';
 import {createAvatar} from '@dicebear/core';
 import {zodResolver} from '@hookform/resolvers/zod';
@@ -39,27 +39,27 @@ export function Navbar() {
 	const query = useMeQuery();
 	const links = [
 		{
-			icon: <ChartColumnBigIcon />,
+			icon: ChartColumnBigIcon,
 			label: 'Dashboard',
 			href: '/',
 		},
 		{
-			icon: <BookOpenIcon />,
+			icon: BookOpenIcon,
 			label: 'Books',
 			href: '/books',
 		},
 		{
-			icon: <RotateCcwClockIcon />,
+			icon: RotateCcwClockIcon,
 			label: 'Transactions',
 			href: '/transactions',
 		},
 		{
-			icon: <UsersIcon />,
+			icon: UsersIcon,
 			label: 'Members',
 			href: '/members',
 		},
 		{
-			icon: <CalendarIcon />,
+			icon: CalendarIcon,
 			label: 'Reservations',
 			href: '/reservations',
 		},
@@ -79,11 +79,9 @@ export function Navbar() {
 								<Tooltip.Trigger asChild>
 									<NavLink
 										to={link.href}
-										className="block px-2 py-2 text-gray-600 aria-page:font-medium aria-page:text-blue-500"
+										className="block p-2 text-gray-600 aria-page:font-medium aria-page:text-blue-500"
 									>
-										<ark.svg asChild className="size-5.5">
-											{link.icon}
-										</ark.svg>
+										<link.icon className="size-6" />
 									</NavLink>
 								</Tooltip.Trigger>
 								<Portal>
@@ -111,11 +109,11 @@ export function Navbar() {
 											}}
 											disabled={query.isPending}
 											className={cx(
-												'block px-2 py-2 text-gray-600 aria-page:font-medium',
+												'block p-2 text-gray-600 aria-page:font-medium',
 												api.open && 'text-blue-500',
 											)}
 										>
-											<SettingsIcon className="size-5.5" />
+											<SettingsIcon className="size-6" />
 										</Tooltip.Trigger>
 
 										<Portal>

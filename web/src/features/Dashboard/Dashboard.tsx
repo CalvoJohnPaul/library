@@ -38,7 +38,7 @@ export function Dashboard() {
 
 	return (
 		<DashboardProvider value={query.data}>
-			<title>read. | Dashboard</title>
+			<title>Dashboard | read.</title>
 			<div className="mb-6 flex items-center gap-3">
 				<div className="grow">
 					<h1 className="font-bold text-xl">Dashboard</h1>
