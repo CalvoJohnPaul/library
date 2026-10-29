@@ -1,5 +1,6 @@
-import {adventurer} from '@dicebear/collection';
+import {funEmoji} from '@dicebear/collection';
 import {createAvatar} from '@dicebear/core';
+import {Avatar} from '@/components/ui/Avatar';
 import {ProgressLinear} from '@/components/ui/ProgressLinear';
 import {useDashboardContext} from './DashboardContext';
 import {roundedBarMax} from './utils';
@@ -18,11 +19,13 @@ export function TopBorrowingMembers() {
 			<ol className="flex flex-col gap-4">
 				{members.map(({member, total}) => (
 					<li key={member.id} className="flex items-center gap-3">
-						<img
-							src={createAvatar(adventurer, {seed: String(member.id)}).toDataUri()}
-							alt=""
-							className="size-8 shrink-0 rounded-full"
-						/>
+						<Avatar.Root size="sm" className="shrink-0">
+							<Avatar.Image
+								src={createAvatar(funEmoji, {seed: member.id.toString()}).toDataUri()}
+							/>
+							<Avatar.Fallback />
+						</Avatar.Root>
+
 						<div className="min-w-0 grow">
 							<div className="flex items-baseline justify-between gap-2">
 								<p className="flex min-w-0 items-baseline gap-1 font-medium text-sm">

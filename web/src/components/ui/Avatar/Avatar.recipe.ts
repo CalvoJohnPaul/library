@@ -4,12 +4,16 @@ import {anatomyToRecipeSlots} from '@/utils/anatomyToRecipeSlots';
 
 export const avatarRecipe = tv({
 	slots: anatomyToRecipeSlots(avatarAnatomy, {
-		root: 'flex items-center justify-center overflow-hidden rounded-full border border-gray-200 bg-gray-50',
+		root: 'flex items-center justify-center overflow-hidden rounded-full',
 		fallback: 'font-medium text-gray-600',
 		image: 'size-full object-cover object-center',
 	}),
 	variants: {
 		size: {
+			sm: {
+				root: 'size-8',
+				fallback: 'icon:size-4 text-sm',
+			},
 			md: {
 				root: 'size-10',
 				fallback: 'icon:size-5 text-base',

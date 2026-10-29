@@ -1,4 +1,6 @@
 import {ark, Portal} from '@ark-ui/react';
+import {funEmoji} from '@dicebear/collection';
+import {createAvatar} from '@dicebear/core';
 import {zodResolver} from '@hookform/resolvers/zod';
 import {isNil, omitBy} from 'es-toolkit';
 import {isEmpty} from 'es-toolkit/compat';
@@ -135,6 +137,11 @@ export function Navbar() {
 									<Menu.Content>
 										<div className="flex items-center gap-2 py-2 pr-4 pl-2">
 											<Avatar.Root>
+												<Avatar.Image
+													src={createAvatar(funEmoji, {
+														seed: query.data?.id.toString(),
+													}).toDataUri()}
+												/>
 												<Avatar.Fallback />
 											</Avatar.Root>
 											<div>
