@@ -22,8 +22,8 @@ export function ReservationActivity() {
 	const axisMax = roundedAxisMax(
 		activity.map((point) => Math.max(point.reserved, point.unreserved)),
 	);
-	const tickStep = Math.ceil(axisMax / (3 * 500)) * 500;
-	const ticks = Array.from({length: 4}, (_, index) => index * tickStep);
+	const tickStep = Math.ceil(axisMax / (4 * 250)) * 250;
+	const ticks = Array.from({length: 5}, (_, index) => index * tickStep);
 
 	return (
 		<section className="rounded-xl border border-gray-200 bg-white p-5">
@@ -47,7 +47,7 @@ export function ReservationActivity() {
 						width={60}
 						allowDecimals={false}
 						tickFormatter={(value: number) => value.toLocaleString()}
-						domain={[0, ticks[3]]}
+						domain={[0, ticks[4]]}
 						ticks={ticks}
 						interval={0}
 					/>

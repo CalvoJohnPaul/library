@@ -36,7 +36,7 @@ export function TopBorrowedBooks(props: TopBorrowedBooksProps) {
 		.slice(0, 5);
 
 	const axisMax = roundedAxisMax(items.map((item) => item.count));
-	const tickStep = Math.ceil(axisMax / (4 * 500)) * 500;
+	const tickStep = Math.ceil(axisMax / (4 * 250)) * 250;
 	const ticks = Array.from({length: 5}, (_, index) => index * tickStep);
 	const shorten = (text: string) => (text.length > 25 ? `${text.slice(0, 24)}…` : text);
 

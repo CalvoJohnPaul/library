@@ -31,8 +31,8 @@ export function BorrowingActivity() {
 	}));
 
 	const axisMax = roundedAxisMax(activity.map((point) => Math.max(point.borrowed, point.returned)));
-	const tickStep = Math.ceil(axisMax / (9 * 500)) * 500;
-	const ticks = Array.from({length: 10}, (_, index) => index * tickStep);
+	const tickStep = Math.ceil(axisMax / (9 * 250)) * 250;
+	const ticks = Array.from({length: 9}, (_, index) => index * tickStep);
 
 	return (
 		<section className="flex flex-col rounded-xl border border-gray-200 bg-white p-5">
@@ -58,7 +58,7 @@ export function BorrowingActivity() {
 							width={60}
 							allowDecimals={false}
 							tickFormatter={(value: number) => value.toLocaleString()}
-							domain={[0, ticks[9]]}
+							domain={[0, ticks[8]]}
 							ticks={ticks}
 							interval={0}
 						/>

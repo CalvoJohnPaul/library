@@ -1,4 +1,5 @@
 import {CalendarClockIcon, CircleCheckIcon} from 'lucide-react';
+import {cx} from 'tailwind-variants';
 import {useDashboardContext} from './DashboardContext';
 
 export function ReservationStats() {
@@ -25,9 +26,12 @@ export function ReservationStats() {
 					<div className="flex items-center justify-between">
 						<h2 className="text-gray-600 text-xs">{title}</h2>
 						<div
-							className={`flex size-7 shrink-0 items-center justify-center rounded-full border ${accent}`}
+							className={cx(
+								'flex size-6 shrink-0 items-center justify-center rounded-full border',
+								accent,
+							)}
 						>
-							<Icon className="size-4" />
+							<Icon className="size-3.5" />
 						</div>
 					</div>
 					<p className="mt-1 font-bold text-xl">{count.toLocaleString()}</p>
