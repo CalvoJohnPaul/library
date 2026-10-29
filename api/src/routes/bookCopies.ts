@@ -194,19 +194,12 @@ const plugin: FastifyPluginAsyncZod = async (app) => {
 							},
 						},
 					},
-					orderBy: {
-						dateTimeCreated: 'desc',
-					},
-					...(req.query.sortBy != null && {
-						orderBy: {
-							...(req.query.sortBy === 'dateTimeCreated' && {
-								dateTimeCreated: req.query.sortOrder === 'ASC' ? 'asc' : 'desc',
-							}),
-							...(req.query.sortBy === 'dateTimeUpdated' && {
-								dateTimeUpdated: req.query.sortOrder === 'ASC' ? 'asc' : 'desc',
-							}),
-						},
-					}),
+					orderBy:
+						req.query.sortBy == null
+							? [{dateTimeCreated: 'desc'}, {id: 'desc'}]
+							: {
+								[req.query.sortBy]: req.query.sortOrder === 'ASC' ? 'asc' : 'desc',
+							},
 				}),
 			]);
 
@@ -1039,19 +1032,12 @@ const plugin: FastifyPluginAsyncZod = async (app) => {
 						},
 					},
 				},
-				orderBy: {
-					dateTimeCreated: 'desc',
-				},
-				...(req.query.sortBy != null && {
-					orderBy: {
-						...(req.query.sortBy === 'dateTimeCreated' && {
-							dateTimeCreated: req.query.sortOrder === 'ASC' ? 'asc' : 'desc',
-						}),
-						...(req.query.sortBy === 'dateTimeUpdated' && {
-							dateTimeUpdated: req.query.sortOrder === 'ASC' ? 'asc' : 'desc',
-						}),
-					},
-				}),
+				orderBy:
+					req.query.sortBy == null
+						? [{dateTimeCreated: 'desc'}, {id: 'desc'}]
+						: {
+							[req.query.sortBy]: req.query.sortOrder === 'ASC' ? 'asc' : 'desc',
+						},
 			});
 
 			const worksheet = XLSX.utils.json_to_sheet(

@@ -201,7 +201,7 @@ test('GET /reservations defaults to newest first and supports descending created
 		headers,
 	});
 	assert.equal(sortedResponse.statusCode, 200, sortedResponse.body);
-	assert.deepEqual(sortOrders, [{dateTimeCreated: 'desc'}, {dateTimeCreated: 'desc'}]);
+	assert.deepEqual(sortOrders, [[{dateTimeCreated: 'desc'}, {id: 'desc'}], {dateTimeCreated: 'desc'}]);
 });
 
 test('GET /reservations requires authentication', async () => {

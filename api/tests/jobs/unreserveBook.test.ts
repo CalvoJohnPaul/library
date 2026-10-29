@@ -119,7 +119,7 @@ test('unreserves pending reservations older than three days with the original ti
 	});
 });
 
-test('expires pending reservations after five minutes in development', async () => {
+test('expires pending reservations after ten minutes in development', async () => {
 	vi.stubEnv('NODE_ENV', 'development');
 	vi.setSystemTime(new Date('2026-10-28T12:00:00.000Z'));
 	mock.reservation.findMany.mockResolvedValue([{id: 1}]);
@@ -127,7 +127,7 @@ test('expires pending reservations after five minutes in development', async () 
 	expect(mock.reservation.findMany).toHaveBeenCalledWith({
 		where: {
 			status: 'PENDING',
-			dateTimeCreated: {lt: new Date('2026-10-28T11:55:00.000Z')},
+			dateTimeCreated: {lt: new Date('2026-10-28T11:50:00.000Z')},
 		},
 		select: {id: true},
 	});

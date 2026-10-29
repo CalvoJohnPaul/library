@@ -217,9 +217,10 @@ const plugin: FastifyPluginAsyncZod = async (app) => {
 					skip: take * (page - 1),
 					take,
 					select: reservationSelect,
-					orderBy: {
-						[req.query.sortBy ?? 'dateTimeCreated']: req.query.sortOrder === 'ASC' ? 'asc' : 'desc',
-					},
+					orderBy:
+						req.query.sortBy == null
+							? [{dateTimeCreated: 'desc'}, {id: 'desc'}]
+							: {[req.query.sortBy]: req.query.sortOrder === 'ASC' ? 'asc' : 'desc'},
 				}),
 			]);
 
@@ -754,9 +755,10 @@ const plugin: FastifyPluginAsyncZod = async (app) => {
 			const rows = await app.prisma.reservation.findMany({
 				where,
 				select: reservationSelect,
-				orderBy: {
-					[req.query.sortBy ?? 'dateTimeCreated']: req.query.sortOrder === 'ASC' ? 'asc' : 'desc',
-				},
+				orderBy:
+					req.query.sortBy == null
+						? [{dateTimeCreated: 'desc'}, {id: 'desc'}]
+						: {[req.query.sortBy]: req.query.sortOrder === 'ASC' ? 'asc' : 'desc'},
 			});
 
 			const worksheet = XLSX.utils.json_to_sheet(

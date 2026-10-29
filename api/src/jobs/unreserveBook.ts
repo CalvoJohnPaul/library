@@ -6,7 +6,7 @@ const unreserveBookTask = new AsyncTask(
 	async () => {
 		console.log(`job 'unreserveBook' started`);
 		const expiryMilliseconds =
-			process.env.NODE_ENV === 'development' ? 5 * 60 * 1000 : 3 * 24 * 60 * 60 * 1000;
+			process.env.NODE_ENV === 'development' ? 10 * 60 * 1000 : 3 * 24 * 60 * 60 * 1000;
 		const reason = `Cancelled by the system: reservation expired after ${process.env.NODE_ENV === 'development' ? '5 minutes' : '3 days'}.`;
 		const reservations = await prisma.reservation.findMany({
 			where: {

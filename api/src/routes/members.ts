@@ -245,22 +245,15 @@ const plugin: FastifyPluginAsyncZod = async (app) => {
 						dateTimeCreated: true,
 						dateTimeUpdated: true,
 					},
-					orderBy: {
-						dateTimeCreated: 'desc',
-					},
-					...(req.query.sortBy != null && {
-						orderBy: {
-							...(req.query.sortBy === 'dateTimeCreated' && {
-								dateTimeCreated: sortOrder,
-							}),
-							...(req.query.sortBy === 'dateTimeUpdated' && {
-								dateTimeUpdated: sortOrder,
-							}),
-							...(req.query.sortBy === 'dateTimeLastBorrowedBook' && {
-								dateTimeLastBorrowedBook: {sort: sortOrder, nulls: 'last'},
-							}),
-						},
-					}),
+					orderBy:
+						req.query.sortBy == null
+							? [{dateTimeCreated: 'desc'}, {id: 'desc'}]
+							: {
+								[req.query.sortBy]:
+									req.query.sortBy === 'dateTimeLastBorrowedBook'
+										? {sort: sortOrder, nulls: 'last'}
+										: sortOrder,
+							},
 				}),
 			]);
 
@@ -745,22 +738,15 @@ const plugin: FastifyPluginAsyncZod = async (app) => {
 					dateTimeCreated: true,
 					dateTimeUpdated: true,
 				},
-				orderBy: {
-					dateTimeCreated: 'desc',
-				},
-				...(req.query.sortBy != null && {
-					orderBy: {
-						...(req.query.sortBy === 'dateTimeCreated' && {
-							dateTimeCreated: sortOrder,
-						}),
-						...(req.query.sortBy === 'dateTimeUpdated' && {
-							dateTimeUpdated: sortOrder,
-						}),
-						...(req.query.sortBy === 'dateTimeLastBorrowedBook' && {
-							dateTimeLastBorrowedBook: {sort: sortOrder, nulls: 'last'},
-						}),
-					},
-				}),
+				orderBy:
+					req.query.sortBy == null
+						? [{dateTimeCreated: 'desc'}, {id: 'desc'}]
+						: {
+							[req.query.sortBy]:
+								req.query.sortBy === 'dateTimeLastBorrowedBook'
+									? {sort: sortOrder, nulls: 'last'}
+									: sortOrder,
+						},
 			});
 
 			const worksheet = XLSX.utils.json_to_sheet(
