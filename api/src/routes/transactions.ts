@@ -207,14 +207,13 @@ const plugin: FastifyPluginAsyncZod = async (app) => {
 				req.query.bookId__in != null ||
 				req.query.bookId__nin != null
 			) {
-				where.bookCopy = {
-					bookId: {
-						...(req.query.bookId__eq != null && {equals: req.query.bookId__eq}),
-						...(req.query.bookId__neq != null && {not: req.query.bookId__neq}),
-						...(req.query.bookId__in != null && {in: req.query.bookId__in}),
-						...(req.query.bookId__nin != null && {notIn: req.query.bookId__nin}),
-					},
+				const bookId = {
+					...(req.query.bookId__eq != null && {equals: req.query.bookId__eq}),
+					...(req.query.bookId__neq != null && {not: req.query.bookId__neq}),
+					...(req.query.bookId__in != null && {in: req.query.bookId__in}),
+					...(req.query.bookId__nin != null && {notIn: req.query.bookId__nin}),
 				};
+				where.AND = [{OR: [{bookId}, {bookCopy: {is: {bookId}}}]}];
 			}
 
 			if (
@@ -272,6 +271,15 @@ const plugin: FastifyPluginAsyncZod = async (app) => {
 								yearAndSection: true,
 							},
 						},
+						book: {
+							select: {
+								id: true,
+								title: true,
+								genre: true,
+								author: true,
+								yearPublished: true,
+							},
+						},
 						bookCopy: {
 							select: {
 								id: true,
@@ -287,6 +295,9 @@ const plugin: FastifyPluginAsyncZod = async (app) => {
 									},
 								},
 							},
+						},
+						reservation: {
+							select: {id: true, status: true, bookCopy: {select: {status: true}}},
 						},
 					},
 					orderBy: {
@@ -326,18 +337,9 @@ const plugin: FastifyPluginAsyncZod = async (app) => {
 							course: transaction.member.course,
 							yearAndSection: transaction.member.yearAndSection,
 						},
-						bookCopy: {
-							id: transaction.bookCopy.id,
-							book: {
-								id: transaction.bookCopy.book.id,
-								title: transaction.bookCopy.book.title,
-								genre: transaction.bookCopy.book.genre,
-								author: transaction.bookCopy.book.author,
-								yearPublished: transaction.bookCopy.book.yearPublished,
-							},
-							isbn: transaction.bookCopy.isbn,
-							status: transaction.bookCopy.status,
-						},
+						book: transaction.book,
+						bookCopy: transaction.bookCopy,
+						reservation: transaction.reservation,
 						dateTimeCreated: transaction.dateTimeCreated,
 						dateTimeUpdated: transaction.dateTimeUpdated,
 					})),
@@ -389,6 +391,15 @@ const plugin: FastifyPluginAsyncZod = async (app) => {
 							yearAndSection: true,
 						},
 					},
+					book: {
+						select: {
+							id: true,
+							title: true,
+							genre: true,
+							author: true,
+							yearPublished: true,
+						},
+					},
 					bookCopy: {
 						select: {
 							id: true,
@@ -404,6 +415,9 @@ const plugin: FastifyPluginAsyncZod = async (app) => {
 								},
 							},
 						},
+					},
+					reservation: {
+						select: {id: true, status: true, bookCopy: {select: {status: true}}},
 					},
 				},
 			});
@@ -425,18 +439,9 @@ const plugin: FastifyPluginAsyncZod = async (app) => {
 						course: transaction.member.course,
 						yearAndSection: transaction.member.yearAndSection,
 					},
-					bookCopy: {
-						id: transaction.bookCopy.id,
-						book: {
-							id: transaction.bookCopy.book.id,
-							title: transaction.bookCopy.book.title,
-							genre: transaction.bookCopy.book.genre,
-							author: transaction.bookCopy.book.author,
-							yearPublished: transaction.bookCopy.book.yearPublished,
-						},
-						isbn: transaction.bookCopy.isbn,
-						status: transaction.bookCopy.status,
-					},
+					book: transaction.book,
+					bookCopy: transaction.bookCopy,
+					reservation: transaction.reservation,
 					dateTimeCreated: transaction.dateTimeCreated,
 					dateTimeUpdated: transaction.dateTimeUpdated,
 				},
@@ -627,14 +632,13 @@ const plugin: FastifyPluginAsyncZod = async (app) => {
 				req.query.bookId__in != null ||
 				req.query.bookId__nin != null
 			) {
-				where.bookCopy = {
-					bookId: {
-						...(req.query.bookId__eq != null && {equals: req.query.bookId__eq}),
-						...(req.query.bookId__neq != null && {not: req.query.bookId__neq}),
-						...(req.query.bookId__in != null && {in: req.query.bookId__in}),
-						...(req.query.bookId__nin != null && {notIn: req.query.bookId__nin}),
-					},
+				const bookId = {
+					...(req.query.bookId__eq != null && {equals: req.query.bookId__eq}),
+					...(req.query.bookId__neq != null && {not: req.query.bookId__neq}),
+					...(req.query.bookId__in != null && {in: req.query.bookId__in}),
+					...(req.query.bookId__nin != null && {notIn: req.query.bookId__nin}),
 				};
+				where.AND = [{OR: [{bookId}, {bookCopy: {is: {bookId}}}]}];
 			}
 
 			if (
@@ -684,6 +688,15 @@ const plugin: FastifyPluginAsyncZod = async (app) => {
 							yearAndSection: true,
 						},
 					},
+					book: {
+						select: {
+							id: true,
+							title: true,
+							genre: true,
+							author: true,
+							yearPublished: true,
+						},
+					},
 					bookCopy: {
 						select: {
 							id: true,
@@ -728,19 +741,22 @@ const plugin: FastifyPluginAsyncZod = async (app) => {
 					name: transaction.member.name,
 					course: transaction.member.course,
 					yearAndSection: transaction.member.yearAndSection,
-					bookCopyId: transaction.bookCopy.id,
-					isbn: transaction.bookCopy.isbn,
-					title: transaction.bookCopy.book.title,
-					author: transaction.bookCopy.book.author,
-					genre: transaction.bookCopy.book.genre,
-					yearPublished: transaction.bookCopy.book.yearPublished,
-					bookStatus: transaction.bookCopy.status,
+					bookId: transaction.bookCopy?.book.id ?? transaction.book?.id ?? null,
+					bookCopyId: transaction.bookCopy?.id ?? null,
+					isbn: transaction.bookCopy?.isbn ?? null,
+					title: transaction.bookCopy?.book.title ?? transaction.book?.title ?? null,
+					author: transaction.bookCopy?.book.author ?? transaction.book?.author ?? null,
+					genre: transaction.bookCopy?.book.genre ?? transaction.book?.genre ?? null,
+					yearPublished:
+						transaction.bookCopy?.book.yearPublished ?? transaction.book?.yearPublished ?? null,
+					bookStatus: transaction.bookCopy?.status ?? null,
 					dateTimeCreated: transaction.dateTimeCreated.toISOString(),
 					dateTimeUpdated: transaction.dateTimeUpdated.toISOString(),
 				})),
 			);
 
 			const workbook = XLSX.utils.book_new();
+
 			XLSX.utils.book_append_sheet(workbook, worksheet, 'Transactions');
 
 			const buffer = XLSX.write(workbook, {type: 'buffer', bookType: 'xlsx'}) as Buffer;

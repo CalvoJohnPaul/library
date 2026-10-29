@@ -1,6 +1,6 @@
 import {Portal} from '@ark-ui/react';
 import {zodResolver} from '@hookform/resolvers/zod';
-import {type Book, type Paginated, UpdateBookDataInputDefinition} from '@library/types';
+import {UpdateBookDataInputDefinition} from '@library/types';
 import {isNil, omitBy} from 'es-toolkit';
 import {isEmpty} from 'es-toolkit/compat';
 import {PenSquareIcon} from 'lucide-react';
@@ -29,26 +29,10 @@ export function EditBook() {
 
 	const disclosure = useDisclosure();
 	const mutation = useUpdateBookMutation({
-		onSuccess: async (next) => {
-			client.setQueriesData<Paginated<Book>>(
-				{
-					queryKey: useBooksQuery.getQueryKey(),
-					exact: false,
-					type: 'all',
-				},
-				(data) => {
-					if (!data) return data;
-					return {
-						...data,
-						rows: data.rows.map((prev) => (prev.id === next.id ? next : prev)),
-					};
-				},
-			);
-
+		onSuccess: () => {
 			disclosure.setOpen(false);
-			toaster.success({
-				description: 'Changes have been saved.',
-			});
+			toaster.success({description: 'Changes have been saved.'});
+			client.invalidateQueries({queryKey: useBooksQuery.getQueryKey()});
 		},
 		onError: (error) => {
 			toaster.error({
@@ -62,7 +46,7 @@ export function EditBook() {
 			open={disclosure.open}
 			onOpenChange={(details) => disclosure.setOpen(details.open)}
 			onExitComplete={() => {
-				form.reset(book);
+				form.reset();
 			}}
 		>
 			<Dialog.Context>

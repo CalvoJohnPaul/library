@@ -163,7 +163,7 @@ export function Books() {
 									});
 
 									return data.rows.map((book) => ({
-										label: book.title,
+										label: `${book.title} (${book.author})`,
 										value: book.id.toString(),
 									}));
 								} catch {

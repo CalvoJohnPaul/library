@@ -18,6 +18,7 @@ import csrfRoute from '../../src/routes/csrf.js';
 import healthRoute from '../../src/routes/health.js';
 import meRoute from '../../src/routes/me.js';
 import membersRoute from '../../src/routes/members.js';
+import reservationsRoute from '../../src/routes/reservations.js';
 import sessionsRoute from '../../src/routes/sessions.js';
 import statsRoute from '../../src/routes/stats.js';
 import transactionsRoute from '../../src/routes/transactions.js';
@@ -33,12 +34,15 @@ const {mock, mockPrisma} = vi.hoisted(() => {
 		return {
 			count: unmocked,
 			findMany: unmocked,
+			findFirst: unmocked,
 			findUnique: unmocked,
+			findUniqueOrThrow: unmocked,
 			exists: unmocked,
 			create: unmocked,
 			update: unmocked,
 			updateMany: unmocked,
 			deleteMany: unmocked,
+			delete: unmocked,
 		};
 	}
 	function mockPrisma() {
@@ -47,6 +51,7 @@ const {mock, mockPrisma} = vi.hoisted(() => {
 			book: model(),
 			bookCopy: model(),
 			member: model(),
+			reservation: model(),
 			transaction: model(),
 			$connect: async () => {},
 			$disconnect: async () => {},
@@ -95,6 +100,7 @@ export function createFixture() {
 		await app.register(healthRoute, {prefix: '/health'});
 		await app.register(meRoute);
 		await app.register(membersRoute, {prefix: '/members'});
+		await app.register(reservationsRoute, {prefix: '/reservations'});
 		await app.register(sessionsRoute);
 		await app.register(statsRoute, {prefix: '/stats'});
 		await app.register(transactionsRoute, {prefix: '/transactions'});
@@ -102,7 +108,14 @@ export function createFixture() {
 	});
 	beforeEach(() => {
 		const fresh = mockPrisma();
-		for (const name of ['account', 'book', 'bookCopy', 'member', 'transaction'] as const) {
+		for (const name of [
+			'account',
+			'book',
+			'bookCopy',
+			'member',
+			'reservation',
+			'transaction',
+		] as const) {
 			Object.assign(mock[name], fresh[name]);
 		}
 	});
@@ -181,7 +194,7 @@ export function createFixture() {
 				id: faker.number.int({min: 1, max: 1_000_000}),
 				isbn: faker.string.uuid(),
 				book,
-				status: 'AVAILABLE' as 'AVAILABLE' | 'BORROWED',
+				status: 'AVAILABLE' as 'AVAILABLE' | 'BORROWED' | 'RESERVED',
 				dateTimeCreated: new Date(),
 				dateTimeUpdated: new Date(),
 			};
@@ -194,7 +207,9 @@ export function createFixture() {
 				ticket: faker.string.uuid(),
 				remarks: null,
 				member,
+				book: null,
 				bookCopy: copy,
+				reservation: null as {id: number; status: 'PENDING' | 'CANCELLED' | 'COMPLETED'} | null,
 				dateTimeCreated: new Date(),
 				dateTimeUpdated: new Date(),
 			};

@@ -4,6 +4,7 @@ import {isNil, omitBy} from 'es-toolkit';
 import {isEmpty} from 'es-toolkit/compat';
 import {
 	BookOpenIcon,
+	CalendarIcon,
 	ChartColumnBigIcon,
 	LockKeyholeIcon,
 	LogOutIcon,
@@ -54,6 +55,11 @@ export function Navbar() {
 			icon: <UsersIcon />,
 			label: 'Members',
 			href: '/members',
+		},
+		{
+			icon: <CalendarIcon />,
+			label: 'Reservations',
+			href: '/reservations',
 		},
 	];
 
@@ -169,10 +175,10 @@ function EditAccount() {
 
 	const disclosure = useDisclosure();
 	const mutation = useUpdateMeMutation({
-		onSuccess: (next) => {
-			client.setQueryData(useMeQuery.getQueryKey(), next);
+		onSuccess: (data) => {
+			client.setQueryData(useMeQuery.getQueryKey(), data);
 			disclosure.setOpen(false);
-			form.reset(next);
+			form.reset(data);
 			toaster.success({
 				description: 'Changes have been saved.',
 			});
@@ -299,8 +305,8 @@ function ChangePassword() {
 
 	const disclosure = useDisclosure();
 	const mutation = useUpdateMeMutation({
-		onSuccess: (next) => {
-			client.setQueryData(useMeQuery.getQueryKey(), next);
+		onSuccess: (data) => {
+			client.setQueryData(useMeQuery.getQueryKey(), data);
 			disclosure.setOpen(false);
 			toaster.success({
 				description: 'Password has been changed.',
@@ -434,11 +440,7 @@ function Logout() {
 	const mutation = useDestroySessionMutation({
 		onSuccess() {
 			client
-				.invalidateQueries({
-					queryKey: useMeQuery.getQueryKey(),
-					exact: false,
-					type: 'all',
-				})
+				.invalidateQueries({queryKey: useMeQuery.getQueryKey()})
 				.then(() => {
 					navigate('/');
 				})

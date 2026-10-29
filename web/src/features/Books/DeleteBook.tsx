@@ -16,18 +16,10 @@ export function DeleteBook() {
 	const book = useBookContext();
 	const disclosure = useDisclosure();
 	const mutation = useDeleteBookMutation({
-		onSuccess: async () => {
-			await client.invalidateQueries({
-				refetchType: 'active',
-				queryKey: useBooksQuery.getQueryKey(),
-				exact: false,
-				type: 'all',
-			});
-
+		onSuccess: () => {
 			disclosure.setOpen(false);
-			toaster.success({
-				description: 'Book has been deleted.',
-			});
+			toaster.success({description: 'Book has been deleted.'});
+			client.invalidateQueries({queryKey: useBooksQuery.getQueryKey()});
 		},
 		onError: (error) => {
 			toaster.error({
@@ -62,7 +54,7 @@ export function DeleteBook() {
 							<div>
 								<Dialog.Title>Delete book</Dialog.Title>
 								<Dialog.Description>
-									Are you sure you want to delete this book? This action cannot be undone.
+									Are you sure you want to delete this book? This action is irreversible.
 								</Dialog.Description>
 							</div>
 							<Dialog.CloseTrigger />

@@ -16,18 +16,10 @@ export function DeleteMember() {
 	const member = useMemberContext();
 	const disclosure = useDisclosure();
 	const mutation = useDeleteMemberMutation({
-		onSuccess: async () => {
-			await client.invalidateQueries({
-				refetchType: 'active',
-				queryKey: useMembersQuery.getQueryKey(),
-				exact: false,
-				type: 'all',
-			});
-
+		onSuccess: () => {
 			disclosure.setOpen(false);
-			toaster.success({
-				description: 'Member has been deleted.',
-			});
+			toaster.success({description: 'Member has been deleted.'});
+			client.invalidateQueries({queryKey: useMembersQuery.getQueryKey()});
 		},
 		onError: (error) => {
 			toaster.error({
@@ -62,7 +54,7 @@ export function DeleteMember() {
 							<div>
 								<Dialog.Title>Delete member</Dialog.Title>
 								<Dialog.Description>
-									Are you sure you want to delete this member? This action cannot be undone.
+									Are you sure you want to delete this member? This action is irreversible.
 								</Dialog.Description>
 							</div>
 							<Dialog.CloseTrigger />

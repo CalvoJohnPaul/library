@@ -18,29 +18,21 @@ import {client} from '@/utils/client';
 import {getBookGenreOptions, getBookYearPublishedOptions} from '@/utils/common';
 import {toaster} from '@/utils/toaster';
 
-export interface AddBookProps {
+export function AddBook({
+	trigger,
+}: {
 	trigger?: ReactNode | ((disclosure: UseDisclosureReturn) => ReactNode);
-}
-
-export function AddBook({trigger}: AddBookProps) {
+}) {
 	const disclosure = useDisclosure();
 	const form = useForm({
 		resolver: zodResolver(CreateBookInputDefinition),
 	});
 
 	const mutation = useCreateBookMutation({
-		onSuccess: async () => {
-			await client.invalidateQueries({
-				refetchType: 'active',
-				queryKey: useBooksQuery.getQueryKey(),
-				exact: false,
-				type: 'all',
-			});
-
+		onSuccess: () => {
 			disclosure.setOpen(false);
-			toaster.success({
-				description: 'Book has been added.',
-			});
+			toaster.success({description: 'Book has been added.'});
+			client.invalidateQueries({queryKey: useBooksQuery.getQueryKey()});
 		},
 		onError: (error) => {
 			toaster.error({

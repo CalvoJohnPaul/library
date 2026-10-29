@@ -1,65 +1,36 @@
 import {Portal} from '@ark-ui/react';
 import {zodResolver} from '@hookform/resolvers/zod';
-import {CreateBookCopyInputDefinition} from '@library/types';
-import {isFunction} from 'es-toolkit';
-import {PlusIcon} from 'lucide-react';
-import type {ReactNode} from 'react';
+import {UpdateBookCopyDataInputDefinition} from '@library/types';
+import {PenSquareIcon} from 'lucide-react';
 import {useForm} from 'react-hook-form';
 import {SpinnerIcon} from '@/components/icons/SpinnerIcon';
 import {Button} from '@/components/ui/Button';
 import {Dialog} from '@/components/ui/Dialog';
 import {FeaturedIcon} from '@/components/ui/FeaturedIcon';
 import {Field} from '@/components/ui/Field';
+import {Menu} from '@/components/ui/Menu';
 import {useBookCopiesQuery} from '@/hooks/useBookCopiesQuery';
-import {useBookQuery} from '@/hooks/useBookQuery';
-import {useBooksQuery} from '@/hooks/useBooksQuery';
-import {useCreateBookCopyMutation} from '@/hooks/useCreateBookCopyMutation';
-import {type UseDisclosureReturn, useDisclosure} from '@/hooks/useDisclosure';
+import {useDisclosure} from '@/hooks/useDisclosure';
+import {useUpdateBookCopyMutation} from '@/hooks/useUpdateBookCopyMutation';
 import {client} from '@/utils/client';
 import {toaster} from '@/utils/toaster';
-import {useBookContext} from './BookContext';
+import {useBookCopyContext} from './BookCopyContext';
 
-export interface AddCopyProps {
-	trigger?: ReactNode | ((disclosure: UseDisclosureReturn) => ReactNode);
-}
-
-export function AddCopy({trigger}: AddCopyProps) {
-	const book = useBookContext();
-	const disclosure = useDisclosure();
+export function EditBookCopy() {
+	const copy = useBookCopyContext();
 	const form = useForm({
-		resolver: zodResolver(CreateBookCopyInputDefinition),
+		resolver: zodResolver(UpdateBookCopyDataInputDefinition),
 		defaultValues: {
-			bookId: book.id,
+			isbn: copy.isbn,
 		},
 	});
 
-	const mutation = useCreateBookCopyMutation({
-		onSuccess: async () => {
-			await Promise.all([
-				client.invalidateQueries({
-					refetchType: 'active',
-					queryKey: useBookCopiesQuery.getQueryKey(),
-					exact: false,
-					type: 'all',
-				}),
-				client.invalidateQueries({
-					refetchType: 'active',
-					queryKey: useBookQuery.getQueryKey(),
-					exact: false,
-					type: 'all',
-				}),
-				client.invalidateQueries({
-					refetchType: 'active',
-					queryKey: useBooksQuery.getQueryKey(),
-					exact: false,
-					type: 'all',
-				}),
-			]);
-
+	const disclosure = useDisclosure();
+	const mutation = useUpdateBookCopyMutation({
+		onSuccess: () => {
 			disclosure.setOpen(false);
-			toaster.success({
-				description: 'Book copy has been added.',
-			});
+			toaster.success({description: 'Changes have been saved.'});
+			client.invalidateQueries({queryKey: useBookCopiesQuery.getQueryKey()});
 		},
 		onError: (error) => {
 			toaster.error({
@@ -73,40 +44,46 @@ export function AddCopy({trigger}: AddCopyProps) {
 			open={disclosure.open}
 			onOpenChange={(details) => disclosure.setOpen(details.open)}
 			onExitComplete={() => {
-				form.reset({bookId: book.id});
+				form.reset({isbn: copy.isbn});
 			}}
 		>
-			<Dialog.Trigger asChild>
-				{isFunction(trigger)
-					? trigger(disclosure)
-					: (trigger ?? (
-							<Button>
-								<PlusIcon />
-								Add copy
-							</Button>
-						))}
-			</Dialog.Trigger>
+			<Dialog.Context>
+				{(api) => (
+					<Menu.Item value="edit" onSelect={() => api.setOpen(true)}>
+						<PenSquareIcon />
+						Edit
+					</Menu.Item>
+				)}
+			</Dialog.Context>
 			<Portal>
 				<Dialog.Backdrop />
 				<Dialog.Positioner>
 					<Dialog.Content asChild>
 						<form
 							onSubmit={form.handleSubmit((data) => {
-								mutation.mutate(data);
+								if (data.isbn == null || data.isbn === '' || data.isbn === copy.isbn) {
+									disclosure.setOpen(false);
+									return;
+								}
+
+								mutation.mutate({
+									id: copy.id,
+									data: {isbn: data.isbn},
+								});
 							})}
 							noValidate
 						>
 							<Dialog.Header>
 								<FeaturedIcon.Root>
 									<FeaturedIcon.Icon>
-										<PlusIcon />
+										<PenSquareIcon />
 									</FeaturedIcon.Icon>
 								</FeaturedIcon.Root>
 								<div>
-									<Dialog.Title>Add copy</Dialog.Title>
+									<Dialog.Title>Edit copy</Dialog.Title>
 									<Dialog.Description>
-										Fill out the form to add a new copy of&nbsp;
-										<em className="italic">"{book.title}"</em> to your&nbsp;collection.
+										Fill out the form to edit the copy of&nbsp;
+										<em className="italic">"{copy.book.title}"</em> in your&nbsp;collection.
 									</Dialog.Description>
 								</div>
 								<Dialog.CloseTrigger />

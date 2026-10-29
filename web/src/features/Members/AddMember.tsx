@@ -18,11 +18,11 @@ import {client} from '@/utils/client';
 import {getMemberCourseOptions, getMemberYearAndSectionOptions} from '@/utils/common';
 import {toaster} from '@/utils/toaster';
 
-export interface AddMemberProps {
+export function AddMember({
+	trigger,
+}: {
 	trigger?: ReactNode | ((disclosure: UseDisclosureReturn) => ReactNode);
-}
-
-export function AddMember({trigger}: AddMemberProps) {
+}) {
 	const disclosure = useDisclosure();
 	const form = useForm({
 		resolver: zodResolver(CreateMemberInputDefinition),
@@ -41,18 +41,10 @@ export function AddMember({trigger}: AddMemberProps) {
 	});
 
 	const mutation = useCreateMemberMutation({
-		onSuccess: async () => {
-			await client.invalidateQueries({
-				refetchType: 'active',
-				queryKey: useMembersQuery.getQueryKey(),
-				exact: false,
-				type: 'all',
-			});
-
+		onSuccess: () => {
 			disclosure.setOpen(false);
-			toaster.success({
-				description: 'Member has been added.',
-			});
+			toaster.success({description: 'Member has been added.'});
+			client.invalidateQueries({queryKey: useMembersQuery.getQueryKey()});
 		},
 		onError: (error) => {
 			toaster.error({

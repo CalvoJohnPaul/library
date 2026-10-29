@@ -5,13 +5,16 @@ import {SpinnerIcon} from '@/components/icons/SpinnerIcon';
 import {Button} from '@/components/ui/Button';
 import {Tabs} from '@/components/ui/Tabs';
 import {useBookQuery} from '@/hooks/useBookQuery';
-import {AddCopy} from './AddCopy';
+import {AddBookCopy} from './AddBookCopy';
 import {BookProvider} from './BookContext';
-import {Copies} from './Copies';
+import {Copies} from './BookCopies';
+import {Reservations} from './Reservations';
 import {Settings} from './Settings';
 import {Transactions} from './Transactions';
 
-const TabDefinition = z.enum(['copies', 'transactions', 'settings']).catch('copies');
+const TabDefinition = z
+	.enum(['copies', 'transactions', 'reservations', 'settings'])
+	.catch('copies');
 
 export function Book() {
 	const {id} = useParams<{id: string}>();
@@ -83,12 +86,13 @@ export function Book() {
 							<p className="text-gray-600 text-sm">Manage the details of your book below.</p>
 						</div>
 
-						<Tabs.Context>{(api) => <>{api.value === 'copies' && <AddCopy />}</>}</Tabs.Context>
+						<Tabs.Context>{(api) => <>{api.value === 'copies' && <AddBookCopy />}</>}</Tabs.Context>
 					</div>
 
-					<Tabs.List className="mb-8 w-100">
+					<Tabs.List className="mb-8 w-120">
 						<Tabs.Trigger value="copies">Copies</Tabs.Trigger>
 						<Tabs.Trigger value="transactions">Transactions</Tabs.Trigger>
+						<Tabs.Trigger value="reservations">Reservations</Tabs.Trigger>
 						<Tabs.Trigger value="settings">Settings</Tabs.Trigger>
 						<Tabs.Indicator />
 					</Tabs.List>
@@ -97,6 +101,9 @@ export function Book() {
 					</Tabs.Content>
 					<Tabs.Content value="transactions">
 						<Transactions />
+					</Tabs.Content>
+					<Tabs.Content value="reservations">
+						<Reservations />
 					</Tabs.Content>
 					<Tabs.Content value="settings">
 						<Settings />

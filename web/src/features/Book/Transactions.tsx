@@ -24,6 +24,9 @@ import {Tooltip} from '@/components/ui/Tooltip';
 import {useExportTransactionsMutation} from '@/hooks/useExportTransactionsMutation';
 import {type MembersInput, useMembersQuery} from '@/hooks/useMembersQuery';
 import {type TransactionsInput, useTransactionsQuery} from '@/hooks/useTransactionsQuery';
+import {ClaimReservation} from '@/templates/ClaimReservation';
+import {ReturnBookCopy} from '@/templates/ReturnBookCopy';
+import {UnreserveReservation} from '@/templates/UnreserveReservation';
 import {client} from '@/utils/client';
 import {
 	getTransactionStatusLabel,
@@ -33,8 +36,6 @@ import {
 } from '@/utils/common';
 import {toaster} from '@/utils/toaster';
 import {useBookContext} from './BookContext';
-import {ReturnCopy} from './ReturnCopy';
-import {TransactionProvider} from './TransactionContext';
 
 export function Transactions() {
 	const book = useBookContext();
@@ -121,7 +122,17 @@ export function Transactions() {
 					heading: 'Type',
 					cell(transaction) {
 						return (
-							<Badge.Root accent={transaction.type === 'BORROW' ? 'warning' : 'success'}>
+							<Badge.Root
+								accent={
+									transaction.type === 'BORROW'
+										? 'warning'
+										: transaction.type === 'RESERVE'
+											? 'purple'
+											: transaction.type === 'UNRESERVE'
+												? 'indigo'
+												: 'success'
+								}
+							>
 								<Badge.Label>{getTransactionTypeLabel(transaction.type)}</Badge.Label>
 							</Badge.Root>
 						);
@@ -180,7 +191,7 @@ export function Transactions() {
 					id: 'isbn',
 					heading: 'ISBN',
 					cell(transaction) {
-						return transaction.bookCopy.isbn;
+						return transaction.bookCopy?.isbn ?? null;
 					},
 					filter: {
 						type: 'TEXT',
@@ -230,7 +241,7 @@ export function Transactions() {
 
 								return data.rows.map((member) => ({
 									value: member.id.toString(),
-									label: member.name,
+									label: `${member.name} (${member.externalId})`,
 								}));
 							} catch {
 								return [];
@@ -317,10 +328,17 @@ export function Transactions() {
 					id: 'actions',
 					heading: <SettingsIcon className="size-5" />,
 					cell(transaction) {
+						const canReturn =
+							transaction.type === 'BORROW' &&
+							transaction.status === 'PENDING' &&
+							transaction.bookCopy != null;
+						const reservation = transaction.type === 'RESERVE' ? transaction.reservation : null;
+						const canManageReservation = reservation?.status === 'PENDING';
+
 						return (
 							<Menu.Root>
 								<Menu.Trigger
-									disabled={transaction.status !== 'PENDING' || transaction.type !== 'BORROW'}
+									disabled={!canReturn && !canManageReservation}
 									className="disabled:opacity-50"
 								>
 									<SettingsIcon className="size-5" />
@@ -328,9 +346,37 @@ export function Transactions() {
 								<Portal>
 									<Menu.Positioner>
 										<Menu.Content>
-											<TransactionProvider value={transaction}>
-												<ReturnCopy />
-											</TransactionProvider>
+											{canReturn && transaction.bookCopy && (
+												<ReturnBookCopy
+													id={transaction.bookCopy.id}
+													onReturned={() => {
+														client.invalidateQueries({
+															queryKey: useTransactionsQuery.getQueryKey(),
+														});
+													}}
+												/>
+											)}
+											{canManageReservation && reservation && (
+												<>
+													<ClaimReservation
+														id={reservation.id}
+														disabled={reservation.bookCopy?.status !== 'RESERVED'}
+														onClaimed={() => {
+															client.invalidateQueries({
+																queryKey: useTransactionsQuery.getQueryKey(),
+															});
+														}}
+													/>
+													<UnreserveReservation
+														id={reservation.id}
+														onUnreserved={() => {
+															client.invalidateQueries({
+																queryKey: useTransactionsQuery.getQueryKey(),
+															});
+														}}
+													/>
+												</>
+											)}
 										</Menu.Content>
 									</Menu.Positioner>
 								</Portal>

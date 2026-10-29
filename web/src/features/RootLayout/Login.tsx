@@ -20,13 +20,8 @@ export function Login() {
 	});
 
 	const mutation = useCreateSessionMutation({
-		onSuccess: async () => {
-			await client.invalidateQueries({
-				queryKey: useMeQuery.getQueryKey(),
-				exact: true,
-				type: 'all',
-				refetchType: 'active',
-			});
+		onSuccess: () => {
+			client.invalidateQueries({queryKey: useMeQuery.getQueryKey()});
 		},
 		onError: (error) => {
 			toaster.error({

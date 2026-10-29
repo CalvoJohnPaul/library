@@ -1,8 +1,7 @@
 import {Portal} from '@ark-ui/react';
 import {zodResolver} from '@hookform/resolvers/zod';
-import {CreateMemberInputDefinition, type Member, type Transaction} from '@library/types';
+import {CreateMemberInputDefinition, type Member} from '@library/types';
 import {useMutation} from '@tanstack/react-query';
-import {format} from 'date-fns';
 import {ArrowRightIcon, CircleCheckIcon, PenSquareIcon, RepeatIcon} from 'lucide-react';
 import {useState} from 'react';
 import {Controller, useForm, useWatch} from 'react-hook-form';
@@ -15,28 +14,23 @@ import {Field} from '@/components/ui/Field';
 import {IconButton} from '@/components/ui/IconButton';
 import {Menu} from '@/components/ui/Menu';
 import {useBookCopiesQuery} from '@/hooks/useBookCopiesQuery';
-import {useBookQuery} from '@/hooks/useBookQuery';
-import {useBooksQuery} from '@/hooks/useBooksQuery';
 import {useBorrowBookCopyMutation} from '@/hooks/useBorrowBookCopyMutation';
 import {useCreateMemberMutation} from '@/hooks/useCreateMemberMutation';
 import {useDisclosure} from '@/hooks/useDisclosure';
-import {useMemberQuery} from '@/hooks/useMemberQuery';
 import {type MembersInput, useMembersQuery} from '@/hooks/useMembersQuery';
-import {useTransactionsQuery} from '@/hooks/useTransactionsQuery';
 import {client} from '@/utils/client';
 import {getMemberCourseOptions, getMemberYearAndSectionOptions} from '@/utils/common';
 import {toaster} from '@/utils/toaster';
-import {useCopyContext} from './CopyContext';
+import {useBookCopyContext} from './BookCopyContext';
 
 type Step = 'SEARCH' | 'CONFIRM' | 'CREATE' | 'SUCCESS';
 
-export function BorrowCopy() {
-	const copy = useCopyContext();
+export function BorrowBookCopy() {
+	const copy = useBookCopyContext();
 	const disclosure = useDisclosure();
 
 	const [step, setStep] = useState<Step>('SEARCH');
 	const [member, setMember] = useState<Member | null>(null);
-	const [transaction, setTransaction] = useState<Transaction | null>(null);
 	const [searchValue, setSearchValue] = useState('');
 	const [searchError, setSearchError] = useState('');
 
@@ -75,53 +69,11 @@ export function BorrowCopy() {
 	});
 
 	const createMemberMutation = useCreateMemberMutation();
-	const borrowMutation = useBorrowBookCopyMutation({
-		async onSuccess(result) {
-			setTransaction(result.transaction);
+	const borrowBookCopyMutation = useBorrowBookCopyMutation({
+		async onSuccess() {
 			setStep('SUCCESS');
-
-			Promise.all([
-				client.invalidateQueries({
-					refetchType: 'active',
-					queryKey: useBookCopiesQuery.getQueryKey(),
-					exact: false,
-					type: 'all',
-				}),
-				client.invalidateQueries({
-					refetchType: 'active',
-					queryKey: useBookQuery.getQueryKey(),
-					exact: false,
-					type: 'all',
-				}),
-				client.invalidateQueries({
-					refetchType: 'active',
-					queryKey: useBooksQuery.getQueryKey(),
-					exact: false,
-					type: 'all',
-				}),
-				client.invalidateQueries({
-					refetchType: 'active',
-					queryKey: useMemberQuery.getQueryKey(result.transaction.member.id),
-					exact: false,
-					type: 'all',
-				}),
-				client.invalidateQueries({
-					refetchType: 'active',
-					queryKey: useMembersQuery.getQueryKey(),
-					exact: false,
-					type: 'all',
-				}),
-				client.invalidateQueries({
-					refetchType: 'active',
-					queryKey: useTransactionsQuery.getQueryKey(),
-					exact: false,
-					type: 'all',
-				}),
-			]);
-
-			toaster.success({
-				description: 'Book copy has been borrowed.',
-			});
+			toaster.success({description: 'Book copy has been borrowed.'});
+			client.invalidateQueries({queryKey: useBookCopiesQuery.getQueryKey()});
 		},
 		onError(error) {
 			toaster.error({
@@ -135,7 +87,6 @@ export function BorrowCopy() {
 		setSearchValue('');
 		setSearchError('');
 		setMember(null);
-		setTransaction(null);
 		form.reset({
 			externalId: '',
 			name: '',
@@ -181,7 +132,7 @@ export function BorrowCopy() {
 	};
 
 	const handleBorrow = (memberId: number) => {
-		borrowMutation.mutate({
+		borrowBookCopyMutation.mutate({
 			id: copy.id,
 			data: {
 				memberId,
@@ -214,7 +165,9 @@ export function BorrowCopy() {
 	});
 
 	const pending =
-		lookupMemberMutation.isPending || createMemberMutation.isPending || borrowMutation.isPending;
+		lookupMemberMutation.isPending ||
+		createMemberMutation.isPending ||
+		borrowBookCopyMutation.isPending;
 
 	return (
 		<Dialog.Root
@@ -388,28 +341,20 @@ export function BorrowCopy() {
 								</Dialog.Body>
 							)}
 
-							{step === 'SUCCESS' && transaction && (
+							{step === 'SUCCESS' && member && (
 								<Dialog.Body>
 									<dl className="space-y-2 rounded-md border border-gray-200 bg-white p-4 text-sm">
 										<div className="flex justify-between gap-4">
-											<dt className="font-semibold text-gray-600">Reference</dt>
-											<dd>{transaction.ticket}</dd>
-										</div>
-										<div className="flex justify-between gap-4">
 											<dt className="font-semibold text-gray-600">Borrower</dt>
-											<dd>{transaction.member.name}</dd>
+											<dd>{member.name}</dd>
 										</div>
 										<div className="flex justify-between gap-4">
 											<dt className="font-semibold text-gray-600">Book</dt>
-											<dd>{transaction.bookCopy.book.title}</dd>
+											<dd>{copy.book.title}</dd>
 										</div>
 										<div className="flex justify-between gap-4">
 											<dt className="font-semibold text-gray-600">ISBN</dt>
-											<dd>{transaction.bookCopy.isbn}</dd>
-										</div>
-										<div className="flex justify-between gap-4">
-											<dt className="font-semibold text-gray-600">Date borrowed</dt>
-											<dd>{format(transaction.dateTimeCreated, 'MMM dd, yyyy hh:mm a')}</dd>
+											<dd>{copy.isbn}</dd>
 										</div>
 									</dl>
 								</Dialog.Body>
@@ -442,7 +387,11 @@ export function BorrowCopy() {
 										)}
 									</Dialog.Context>
 									<Button onClick={() => handleBorrow(member.id)} disabled={pending}>
-										{borrowMutation.isPending ? <SpinnerIcon className="size-5" /> : 'Confirm'}
+										{borrowBookCopyMutation.isPending ? (
+											<SpinnerIcon className="size-5" />
+										) : (
+											'Confirm'
+										)}
 									</Button>
 								</Dialog.Footer>
 							)}

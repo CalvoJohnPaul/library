@@ -23,7 +23,12 @@ import {Menu} from '@/components/ui/Menu';
 import {Tooltip} from '@/components/ui/Tooltip';
 import {type BooksInput, useBooksQuery} from '@/hooks/useBooksQuery';
 import {useExportTransactionsMutation} from '@/hooks/useExportTransactionsMutation';
+import {useReservationsQuery} from '@/hooks/useReservationsQuery';
+import {useStatsQuery} from '@/hooks/useStatsQuery';
 import {type TransactionsInput, useTransactionsQuery} from '@/hooks/useTransactionsQuery';
+import {ClaimReservation} from '@/templates/ClaimReservation';
+import {ReturnBookCopy} from '@/templates/ReturnBookCopy';
+import {UnreserveReservation} from '@/templates/UnreserveReservation';
 import {client} from '@/utils/client';
 import {
 	getTransactionStatusLabel,
@@ -33,8 +38,6 @@ import {
 } from '@/utils/common';
 import {toaster} from '@/utils/toaster';
 import {useMemberContext} from './MemberContext';
-import {ReturnBookCopy} from './ReturnBookCopy';
-import {TransactionProvider} from './TransactionContext';
 
 export function Transactions() {
 	const member = useMemberContext();
@@ -92,6 +95,11 @@ export function Transactions() {
 	} satisfies TransactionsInput;
 
 	const query = useTransactionsQuery(filters);
+	const refreshAfterReservation = () => {
+		client.invalidateQueries({queryKey: useTransactionsQuery.getQueryKey()});
+		client.invalidateQueries({queryKey: useReservationsQuery.getQueryKey()});
+		client.invalidateQueries({queryKey: useStatsQuery.getQueryKey()});
+	};
 
 	const exportMutation = useExportTransactionsMutation({
 		onError: (error) => {
@@ -115,7 +123,17 @@ export function Transactions() {
 					heading: 'Type',
 					cell(transaction) {
 						return (
-							<Badge.Root accent={transaction.type === 'BORROW' ? 'warning' : 'success'}>
+							<Badge.Root
+								accent={
+									transaction.type === 'BORROW'
+										? 'warning'
+										: transaction.type === 'RESERVE'
+											? 'purple'
+											: transaction.type === 'UNRESERVE'
+												? 'indigo'
+												: 'success'
+								}
+							>
 								<Badge.Label>{getTransactionTypeLabel(transaction.type)}</Badge.Label>
 							</Badge.Root>
 						);
@@ -174,14 +192,12 @@ export function Transactions() {
 					id: 'book',
 					heading: 'Book',
 					cell(transaction) {
-						return (
-							<Link
-								to={`/books/${transaction.bookCopy.book.id}`}
-								className="block max-w-64 truncate text-blue-500"
-							>
-								{transaction.bookCopy.book.title}
+						const book = transaction.book ?? transaction.bookCopy?.book;
+						return book ? (
+							<Link to={`/books/${book.id}`} className="block max-w-64 truncate text-blue-500">
+								{book.title}
 							</Link>
-						);
+						) : null;
 					},
 					filter: {
 						type: 'ASYNC_COMBOBOX',
@@ -190,7 +206,7 @@ export function Transactions() {
 
 							if (search.trim() === '' && value.length > 0) {
 								input = {
-									title: {in: value},
+									id: {in: value},
 									page: 1,
 								};
 							} else {
@@ -209,7 +225,7 @@ export function Transactions() {
 
 								return data.rows.map((book) => ({
 									value: book.id.toString(),
-									label: book.title,
+									label: `${book.title} (${book.author})`,
 								}));
 							} catch {
 								return [];
@@ -227,7 +243,7 @@ export function Transactions() {
 					id: 'isbn',
 					heading: 'ISBN',
 					cell(transaction) {
-						return transaction.bookCopy.isbn;
+						return transaction.bookCopy?.isbn ?? null;
 					},
 					hideable: true,
 					orderable: true,
@@ -305,10 +321,17 @@ export function Transactions() {
 					id: 'actions',
 					heading: <SettingsIcon className="size-5" />,
 					cell(transaction) {
+						const canReturn =
+							transaction.type === 'BORROW' &&
+							transaction.status === 'PENDING' &&
+							transaction.bookCopy != null;
+						const reservation = transaction.type === 'RESERVE' ? transaction.reservation : null;
+						const canManageReservation = reservation?.status === 'PENDING';
+
 						return (
 							<Menu.Root>
 								<Menu.Trigger
-									disabled={transaction.status !== 'PENDING' || transaction.type !== 'BORROW'}
+									disabled={!canReturn && !canManageReservation}
 									className="disabled:opacity-50"
 								>
 									<SettingsIcon className="size-5" />
@@ -316,9 +339,37 @@ export function Transactions() {
 								<Portal>
 									<Menu.Positioner>
 										<Menu.Content>
-											<TransactionProvider value={transaction}>
-												<ReturnBookCopy />
-											</TransactionProvider>
+											{canReturn && transaction.bookCopy && (
+												<ReturnBookCopy
+													id={transaction.bookCopy.id}
+													onReturned={() => {
+														client.invalidateQueries({
+															queryKey: useTransactionsQuery.getQueryKey(),
+														});
+													}}
+												/>
+											)}
+											{canManageReservation && reservation && (
+												<>
+													<ClaimReservation
+														id={reservation.id}
+														disabled={reservation.bookCopy?.status !== 'RESERVED'}
+														onClaimed={() => {
+															client.invalidateQueries({
+																queryKey: useTransactionsQuery.getQueryKey(),
+															});
+														}}
+													/>
+													<UnreserveReservation
+														id={reservation.id}
+														onUnreserved={() => {
+															client.invalidateQueries({
+																queryKey: useTransactionsQuery.getQueryKey(),
+															});
+														}}
+													/>
+												</>
+											)}
 										</Menu.Content>
 									</Menu.Positioner>
 								</Portal>

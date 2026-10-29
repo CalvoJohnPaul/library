@@ -1,10 +1,10 @@
 import {Portal} from '@ark-ui/react';
 import {zodResolver} from '@hookform/resolvers/zod';
-import {type Member, type Paginated, UpdateMemberDataInputDefinition} from '@library/types';
+import {type Member, UpdateMemberDataInputDefinition} from '@library/types';
 import {isNil, omitBy} from 'es-toolkit';
 import {isEmpty} from 'es-toolkit/compat';
 import {TrashIcon} from 'lucide-react';
-import {Controller, useForm} from 'react-hook-form';
+import {Controller, useForm, useWatch} from 'react-hook-form';
 import {useNavigate} from 'react-router';
 import {SelectField} from '@/components/forms/SelectField';
 import {SpinnerIcon} from '@/components/icons/SpinnerIcon';
@@ -15,7 +15,6 @@ import {Field} from '@/components/ui/Field';
 import {useDeleteMemberMutation} from '@/hooks/useDeleteMemberMutation';
 import {useDisclosure} from '@/hooks/useDisclosure';
 import {useMemberQuery} from '@/hooks/useMemberQuery';
-import {useMembersQuery} from '@/hooks/useMembersQuery';
 import {useUpdateMemberMutation} from '@/hooks/useUpdateMemberMutation';
 import {client} from '@/utils/client';
 import {getMemberCourseOptions, getMemberYearAndSectionOptions} from '@/utils/common';
@@ -28,32 +27,18 @@ export function Settings() {
 		resolver: zodResolver(UpdateMemberDataInputDefinition),
 		defaultValues: member,
 	});
-	const course = form.watch('course');
+
+	const course = useWatch({
+		control: form.control,
+		name: 'course',
+		defaultValue: null,
+	});
 
 	const mutation = useUpdateMemberMutation({
-		onSuccess: (next) => {
-			form.reset(next);
-
-			client.setQueryData<Member>(useMemberQuery.getQueryKey(next.id), next);
-			client.setQueriesData<Paginated<Member>>(
-				{
-					queryKey: useMembersQuery.getQueryKey(),
-					exact: false,
-					type: 'all',
-				},
-				(data) => {
-					if (!data) return data;
-
-					return {
-						...data,
-						rows: data.rows.map((prev) => (prev.id === next.id ? next : prev)),
-					};
-				},
-			);
-
-			toaster.success({
-				description: 'Changes have been saved.',
-			});
+		onSuccess: (data) => {
+			form.reset(data);
+			toaster.success({description: 'Changes have been saved.'});
+			client.setQueryData<Member>(useMemberQuery.getQueryKey(member.id), data);
 		},
 		onError: (error) => {
 			toaster.error({
@@ -160,18 +145,9 @@ export function DeleteMember() {
 	const navigate = useNavigate();
 	const mutation = useDeleteMemberMutation({
 		onSuccess: async () => {
-			await navigate('/members');
-			await client.invalidateQueries({
-				refetchType: 'active',
-				queryKey: useMembersQuery.getQueryKey(),
-				exact: false,
-				type: 'all',
-			});
-
 			disclosure.setOpen(false);
-			toaster.success({
-				description: 'Member has been deleted.',
-			});
+			toaster.success({description: 'Member has been deleted.'});
+			navigate('/members');
 		},
 		onError: (error) => {
 			toaster.error({

@@ -1,6 +1,6 @@
 import {Portal} from '@ark-ui/react';
 import {zodResolver} from '@hookform/resolvers/zod';
-import {ReturnBookCopyDataInputDefinition} from '@library/types';
+import {type BookCopy, ReturnBookCopyDataInputDefinition} from '@library/types';
 import {CornerDownLeftIcon} from 'lucide-react';
 import {useForm} from 'react-hook-form';
 import {SpinnerIcon} from '@/components/icons/SpinnerIcon';
@@ -9,21 +9,22 @@ import {Dialog} from '@/components/ui/Dialog';
 import {FeaturedIcon} from '@/components/ui/FeaturedIcon';
 import {Field} from '@/components/ui/Field';
 import {Menu} from '@/components/ui/Menu';
-import {useBookCopiesQuery} from '@/hooks/useBookCopiesQuery';
-import {useBookQuery} from '@/hooks/useBookQuery';
-import {useBooksQuery} from '@/hooks/useBooksQuery';
 import {useDisclosure} from '@/hooks/useDisclosure';
 import {useReturnBookCopyMutation} from '@/hooks/useReturnBookCopyMutation';
-import {useTransactionsQuery} from '@/hooks/useTransactionsQuery';
-import {client} from '@/utils/client';
 import {toaster} from '@/utils/toaster';
-import {useCopyContext} from './CopyContext';
-import {useTransactionContext} from './TransactionContext';
 
-export function ReturnCopy() {
-	const ctx1 = useCopyContext();
-	const ctx2 = useTransactionContext();
-	const {id} = ctx1 ?? ctx2.bookCopy;
+export interface ReturnBookCopyProps {
+	/**
+	 * @description the book copy id
+	 */
+	id: number;
+	disabled?: boolean;
+	onReturned?: (data: BookCopy) => void;
+}
+
+export function ReturnBookCopy(props: ReturnBookCopyProps) {
+	const {id, disabled, onReturned} = props;
+
 	const disclosure = useDisclosure();
 	const form = useForm({
 		resolver: zodResolver(ReturnBookCopyDataInputDefinition),
@@ -33,38 +34,10 @@ export function ReturnCopy() {
 	});
 
 	const mutation = useReturnBookCopyMutation({
-		onSuccess: async () => {
-			await Promise.all([
-				client.invalidateQueries({
-					refetchType: 'active',
-					queryKey: useBookCopiesQuery.getQueryKey(),
-					exact: false,
-					type: 'all',
-				}),
-				client.invalidateQueries({
-					refetchType: 'active',
-					queryKey: useBookQuery.getQueryKey(),
-					exact: false,
-					type: 'all',
-				}),
-				client.invalidateQueries({
-					refetchType: 'active',
-					queryKey: useBooksQuery.getQueryKey(),
-					exact: false,
-					type: 'all',
-				}),
-				client.invalidateQueries({
-					refetchType: 'active',
-					queryKey: useTransactionsQuery.getQueryKey(),
-					exact: false,
-					type: 'all',
-				}),
-			]);
-
+		onSuccess: (data) => {
 			disclosure.setOpen(false);
-			toaster.success({
-				description: 'Book copy has been returned.',
-			});
+			toaster.success({description: 'Book copy has been returned.'});
+			onReturned?.(data);
 		},
 		onError: (error) => {
 			toaster.error({
@@ -83,7 +56,7 @@ export function ReturnCopy() {
 		>
 			<Dialog.Context>
 				{(api) => (
-					<Menu.Item value="return" onSelect={() => api.setOpen(true)}>
+					<Menu.Item value="return" disabled={disabled} onSelect={() => api.setOpen(true)}>
 						<CornerDownLeftIcon />
 						Return
 					</Menu.Item>
@@ -97,7 +70,9 @@ export function ReturnCopy() {
 							onSubmit={form.handleSubmit((data) => {
 								mutation.mutate({
 									id,
-									data: {remarks: data.remarks || null},
+									data: {
+										remarks: data.remarks || null,
+									},
 								});
 							})}
 							noValidate
