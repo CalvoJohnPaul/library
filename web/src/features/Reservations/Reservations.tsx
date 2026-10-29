@@ -5,7 +5,7 @@ import {
 	SortOrderDefinition,
 } from '@library/types';
 import {format} from 'date-fns';
-import {PlusIcon, SettingsIcon} from 'lucide-react';
+import {SettingsIcon} from 'lucide-react';
 import {
 	parseAsInteger,
 	parseAsIsoDate,
@@ -17,7 +17,6 @@ import {
 import {Link} from 'react-router';
 import {DataTable} from '@/components/DataTable';
 import {Badge} from '@/components/ui/Badge';
-import {Button} from '@/components/ui/Button';
 import {Menu} from '@/components/ui/Menu';
 import {type BooksInput, useBooksQuery} from '@/hooks/useBooksQuery';
 import {useExportReservationsMutation} from '@/hooks/useExportReservationsMutation';
@@ -27,6 +26,7 @@ import {ClaimReservation} from '@/templates/ClaimReservation';
 import {UnreserveReservation} from '@/templates/UnreserveReservation';
 import {client} from '@/utils/client';
 import {toaster} from '@/utils/toaster';
+import {AddReservation} from './AddReservation';
 
 export function Reservations() {
 	const [state, setState] = useQueryStates({
@@ -84,10 +84,7 @@ export function Reservations() {
 					<h1 className="font-bold text-xl">Reservations</h1>
 					<p className="text-gray-600 text-sm">Manage book reservations below.</p>
 				</div>
-				<Button disabled>
-					<PlusIcon className="size-5" />
-					Create reservation
-				</Button>
+				<AddReservation />
 			</div>
 			<DataTable
 				id="reservations"

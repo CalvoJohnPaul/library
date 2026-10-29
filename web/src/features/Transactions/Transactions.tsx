@@ -25,7 +25,9 @@ import {type BooksInput, useBooksQuery} from '@/hooks/useBooksQuery';
 import {useExportTransactionsMutation} from '@/hooks/useExportTransactionsMutation';
 import {type MembersInput, useMembersQuery} from '@/hooks/useMembersQuery';
 import {type TransactionsInput, useTransactionsQuery} from '@/hooks/useTransactionsQuery';
+import {ClaimReservation} from '@/templates/ClaimReservation';
 import {ReturnBookCopy} from '@/templates/ReturnBookCopy';
+import {UnreserveReservation} from '@/templates/UnreserveReservation';
 import {client} from '@/utils/client';
 import {
 	getTransactionStatusLabel,
@@ -381,14 +383,17 @@ export function Transactions() {
 						id: 'actions',
 						heading: <SettingsIcon className="size-5" />,
 						cell(transaction) {
+							const canReturn =
+								transaction.type === 'BORROW' &&
+								transaction.status === 'PENDING' &&
+								transaction.bookCopy != null;
+							const reservation = transaction.type === 'RESERVE' ? transaction.reservation : null;
+							const canManageReservation = reservation?.status === 'PENDING';
+
 							return (
 								<Menu.Root>
 									<Menu.Trigger
-										disabled={
-											transaction.status !== 'PENDING' ||
-											transaction.type !== 'BORROW' ||
-											!transaction.bookCopy
-										}
+										disabled={!canReturn && !canManageReservation}
 										className="disabled:opacity-50"
 									>
 										<SettingsIcon className="size-5" />
@@ -396,7 +401,37 @@ export function Transactions() {
 									<Portal>
 										<Menu.Positioner>
 											<Menu.Content>
-												{transaction.bookCopy && <ReturnBookCopy id={transaction.bookCopy.id} />}
+												{canReturn && transaction.bookCopy && (
+													<ReturnBookCopy
+														id={transaction.bookCopy.id}
+														onReturned={() => {
+															client.invalidateQueries({
+																queryKey: useTransactionsQuery.getQueryKey(),
+															});
+														}}
+													/>
+												)}
+												{canManageReservation && reservation && (
+													<>
+														<ClaimReservation
+															id={reservation.id}
+															disabled={reservation.bookCopy?.status !== 'RESERVED'}
+															onClaimed={() => {
+																client.invalidateQueries({
+																	queryKey: useTransactionsQuery.getQueryKey(),
+																});
+															}}
+														/>
+														<UnreserveReservation
+															id={reservation.id}
+															onUnreserved={() => {
+																client.invalidateQueries({
+																	queryKey: useTransactionsQuery.getQueryKey(),
+																});
+															}}
+														/>
+													</>
+												)}
 											</Menu.Content>
 										</Menu.Positioner>
 									</Portal>

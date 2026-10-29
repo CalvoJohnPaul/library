@@ -8,10 +8,17 @@ export const StatsActivityPointDefinition = z.object({
 	totalBooksReturned: z.number(),
 });
 
+export const StatsReservationActivityPointDefinition = z.object({
+	timestamp: DateDefinition,
+	totalBooksReserved: z.number(),
+	totalBooksUnreserved: z.number(),
+});
+
 export const StatsTopBorrowedBookDefinition = z.object({
 	book: z.object({
 		id: z.number(),
 		title: z.string(),
+		author: z.string(),
 		genre: BookGenreDefinition,
 	}),
 	total: z.number(),
@@ -39,8 +46,12 @@ export const StatsMonthOverMonthDeltaDefinition = z.object({
 export const StatsDefinition = z.object({
 	totalBooks: z.number(),
 	totalBookCopies: z.number(),
+	totalAvailableCopies: z.number(),
 	totalOutstandingBorrows: z.number(),
+	totalPendingReservations: z.number(),
+	totalReadyToClaimReservations: z.number(),
 	last14DaysActivity: z.array(StatsActivityPointDefinition),
+	last7DaysReservationActivity: z.array(StatsReservationActivityPointDefinition),
 	topBorrowedBooksThisMonth: z.array(StatsTopBorrowedBookDefinition),
 	topBorrowedMembersThisMonth: z.array(StatsTopBorrowedMemberDefinition),
 	totalBookCopiesByGenre: z.array(StatsGenreCountDefinition),

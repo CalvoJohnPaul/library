@@ -4,6 +4,8 @@ import {useStatsQuery} from '@/hooks/useStatsQuery';
 import {BooksByGenre} from './BooksByGenre';
 import {BorrowingActivity} from './BorrowingActivity';
 import {DashboardProvider} from './DashboardContext';
+import {ReservationActivity} from './ReservationActivity';
+import {ReservationStats} from './ReservationStats';
 import {Stats} from './Stats';
 import {TopBorrowedBooks} from './TopBorrowedBooks';
 import {TopBorrowingMembers} from './TopBorrowingMembers';
@@ -13,6 +15,7 @@ export function Dashboard() {
 	const query = useStatsQuery({
 		placeholderData: {
 			last14DaysActivity: [],
+			last7DaysReservationActivity: [],
 			monthOverMonth: {
 				borrows: {current: 0, previous: 0},
 				newBooks: {current: 0, previous: 0},
@@ -22,9 +25,12 @@ export function Dashboard() {
 			topBorrowedBooksThisMonth: [],
 			topBorrowedMembersThisMonth: [],
 			totalBookCopies: 0,
+			totalAvailableCopies: 0,
 			totalBookCopiesByGenre: [],
 			totalBooks: 0,
 			totalOutstandingBorrows: 0,
+			totalPendingReservations: 0,
+			totalReadyToClaimReservations: 0,
 		},
 	});
 
@@ -42,10 +48,16 @@ export function Dashboard() {
 			<div className="flex flex-col gap-4">
 				<Stats />
 				<div className="grid grid-cols-1 gap-4 xl:grid-cols-3">
-					<BorrowingActivity />
-					<BooksByGenre genre={genre} onGenreChange={setGenre} />
-					<TopBorrowedBooks genre={genre} onGenreChange={setGenre} />
-					<TopBorrowingMembers />
+					<div className="grid min-w-0 gap-4 xl:col-span-2 xl:grid-rows-2">
+						<BorrowingActivity />
+						<TopBorrowedBooks genre={genre} onGenreChange={setGenre} />
+					</div>
+					<div className="flex min-w-0 flex-col gap-4">
+						<BooksByGenre genre={genre} onGenreChange={setGenre} />
+						<TopBorrowingMembers />
+						<ReservationStats />
+						<ReservationActivity />
+					</div>
 				</div>
 			</div>
 		</DashboardProvider>

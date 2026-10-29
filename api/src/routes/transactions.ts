@@ -296,7 +296,9 @@ const plugin: FastifyPluginAsyncZod = async (app) => {
 								},
 							},
 						},
-						reservation: {select: {id: true, status: true}},
+						reservation: {
+							select: {id: true, status: true, bookCopy: {select: {status: true}}},
+						},
 					},
 					orderBy: {
 						dateTimeCreated: 'desc',
@@ -414,7 +416,9 @@ const plugin: FastifyPluginAsyncZod = async (app) => {
 							},
 						},
 					},
-					reservation: {select: {id: true, status: true}},
+					reservation: {
+						select: {id: true, status: true, bookCopy: {select: {status: true}}},
+					},
 				},
 			});
 

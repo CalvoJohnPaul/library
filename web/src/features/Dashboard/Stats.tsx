@@ -88,7 +88,7 @@ export function Stats() {
 		{
 			type: 'copies',
 			title: 'Copies available',
-			content: (data.totalBookCopies - data.totalOutstandingBorrows).toLocaleString(),
+			content: data.totalAvailableCopies.toLocaleString(),
 			description: `${data.totalOutstandingBorrows.toLocaleString()} copies currently borrowed`,
 			delta: data.monthOverMonth.newCopies,
 			deltaLabel: 'copies added this month',

@@ -21,17 +21,27 @@ export function TopBorrowedBooks(props: TopBorrowedBooksProps) {
 	});
 
 	const items: {
-		name: string;
+		id: number;
+		title: string;
+		author: string;
 		count: number;
 	}[] = data.topBorrowedBooksThisMonth
 		.filter((book) => genre === null || book.book.genre === genre)
-		.map((book) => ({name: book.book.title, count: book.total}))
+		.map((book) => ({
+			id: book.book.id,
+			title: book.book.title,
+			author: book.book.author,
+			count: book.total,
+		}))
 		.slice(0, 5);
 
 	const axisMax = roundedAxisMax(items.map((item) => item.count));
+	const tickStep = Math.ceil(axisMax / (4 * 500)) * 500;
+	const ticks = Array.from({length: 5}, (_, index) => index * tickStep);
+	const shorten = (text: string) => (text.length > 25 ? `${text.slice(0, 24)}…` : text);
 
 	return (
-		<section className="rounded-xl border border-gray-200 bg-white p-5 xl:col-span-2">
+		<section className="flex flex-col rounded-xl border border-gray-200 bg-white p-5">
 			<div className="mb-4 flex items-start justify-between gap-2">
 				<div>
 					<h2 className="font-semibold text-sm">Top borrowed books</h2>
@@ -53,49 +63,72 @@ export function TopBorrowedBooks(props: TopBorrowedBooksProps) {
 			</div>
 
 			{items.length === 0 ? (
-				<p className="pt-16 text-center text-gray-600 text-xs">
+				<p className="grid min-h-68.75 flex-1 place-items-center text-center text-gray-600 text-xs">
 					No borrows in this genre this month
 				</p>
 			) : (
-				<ResponsiveContainer width="100%" height={275}>
-					<BarChart data={items} layout="vertical" barCategoryGap="25%">
-						<CartesianGrid
-							strokeDasharray="3 3"
-							stroke="var(--color-gray-200)"
-							horizontal={false}
-						/>
-						<XAxis
-							type="number"
-							tickLine={false}
-							axisLine={false}
-							tick={{fontSize: 11, fill: 'var(--color-gray-600)'}}
-							allowDecimals={false}
-							domain={[0, axisMax]}
-						/>
-						<YAxis
-							type="category"
-							dataKey="name"
-							tickLine={false}
-							axisLine={false}
-							tick={{fontSize: 11, fill: 'var(--color-gray-600)'}}
-							width={140}
-						/>
-						<Tooltip
-							contentStyle={{
-								borderRadius: '0.5rem',
-								fontSize: '0.75rem',
-							}}
-							cursor={{fill: 'var(--color-gray-100)'}}
-							formatter={(value) => [value, 'borrows']}
-						/>
-						<Bar
-							dataKey="count"
-							fill="var(--color-blue-400)"
-							radius={[0, 4, 4, 0]}
-							maxBarSize={16}
-						/>
-					</BarChart>
-				</ResponsiveContainer>
+				<div className="min-h-68.75 flex-1">
+					<ResponsiveContainer width="100%" height="100%">
+						<BarChart data={items} layout="vertical" barCategoryGap="25%" margin={{right: 32}}>
+							<CartesianGrid
+								strokeDasharray="3 3"
+								stroke="var(--color-gray-200)"
+								horizontal={false}
+							/>
+							<XAxis
+								type="number"
+								tickLine={false}
+								axisLine={false}
+								tick={{fontSize: 11, fill: 'var(--color-gray-600)'}}
+								allowDecimals={false}
+								tickFormatter={(value: number) => value.toLocaleString()}
+								domain={[0, ticks[4]]}
+								ticks={ticks}
+								interval={0}
+							/>
+							<YAxis
+								type="category"
+								dataKey="id"
+								tickLine={false}
+								axisLine={false}
+								tick={({x, y, payload}) => {
+									const item = items.find((book) => book.id === Number(payload.value));
+									if (!item) return null;
+
+									return (
+										<text x={x} y={y} textAnchor="end">
+											<tspan x={x} dy="-0.2em" fontSize={11} fill="var(--color-gray-700)">
+												{shorten(item.title)}
+											</tspan>
+											<tspan x={x} dy="1.3em" fontSize={10} fill="var(--color-gray-500)">
+												{shorten(item.author)}
+											</tspan>
+										</text>
+									);
+								}}
+								width={185}
+							/>
+							<Tooltip
+								contentStyle={{
+									borderRadius: '0.5rem',
+									fontSize: '0.75rem',
+								}}
+								cursor={{fill: 'var(--color-gray-100)'}}
+								labelFormatter={(value) => {
+									const item = items.find((book) => book.id === Number(value));
+									return item ? `${item.title} — ${item.author}` : value;
+								}}
+								formatter={(value) => [value, 'borrows']}
+							/>
+							<Bar
+								dataKey="count"
+								fill="var(--color-blue-400)"
+								radius={[0, 4, 4, 0]}
+								maxBarSize={16}
+							/>
+						</BarChart>
+					</ResponsiveContainer>
+				</div>
 			)}
 		</section>
 	);

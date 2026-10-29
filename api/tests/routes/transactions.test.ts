@@ -65,15 +65,19 @@ test('GET /transactions and /transactions/:id expose the linked reservation', as
 	const headers = await fixture.auth();
 	const row = {
 		...fixture.transaction(fixture.member(), fixture.copy(fixture.book())),
-		reservation: {id: 42, status: 'COMPLETED'},
+		reservation: {id: 42, status: 'PENDING', bookCopy: {status: 'RESERVED'}},
 	};
 	fixture.mock.transaction.count = async () => 1;
 	fixture.mock.transaction.findMany = async (args: {select: {reservation: unknown}}) => {
-		assert.deepEqual(args.select.reservation, {select: {id: true, status: true}});
+		assert.deepEqual(args.select.reservation, {
+			select: {id: true, status: true, bookCopy: {select: {status: true}}},
+		});
 		return [row];
 	};
 	fixture.mock.transaction.findUnique = async (args: {select: {reservation: unknown}}) => {
-		assert.deepEqual(args.select.reservation, {select: {id: true, status: true}});
+		assert.deepEqual(args.select.reservation, {
+			select: {id: true, status: true, bookCopy: {select: {status: true}}},
+		});
 		return row;
 	};
 	const list = await fixture.app.inject({method: 'GET', url: '/transactions', headers});

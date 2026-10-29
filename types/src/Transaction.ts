@@ -33,7 +33,13 @@ export const TransactionDefinition = z.object({
 		isbn: true,
 		status: true,
 	}).nullable(),
-	reservation: z.object({id: z.number(), status: ReservationStatusDefinition}).nullable(),
+	reservation: z
+		.object({
+			id: z.number(),
+			status: ReservationStatusDefinition,
+			bookCopy: BookCopyDefinition.pick({status: true}).nullable(),
+		})
+		.nullable(),
 	dateTimeCreated: DateDefinition,
 	dateTimeUpdated: DateDefinition,
 });

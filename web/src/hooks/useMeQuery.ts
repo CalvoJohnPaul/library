@@ -23,7 +23,7 @@ export function useMeQuery(
 	return useQuery({
 		refetchOnMount: true,
 		refetchOnReconnect: true,
-		refetchOnWindowFocus: true,
+		refetchOnWindowFocus: 'always',
 		...options,
 		queryKey: getQueryKey(),
 		queryFn: async ({signal}) => {
