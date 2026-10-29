@@ -9,6 +9,7 @@ import {Dashboard} from './features/Dashboard/Dashboard';
 import {Member} from './features/Member/Member';
 import {Members} from './features/Members/Members';
 import {NotFound} from './features/NotFound/NotFound';
+import {Reservations} from './features/Reservations/Reservations';
 import {RootLayout} from './features/RootLayout/RootLayout';
 import {Transactions} from './features/Transactions/Transactions';
 import {client} from './utils/client';
@@ -32,6 +33,7 @@ export function App() {
 									<Route path="transactions" element={<Transactions />} />
 									<Route path="members" element={<Members />} />
 									<Route path="members/:id" element={<Member />} />
+									<Route path="reservations" element={<Reservations />} />
 									<Route path="*" element={<NotFound />} />
 								</Route>
 							</Routes>

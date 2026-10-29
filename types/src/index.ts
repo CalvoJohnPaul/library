@@ -5,6 +5,7 @@ export * from './Csrf.js';
 export * from './common.js';
 export * from './HttpResponse.js';
 export * from './Member.js';
+export * from './Reservation.js';
 export * from './Session.js';
 export * from './Stats.js';
 export * from './Transaction.js';

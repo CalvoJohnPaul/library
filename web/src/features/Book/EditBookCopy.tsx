@@ -17,7 +17,7 @@ import {client} from '@/utils/client';
 import {toaster} from '@/utils/toaster';
 import {useCopyContext} from './CopyContext';
 
-export function EditCopy() {
+export function EditBookCopy() {
 	const copy = useCopyContext();
 	const form = useForm({
 		resolver: zodResolver(UpdateBookCopyDataInputDefinition),

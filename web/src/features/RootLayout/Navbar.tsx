@@ -4,6 +4,7 @@ import {isNil, omitBy} from 'es-toolkit';
 import {isEmpty} from 'es-toolkit/compat';
 import {
 	BookOpenIcon,
+	CalendarIcon,
 	ChartColumnBigIcon,
 	LockKeyholeIcon,
 	LogOutIcon,
@@ -54,6 +55,11 @@ export function Navbar() {
 			icon: <UsersIcon />,
 			label: 'Members',
 			href: '/members',
+		},
+		{
+			icon: <CalendarIcon />,
+			label: 'Reservations',
+			href: '/reservations',
 		},
 	];
 

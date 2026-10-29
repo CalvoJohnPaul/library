@@ -152,6 +152,8 @@ const plugin: FastifyPluginAsyncZod = async (app) => {
 			>();
 
 			for (const row of borrowRows) {
+				if (!row.bookCopy) continue;
+
 				const {id, title, genre} = row.bookCopy.book;
 				const existing = topBorrowedBooksThisMonthMap.get(id);
 

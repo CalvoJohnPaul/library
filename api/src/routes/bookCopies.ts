@@ -521,7 +521,7 @@ const plugin: FastifyPluginAsyncZod = async (app) => {
 			const [existing, memberCount] = await app.prisma.$transaction([
 				app.prisma.bookCopy.findUnique({
 					where: {id: req.params.id},
-					select: {status: true},
+					select: {status: true, bookId: true},
 				}),
 				app.prisma.member.count({where: {id: req.body.memberId}}),
 			]);
@@ -530,7 +530,7 @@ const plugin: FastifyPluginAsyncZod = async (app) => {
 				return reply.notFound();
 			}
 
-			if (existing.status !== 'AVAILABLE') {
+			if (existing.status !== 'AVAILABLE' && existing.status !== 'RESERVED') {
 				return reply.conflict('Book copy is not available');
 			}
 
@@ -538,13 +538,72 @@ const plugin: FastifyPluginAsyncZod = async (app) => {
 				return reply.badRequest('Member not found');
 			}
 
+			if (existing.status === 'AVAILABLE') {
+				if (
+					await app.prisma.reservation.findFirst({
+						where: {bookId: existing.bookId, status: 'PENDING'},
+						select: {id: true},
+					})
+				) {
+					return reply.conflict('Book is reserved');
+				}
+			} else {
+				const assigned = await app.prisma.reservation.findFirst({
+					where: {bookCopyId: req.params.id, status: 'PENDING'},
+					select: {memberId: true},
+				});
+
+				if (!assigned || assigned.memberId !== req.body.memberId) {
+					return reply.conflict('Book copy is reserved for another member');
+				}
+			}
+
 			const [bookCopy, transaction] = await app.prisma.$transaction(async (tx) => {
+				const reservation =
+					existing.status === 'RESERVED'
+						? await tx.reservation.findFirst({
+								where: {bookCopyId: req.params.id, memberId: req.body.memberId, status: 'PENDING'},
+								select: {id: true, ticket: true},
+							})
+						: null;
+
+				if (existing.status === 'RESERVED' && !reservation) {
+					return [null, null] as const;
+				}
+
+				if (
+					existing.status === 'AVAILABLE' &&
+					(await tx.reservation.findFirst({
+						where: {bookId: existing.bookId, status: 'PENDING'},
+						select: {id: true},
+					}))
+				) {
+					return [null, null] as const;
+				}
+
+				if (reservation) {
+					const {count} = await tx.reservation.updateMany({
+						where: {id: reservation.id, status: 'PENDING', bookCopyId: req.params.id},
+						data: {status: 'COMPLETED'},
+					});
+
+					if (count === 0) {
+						return [null, null] as const;
+					}
+				}
+
 				const {count} = await tx.bookCopy.updateMany({
-					where: {id: req.params.id, status: 'AVAILABLE'},
+					where: {id: req.params.id, status: existing.status},
 					data: {status: 'BORROWED'},
 				});
 
-				if (count === 0) return [null, null] as const;
+				if (count === 0) {
+					if (reservation) {
+						throw app.httpErrors.conflict('Assigned copy is not reserved');
+					}
+
+					return [null, null] as const;
+				}
 
 				const date = new Date();
 				const ticketSegment0 = req.account.id.toString().padStart(4, '0');
@@ -553,7 +612,16 @@ const plugin: FastifyPluginAsyncZod = async (app) => {
 					(date.getMonth() + 1).toString().padStart(2, '0') +
 					date.getDate().toString().padStart(2, '0') +
 					date.getFullYear();
-				const ticket = `${ticketSegment0}-${ticketSegment1}-${ticketSegment2}`;
+
+				const ticket =
+					reservation?.ticket ?? `${ticketSegment0}-${ticketSegment1}-${ticketSegment2}`;
+
+				if (reservation) {
+					await tx.transaction.update({
+						where: {ticket_type: {ticket, type: 'RESERVE'}},
+						data: {status: 'COMPLETED'},
+					});
+				}
 
 				const transaction = await tx.transaction.create({
 					data: {
@@ -563,6 +631,7 @@ const plugin: FastifyPluginAsyncZod = async (app) => {
 						remarks: req.body.remarks,
 						bookCopyId: req.params.id,
 						memberId: req.body.memberId,
+						reservationId: reservation?.id,
 						dateTimeCreated: date,
 						dateTimeUpdated: date,
 					},
@@ -597,6 +666,7 @@ const plugin: FastifyPluginAsyncZod = async (app) => {
 								},
 							},
 						},
+						reservation: {select: {id: true, status: true}},
 						dateTimeCreated: true,
 						dateTimeUpdated: true,
 					},
@@ -664,18 +734,9 @@ const plugin: FastifyPluginAsyncZod = async (app) => {
 							course: transaction.member.course,
 							yearAndSection: transaction.member.yearAndSection,
 						},
-						bookCopy: {
-							id: transaction.bookCopy.id,
-							isbn: transaction.bookCopy.isbn,
-							book: {
-								id: transaction.bookCopy.book.id,
-								title: transaction.bookCopy.book.title,
-								genre: transaction.bookCopy.book.genre,
-								author: transaction.bookCopy.book.author,
-								yearPublished: transaction.bookCopy.book.yearPublished,
-							},
-							status: transaction.bookCopy.status,
-						},
+						book: null,
+						bookCopy: transaction.bookCopy,
+						reservation: transaction.reservation,
 						dateTimeCreated: transaction.dateTimeCreated,
 						dateTimeUpdated: transaction.dateTimeUpdated,
 					},
@@ -726,6 +787,7 @@ const plugin: FastifyPluginAsyncZod = async (app) => {
 							id: true,
 							ticket: true,
 							memberId: true,
+							reservationId: true,
 						},
 					},
 				},
@@ -761,6 +823,7 @@ const plugin: FastifyPluginAsyncZod = async (app) => {
 						remarks: req.body?.remarks,
 						bookCopyId: req.params.id,
 						memberId: borrow.memberId,
+						reservationId: borrow.reservationId,
 					},
 					select: {
 						id: true,
@@ -793,6 +856,7 @@ const plugin: FastifyPluginAsyncZod = async (app) => {
 								},
 							},
 						},
+						reservation: {select: {id: true, status: true}},
 						dateTimeCreated: true,
 						dateTimeUpdated: true,
 					},
@@ -860,18 +924,9 @@ const plugin: FastifyPluginAsyncZod = async (app) => {
 							course: transaction.member.course,
 							yearAndSection: transaction.member.yearAndSection,
 						},
-						bookCopy: {
-							id: transaction.bookCopy.id,
-							isbn: transaction.bookCopy.isbn,
-							book: {
-								id: transaction.bookCopy.book.id,
-								title: transaction.bookCopy.book.title,
-								genre: transaction.bookCopy.book.genre,
-								author: transaction.bookCopy.book.author,
-								yearPublished: transaction.bookCopy.book.yearPublished,
-							},
-							status: transaction.bookCopy.status,
-						},
+						book: null,
+						bookCopy: transaction.bookCopy,
+						reservation: transaction.reservation,
 						dateTimeCreated: transaction.dateTimeCreated,
 						dateTimeUpdated: transaction.dateTimeUpdated,
 					},

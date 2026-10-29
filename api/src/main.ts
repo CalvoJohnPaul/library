@@ -2,11 +2,13 @@ import {createApp} from './createApp';
 
 async function main() {
 	try {
-		const server = await createApp();
+		const app = await createApp();
+		const host = process.env.HOST?.trim() ?? null;
+		const port = process.env.PORT?.trim() ? Number.parseInt(process.env.PORT, 10) : null;
 
-		await server.listen({
-			port: process.env.PORT ? Number(process.env.PORT) : 8080,
-			host: '0.0.0.0',
+		await app.listen({
+			host: host || '0.0.0.0',
+			port: port && !Number.isNaN(port) ? port : 8080,
 		});
 	} catch (err) {
 		console.error(err);

@@ -6,10 +6,11 @@ import {Button} from '@/components/ui/Button/Button';
 import {Tabs} from '@/components/ui/Tabs';
 import {useMemberQuery} from '@/hooks/useMemberQuery';
 import {MemberProvider} from './MemberContext';
+import {Reservations} from './Reservations';
 import {Settings} from './Settings';
 import {Transactions} from './Transactions';
 
-const TabDefinition = z.enum(['transactions', 'settings']).catch('transactions');
+const TabDefinition = z.enum(['transactions', 'reservations', 'settings']).catch('transactions');
 
 export function Member() {
 	const {id} = useParams<{id: string}>();
@@ -84,11 +85,15 @@ export function Member() {
 				>
 					<Tabs.List className="mb-8 w-100">
 						<Tabs.Trigger value="transactions">Transactions</Tabs.Trigger>
+						<Tabs.Trigger value="reservations">Reservations</Tabs.Trigger>
 						<Tabs.Trigger value="settings">Settings</Tabs.Trigger>
 						<Tabs.Indicator />
 					</Tabs.List>
 					<Tabs.Content value="transactions">
 						<Transactions />
+					</Tabs.Content>
+					<Tabs.Content value="reservations">
+						<Reservations />
 					</Tabs.Content>
 					<Tabs.Content value="settings">
 						<Settings />

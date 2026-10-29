@@ -1,5 +1,9 @@
 import {createListCollection, Portal} from '@ark-ui/react';
-import {BookCopySortByInputDefinition, BookCopyStatusDefinition, SortOrderDefinition} from '@library/types';
+import {
+	BookCopySortByInputDefinition,
+	BookCopyStatusDefinition,
+	SortOrderDefinition,
+} from '@library/types';
 import {format} from 'date-fns';
 import {SettingsIcon} from 'lucide-react';
 import {
@@ -18,11 +22,11 @@ import {useExportBookCopiesMutation} from '@/hooks/useExportBookCopiesMutation';
 import {getBookCopyStatusLabel, getBookCopyStatusOptions} from '@/utils/common';
 import {toaster} from '@/utils/toaster';
 import {useBookContext} from './BookContext';
-import {BorrowCopy} from './BorrowCopy';
+import {BorrowBookCopy} from './BorrowBookCopy';
 import {CopyProvider} from './CopyContext';
 import {DeleteCopy} from './DeleteCopy';
-import {EditCopy} from './EditCopy';
-import {ReturnCopy} from './ReturnCopy';
+import {EditBookCopy} from './EditBookCopy';
+import {ReturnBookCopy} from './ReturnBookCopy';
 
 export function Copies() {
 	const book = useBookContext();
@@ -113,7 +117,15 @@ export function Copies() {
 					heading: 'Status',
 					cell(copy) {
 						return (
-							<Badge.Root accent={copy.status === 'AVAILABLE' ? 'success' : 'danger'}>
+							<Badge.Root
+								accent={
+									copy.status === 'AVAILABLE'
+										? 'success'
+										: copy.status === 'RESERVED'
+											? 'purple'
+											: 'danger'
+								}
+							>
 								<Badge.Label>{getBookCopyStatusLabel(copy.status)}</Badge.Label>
 							</Badge.Root>
 						);
@@ -189,9 +201,9 @@ export function Copies() {
 									<Menu.Positioner>
 										<Menu.Content>
 											<CopyProvider value={copy}>
-												<EditCopy />
-												{copy.status === 'AVAILABLE' && <BorrowCopy />}
-												{copy.status === 'BORROWED' && <ReturnCopy />}
+												<EditBookCopy />
+												{copy.status === 'AVAILABLE' && <BorrowBookCopy />}
+												{copy.status === 'BORROWED' && <ReturnBookCopy />}
 												<Menu.Separator />
 												<DeleteCopy />
 											</CopyProvider>

@@ -24,6 +24,7 @@ import {Tooltip} from '@/components/ui/Tooltip';
 import {type BooksInput, useBooksQuery} from '@/hooks/useBooksQuery';
 import {useExportTransactionsMutation} from '@/hooks/useExportTransactionsMutation';
 import {type TransactionsInput, useTransactionsQuery} from '@/hooks/useTransactionsQuery';
+import {ReturnBookCopy} from '@/templates/ReturnBookCopy';
 import {client} from '@/utils/client';
 import {
 	getTransactionStatusLabel,
@@ -33,8 +34,6 @@ import {
 } from '@/utils/common';
 import {toaster} from '@/utils/toaster';
 import {useMemberContext} from './MemberContext';
-import {ReturnBookCopy} from './ReturnBookCopy';
-import {TransactionProvider} from './TransactionContext';
 
 export function Transactions() {
 	const member = useMemberContext();
@@ -115,7 +114,17 @@ export function Transactions() {
 					heading: 'Type',
 					cell(transaction) {
 						return (
-							<Badge.Root accent={transaction.type === 'BORROW' ? 'warning' : 'success'}>
+							<Badge.Root
+								accent={
+									transaction.type === 'BORROW'
+										? 'warning'
+										: transaction.type === 'RESERVE'
+											? 'purple'
+											: transaction.type === 'UNRESERVE'
+												? 'indigo'
+												: 'success'
+								}
+							>
 								<Badge.Label>{getTransactionTypeLabel(transaction.type)}</Badge.Label>
 							</Badge.Root>
 						);
@@ -174,14 +183,12 @@ export function Transactions() {
 					id: 'book',
 					heading: 'Book',
 					cell(transaction) {
-						return (
-							<Link
-								to={`/books/${transaction.bookCopy.book.id}`}
-								className="block max-w-64 truncate text-blue-500"
-							>
-								{transaction.bookCopy.book.title}
+						const book = transaction.book ?? transaction.bookCopy?.book;
+						return book ? (
+							<Link to={`/books/${book.id}`} className="block max-w-64 truncate text-blue-500">
+								{book.title}
 							</Link>
-						);
+						) : null;
 					},
 					filter: {
 						type: 'ASYNC_COMBOBOX',
@@ -227,7 +234,7 @@ export function Transactions() {
 					id: 'isbn',
 					heading: 'ISBN',
 					cell(transaction) {
-						return transaction.bookCopy.isbn;
+						return transaction.bookCopy?.isbn ?? null;
 					},
 					hideable: true,
 					orderable: true,
@@ -308,7 +315,11 @@ export function Transactions() {
 						return (
 							<Menu.Root>
 								<Menu.Trigger
-									disabled={transaction.status !== 'PENDING' || transaction.type !== 'BORROW'}
+									disabled={
+										transaction.status !== 'PENDING' ||
+										transaction.type !== 'BORROW' ||
+										!transaction.bookCopy
+									}
 									className="disabled:opacity-50"
 								>
 									<SettingsIcon className="size-5" />
@@ -316,9 +327,7 @@ export function Transactions() {
 								<Portal>
 									<Menu.Positioner>
 										<Menu.Content>
-											<TransactionProvider value={transaction}>
-												<ReturnBookCopy />
-											</TransactionProvider>
+											{transaction.bookCopy && <ReturnBookCopy id={transaction.bookCopy.id} />}
 										</Menu.Content>
 									</Menu.Positioner>
 								</Portal>

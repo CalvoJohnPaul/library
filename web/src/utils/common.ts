@@ -74,6 +74,7 @@ export function getBookYearPublishedOptions(): Option[] {
 const BOOK_COPY_STATUS_MAP: Record<BookCopyStatus, string> = {
 	AVAILABLE: 'Available',
 	BORROWED: 'Borrowed',
+	RESERVED: 'Reserved',
 };
 
 export function getBookCopyStatusOptions(): Option[] {
@@ -96,6 +97,8 @@ export function getBookCopyStatusLabel(status: BookCopyStatus): string {
 const TRANSACTION_TYPE_MAP: Record<TransactionType, string> = {
 	BORROW: 'Borrow',
 	RETURN: 'Return',
+	RESERVE: 'Reserve',
+	UNRESERVE: 'Unreserve',
 };
 
 export function getTransactionTypeOptions(): Option[] {

@@ -30,7 +30,7 @@ import {useCopyContext} from './CopyContext';
 
 type Step = 'SEARCH' | 'CONFIRM' | 'CREATE' | 'SUCCESS';
 
-export function BorrowCopy() {
+export function BorrowBookCopy() {
 	const copy = useCopyContext();
 	const disclosure = useDisclosure();
 
@@ -401,11 +401,15 @@ export function BorrowCopy() {
 										</div>
 										<div className="flex justify-between gap-4">
 											<dt className="font-semibold text-gray-600">Book</dt>
-											<dd>{transaction.bookCopy.book.title}</dd>
+											<dd>
+												{transaction.book?.title ??
+													transaction.bookCopy?.book.title ??
+													copy.book.title}
+											</dd>
 										</div>
 										<div className="flex justify-between gap-4">
 											<dt className="font-semibold text-gray-600">ISBN</dt>
-											<dd>{transaction.bookCopy.isbn}</dd>
+											<dd>{transaction.bookCopy?.isbn ?? copy.isbn}</dd>
 										</div>
 										<div className="flex justify-between gap-4">
 											<dt className="font-semibold text-gray-600">Date borrowed</dt>

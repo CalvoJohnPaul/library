@@ -23,9 +23,11 @@
 		"noFallthroughCasesInSwitch": true,
 
 		"paths": {
-			"@/config/*": ["./src/config/*"],
 			"@/components/*": ["./src/components/*"],
+			"@/config/*": ["./src/config/*"],
+			"@/context/*": ["./src/context/*"],
 			"@/hooks/*": ["./src/hooks/*"],
+			"@/templates/*": ["./src/templates/*"],
 			"@/types/*": ["./src/types/*"],
 			"@/utils/*": ["./src/utils/*"]
 		}

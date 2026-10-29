@@ -1,6 +1,7 @@
 generator client {
   provider = "prisma-client"
   output   = "./.generated"
+  previewFeatures = ["partialIndexes"]
 }
 
 datasource db {
@@ -19,6 +20,7 @@ model Account {
 enum BookStatus {
   AVAILABLE
   BORROWED
+  RESERVED
 }
 
 enum BookGenre {
@@ -46,14 +48,16 @@ enum BookGenre {
 }
 
 model Book {
-  id              Int        @id @default(autoincrement())
+  id              Int           @id @default(autoincrement())
   title           String
   author          String
   genre           BookGenre
   yearPublished   Int
-  dateTimeCreated DateTime   @default(now())
-  dateTimeUpdated DateTime   @updatedAt
+  dateTimeCreated DateTime      @default(now())
+  dateTimeUpdated DateTime      @updatedAt
   copies          BookCopy[]
+  reservations    Reservation[]
+  transactions    Transaction[]
 
   @@index([dateTimeCreated])
   @@index([dateTimeUpdated])
@@ -69,6 +73,7 @@ model BookCopy {
   dateTimeCreated DateTime      @default(now())
   dateTimeUpdated DateTime      @updatedAt
   transactions    Transaction[]
+  reservations    Reservation[]
 
   @@index([status])
   @@index([dateTimeCreated])
@@ -87,6 +92,7 @@ model Member {
   dateTimeCreated          DateTime      @default(now())
   dateTimeUpdated          DateTime      @updatedAt
   transactions             Transaction[]
+  reservations             Reservation[]
 
   @@index([dateTimeCreated])
   @@index([dateTimeUpdated])
@@ -96,6 +102,8 @@ model Member {
 enum TransactionType {
   BORROW
   RETURN
+  RESERVE
+  UNRESERVE
 }
 
 enum TransactionStatus {
@@ -111,8 +119,12 @@ model Transaction {
   remarks         String?
   member          Member            @relation(fields: [memberId], references: [id], onDelete: Cascade)
   memberId        Int
-  bookCopy        BookCopy          @relation(fields: [bookCopyId], references: [id], onDelete: Cascade)
-  bookCopyId      Int
+  book            Book?             @relation(fields: [bookId], references: [id], onDelete: Cascade)
+  bookId          Int?
+  bookCopy        BookCopy?         @relation(fields: [bookCopyId], references: [id], onDelete: Cascade)
+  bookCopyId      Int?
+  reservation     Reservation?      @relation(fields: [reservationId], references: [id], onDelete: SetNull)
+  reservationId   Int?
   dateTimeCreated DateTime          @default(now())
   dateTimeUpdated DateTime          @updatedAt
 
@@ -122,4 +134,31 @@ model Transaction {
   @@index([dateTimeUpdated])
   @@index([memberId, type, dateTimeCreated])
   @@index([bookCopyId, type, dateTimeCreated])
+  @@index([bookId, type, dateTimeCreated])
+  @@index([reservationId])
+}
+
+enum ReservationStatus {
+  PENDING
+  CANCELLED
+  COMPLETED
+}
+
+model Reservation {
+  id              Int               @id @default(autoincrement())
+  book            Book              @relation(fields: [bookId], references: [id], onDelete: Cascade)
+  bookId          Int
+  bookCopy        BookCopy?         @relation(fields: [bookCopyId], references: [id], onDelete: SetNull)
+  bookCopyId      Int?
+  member          Member            @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  memberId        Int
+  status          ReservationStatus @default(PENDING)
+  ticket          String            @unique
+  remarks         String?
+  transactions    Transaction[]
+  dateTimeCreated DateTime          @default(now())
+  dateTimeUpdated DateTime          @updatedAt
+
+  @@unique([bookId, memberId], where: {status: "PENDING"})
+  @@index([status, bookCopyId])
 }

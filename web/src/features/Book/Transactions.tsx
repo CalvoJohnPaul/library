@@ -24,6 +24,7 @@ import {Tooltip} from '@/components/ui/Tooltip';
 import {useExportTransactionsMutation} from '@/hooks/useExportTransactionsMutation';
 import {type MembersInput, useMembersQuery} from '@/hooks/useMembersQuery';
 import {type TransactionsInput, useTransactionsQuery} from '@/hooks/useTransactionsQuery';
+import {ReturnBookCopy} from '@/templates/ReturnBookCopy';
 import {client} from '@/utils/client';
 import {
 	getTransactionStatusLabel,
@@ -33,8 +34,6 @@ import {
 } from '@/utils/common';
 import {toaster} from '@/utils/toaster';
 import {useBookContext} from './BookContext';
-import {ReturnCopy} from './ReturnCopy';
-import {TransactionProvider} from './TransactionContext';
 
 export function Transactions() {
 	const book = useBookContext();
@@ -121,7 +120,17 @@ export function Transactions() {
 					heading: 'Type',
 					cell(transaction) {
 						return (
-							<Badge.Root accent={transaction.type === 'BORROW' ? 'warning' : 'success'}>
+							<Badge.Root
+								accent={
+									transaction.type === 'BORROW'
+										? 'warning'
+										: transaction.type === 'RESERVE'
+											? 'purple'
+											: transaction.type === 'UNRESERVE'
+												? 'indigo'
+												: 'success'
+								}
+							>
 								<Badge.Label>{getTransactionTypeLabel(transaction.type)}</Badge.Label>
 							</Badge.Root>
 						);
@@ -180,7 +189,7 @@ export function Transactions() {
 					id: 'isbn',
 					heading: 'ISBN',
 					cell(transaction) {
-						return transaction.bookCopy.isbn;
+						return transaction.bookCopy?.isbn ?? null;
 					},
 					filter: {
 						type: 'TEXT',
@@ -320,7 +329,11 @@ export function Transactions() {
 						return (
 							<Menu.Root>
 								<Menu.Trigger
-									disabled={transaction.status !== 'PENDING' || transaction.type !== 'BORROW'}
+									disabled={
+										transaction.status !== 'PENDING' ||
+										transaction.type !== 'BORROW' ||
+										!transaction.bookCopy
+									}
 									className="disabled:opacity-50"
 								>
 									<SettingsIcon className="size-5" />
@@ -328,9 +341,7 @@ export function Transactions() {
 								<Portal>
 									<Menu.Positioner>
 										<Menu.Content>
-											<TransactionProvider value={transaction}>
-												<ReturnCopy />
-											</TransactionProvider>
+											{transaction.bookCopy && <ReturnBookCopy id={transaction.bookCopy.id} />}
 										</Menu.Content>
 									</Menu.Positioner>
 								</Portal>

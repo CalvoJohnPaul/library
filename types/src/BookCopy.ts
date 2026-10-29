@@ -2,7 +2,7 @@ import * as z from 'zod';
 import {BookDefinition} from './Book.js';
 import {DateDefinition} from './common.js';
 
-export const BookCopyStatusDefinition = z.enum(['AVAILABLE', 'BORROWED']);
+export const BookCopyStatusDefinition = z.enum(['AVAILABLE', 'BORROWED', 'RESERVED']);
 export const BookCopyDefinition = z.object({
 	id: z.number(),
 	isbn: z.string(),

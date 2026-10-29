@@ -28,6 +28,16 @@ export const badgeRecipe = tv({
 				label: 'text-amber-700',
 				icon: 'text-amber-700',
 			},
+			purple: {
+				root: 'border-purple-600/25 bg-purple-600/10',
+				label: 'text-purple-700',
+				icon: 'text-purple-700',
+			},
+			indigo: {
+				root: 'border-indigo-600/25 bg-indigo-600/10',
+				label: 'text-indigo-700',
+				icon: 'text-indigo-700',
+			},
 		},
 	},
 	defaultVariants: {

@@ -1,38 +1,39 @@
 import {Portal} from '@ark-ui/react';
 import {zodResolver} from '@hookform/resolvers/zod';
-import {ReturnBookCopyDataInputDefinition} from '@library/types';
-import {CornerDownLeftIcon} from 'lucide-react';
+import {CreateBookCopyInputDefinition} from '@library/types';
+import {isFunction} from 'es-toolkit';
+import {PlusIcon} from 'lucide-react';
+import type {ReactNode} from 'react';
 import {useForm} from 'react-hook-form';
 import {SpinnerIcon} from '@/components/icons/SpinnerIcon';
 import {Button} from '@/components/ui/Button';
 import {Dialog} from '@/components/ui/Dialog';
 import {FeaturedIcon} from '@/components/ui/FeaturedIcon';
 import {Field} from '@/components/ui/Field';
-import {Menu} from '@/components/ui/Menu';
 import {useBookCopiesQuery} from '@/hooks/useBookCopiesQuery';
 import {useBookQuery} from '@/hooks/useBookQuery';
 import {useBooksQuery} from '@/hooks/useBooksQuery';
-import {useDisclosure} from '@/hooks/useDisclosure';
-import {useReturnBookCopyMutation} from '@/hooks/useReturnBookCopyMutation';
-import {useTransactionsQuery} from '@/hooks/useTransactionsQuery';
+import {useCreateBookCopyMutation} from '@/hooks/useCreateBookCopyMutation';
+import {type UseDisclosureReturn, useDisclosure} from '@/hooks/useDisclosure';
 import {client} from '@/utils/client';
 import {toaster} from '@/utils/toaster';
-import {useCopyContext} from './CopyContext';
-import {useTransactionContext} from './TransactionContext';
+import {useBookContext} from './BookContext';
 
-export function ReturnCopy() {
-	const ctx1 = useCopyContext();
-	const ctx2 = useTransactionContext();
-	const {id} = ctx1 ?? ctx2.bookCopy;
+export interface AddBookCopyProps {
+	trigger?: ReactNode | ((disclosure: UseDisclosureReturn) => ReactNode);
+}
+
+export function AddBookCopy({trigger}: AddBookCopyProps) {
+	const book = useBookContext();
 	const disclosure = useDisclosure();
 	const form = useForm({
-		resolver: zodResolver(ReturnBookCopyDataInputDefinition),
+		resolver: zodResolver(CreateBookCopyInputDefinition),
 		defaultValues: {
-			remarks: '',
+			bookId: book.id,
 		},
 	});
 
-	const mutation = useReturnBookCopyMutation({
+	const mutation = useCreateBookCopyMutation({
 		onSuccess: async () => {
 			await Promise.all([
 				client.invalidateQueries({
@@ -53,17 +54,11 @@ export function ReturnCopy() {
 					exact: false,
 					type: 'all',
 				}),
-				client.invalidateQueries({
-					refetchType: 'active',
-					queryKey: useTransactionsQuery.getQueryKey(),
-					exact: false,
-					type: 'all',
-				}),
 			]);
 
 			disclosure.setOpen(false);
 			toaster.success({
-				description: 'Book copy has been returned.',
+				description: 'Book copy has been added.',
 			});
 		},
 		onError: (error) => {
@@ -78,49 +73,49 @@ export function ReturnCopy() {
 			open={disclosure.open}
 			onOpenChange={(details) => disclosure.setOpen(details.open)}
 			onExitComplete={() => {
-				form.reset({remarks: ''});
+				form.reset({bookId: book.id});
 			}}
 		>
-			<Dialog.Context>
-				{(api) => (
-					<Menu.Item value="return" onSelect={() => api.setOpen(true)}>
-						<CornerDownLeftIcon />
-						Return
-					</Menu.Item>
-				)}
-			</Dialog.Context>
+			<Dialog.Trigger asChild>
+				{isFunction(trigger)
+					? trigger(disclosure)
+					: (trigger ?? (
+							<Button>
+								<PlusIcon />
+								Add copy
+							</Button>
+						))}
+			</Dialog.Trigger>
 			<Portal>
 				<Dialog.Backdrop />
 				<Dialog.Positioner>
 					<Dialog.Content asChild>
 						<form
 							onSubmit={form.handleSubmit((data) => {
-								mutation.mutate({
-									id,
-									data: {remarks: data.remarks || null},
-								});
+								mutation.mutate(data);
 							})}
 							noValidate
 						>
 							<Dialog.Header>
-								<FeaturedIcon.Root accent="warning">
+								<FeaturedIcon.Root>
 									<FeaturedIcon.Icon>
-										<CornerDownLeftIcon />
+										<PlusIcon />
 									</FeaturedIcon.Icon>
 								</FeaturedIcon.Root>
 								<div>
-									<Dialog.Title>Return copy</Dialog.Title>
+									<Dialog.Title>Add copy</Dialog.Title>
 									<Dialog.Description>
-										You are about to return the copy. This action can not be undone.
+										Fill out the form to add a new copy of&nbsp;
+										<em className="italic">"{book.title}"</em> to your&nbsp;collection.
 									</Dialog.Description>
 								</div>
 								<Dialog.CloseTrigger />
 							</Dialog.Header>
 							<Dialog.Body>
-								<Field.Root invalid={!!form.formState.errors.remarks}>
-									<Field.Label>Remarks</Field.Label>
-									<Field.Textarea placeholder="Enter remarks" {...form.register('remarks')} />
-									<Field.ErrorText>{form.formState.errors.remarks?.message}</Field.ErrorText>
+								<Field.Root invalid={!!form.formState.errors.isbn}>
+									<Field.Label>ISBN</Field.Label>
+									<Field.Input placeholder="Enter ISBN" {...form.register('isbn')} />
+									<Field.ErrorText>{form.formState.errors.isbn?.message}</Field.ErrorText>
 								</Field.Root>
 							</Dialog.Body>
 							<Dialog.Footer>
@@ -136,8 +131,8 @@ export function ReturnCopy() {
 										</Button>
 									)}
 								</Dialog.Context>
-								<Button type="submit" accent="warning" disabled={mutation.isPending}>
-									{mutation.isPending ? <SpinnerIcon className="size-5" /> : 'Return'}
+								<Button type="submit" disabled={mutation.isPending}>
+									{mutation.isPending ? <SpinnerIcon className="size-5" /> : 'Submit'}
 								</Button>
 							</Dialog.Footer>
 						</form>
