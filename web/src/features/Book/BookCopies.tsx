@@ -23,9 +23,9 @@ import {ReturnBookCopy} from '@/templates/ReturnBookCopy';
 import {getBookCopyStatusLabel, getBookCopyStatusOptions} from '@/utils/common';
 import {toaster} from '@/utils/toaster';
 import {useBookContext} from './BookContext';
+import {BookCopyProvider} from './BookCopyContext';
 import {BorrowBookCopy} from './BorrowBookCopy';
-import {CopyProvider} from './CopyContext';
-import {DeleteCopy} from './DeleteCopy';
+import {DeleteBookCopy} from './DeleteBookCopy';
 import {EditBookCopy} from './EditBookCopy';
 
 export function Copies() {
@@ -200,13 +200,13 @@ export function Copies() {
 								<Portal>
 									<Menu.Positioner>
 										<Menu.Content>
-											<CopyProvider value={copy}>
+											<BookCopyProvider value={copy}>
 												<EditBookCopy />
 												{copy.status === 'AVAILABLE' && <BorrowBookCopy />}
 												{copy.status === 'BORROWED' && <ReturnBookCopy id={copy.id} />}
 												<Menu.Separator />
-												<DeleteCopy />
-											</CopyProvider>
+												<DeleteBookCopy />
+											</BookCopyProvider>
 										</Menu.Content>
 									</Menu.Positioner>
 								</Portal>

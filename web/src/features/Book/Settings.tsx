@@ -1,6 +1,6 @@
 import {Portal} from '@ark-ui/react';
 import {zodResolver} from '@hookform/resolvers/zod';
-import {type Book, type Paginated, UpdateBookDataInputDefinition} from '@library/types';
+import {type Book, UpdateBookDataInputDefinition} from '@library/types';
 import {isNil, omitBy} from 'es-toolkit';
 import {isEmpty} from 'es-toolkit/compat';
 import {TrashIcon} from 'lucide-react';
@@ -13,7 +13,6 @@ import {Dialog} from '@/components/ui/Dialog';
 import {FeaturedIcon} from '@/components/ui/FeaturedIcon';
 import {Field} from '@/components/ui/Field';
 import {useBookQuery} from '@/hooks/useBookQuery';
-import {useBooksQuery} from '@/hooks/useBooksQuery';
 import {useDeleteBookMutation} from '@/hooks/useDeleteBookMutation';
 import {useDisclosure} from '@/hooks/useDisclosure';
 import {useUpdateBookMutation} from '@/hooks/useUpdateBookMutation';
@@ -30,29 +29,10 @@ export function Settings() {
 	});
 
 	const mutation = useUpdateBookMutation({
-		onSuccess: (next) => {
-			form.reset(next);
-
-			client.setQueryData<Book>(useBookQuery.getQueryKey(next.id), next);
-			client.setQueriesData<Paginated<Book>>(
-				{
-					queryKey: useBooksQuery.getQueryKey(),
-					exact: false,
-					type: 'all',
-				},
-				(data) => {
-					if (!data) return data;
-
-					return {
-						...data,
-						rows: data.rows.map((prev) => (prev.id === next.id ? next : prev)),
-					};
-				},
-			);
-
-			toaster.success({
-				description: 'Changes have been saved.',
-			});
+		onSuccess: (data) => {
+			form.reset(data);
+			toaster.success({description: 'Changes have been saved.'});
+			client.setQueryData<Book>(useBookQuery.getQueryKey(book.id), data);
 		},
 		onError: (error) => {
 			toaster.error({
@@ -151,19 +131,10 @@ export function DeleteBook() {
 	const disclosure = useDisclosure();
 	const navigate = useNavigate();
 	const mutation = useDeleteBookMutation({
-		onSuccess: async () => {
-			await navigate('/books');
-			await client.invalidateQueries({
-				refetchType: 'active',
-				queryKey: useBooksQuery.getQueryKey(),
-				exact: false,
-				type: 'all',
-			});
-
+		onSuccess: () => {
 			disclosure.setOpen(false);
-			toaster.success({
-				description: 'Book has been deleted.',
-			});
+			toaster.success({description: 'Book has been deleted.'});
+			navigate('/books');
 		},
 		onError: (error) => {
 			toaster.error({

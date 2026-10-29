@@ -6,51 +6,20 @@ import {Dialog} from '@/components/ui/Dialog';
 import {FeaturedIcon} from '@/components/ui/FeaturedIcon';
 import {Menu} from '@/components/ui/Menu';
 import {useBookCopiesQuery} from '@/hooks/useBookCopiesQuery';
-import {useBookQuery} from '@/hooks/useBookQuery';
-import {useBooksQuery} from '@/hooks/useBooksQuery';
 import {useDeleteBookCopyMutation} from '@/hooks/useDeleteBookCopyMutation';
 import {useDisclosure} from '@/hooks/useDisclosure';
-import {useTransactionsQuery} from '@/hooks/useTransactionsQuery';
 import {client} from '@/utils/client';
 import {toaster} from '@/utils/toaster';
-import {useCopyContext} from './CopyContext';
+import {useBookCopyContext} from './BookCopyContext';
 
-export function DeleteCopy() {
-	const copy = useCopyContext();
+export function DeleteBookCopy() {
+	const copy = useBookCopyContext();
 	const disclosure = useDisclosure();
 	const mutation = useDeleteBookCopyMutation({
-		onSuccess: async () => {
-			await Promise.all([
-				client.invalidateQueries({
-					refetchType: 'active',
-					queryKey: useBookCopiesQuery.getQueryKey(),
-					exact: false,
-					type: 'all',
-				}),
-				client.invalidateQueries({
-					refetchType: 'active',
-					queryKey: useBookQuery.getQueryKey(),
-					exact: false,
-					type: 'all',
-				}),
-				client.invalidateQueries({
-					refetchType: 'active',
-					queryKey: useBooksQuery.getQueryKey(),
-					exact: false,
-					type: 'all',
-				}),
-				client.invalidateQueries({
-					refetchType: 'active',
-					queryKey: useTransactionsQuery.getQueryKey(),
-					exact: false,
-					type: 'all',
-				}),
-			]);
-
+		onSuccess: () => {
 			disclosure.setOpen(false);
-			toaster.success({
-				description: 'Book copy has been deleted.',
-			});
+			toaster.success({description: 'Book copy has been deleted.'});
+			client.invalidateQueries({queryKey: useBookCopiesQuery.getQueryKey()});
 		},
 		onError: (error) => {
 			toaster.error({

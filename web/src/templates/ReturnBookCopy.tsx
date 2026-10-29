@@ -18,11 +18,12 @@ export interface ReturnBookCopyProps {
 	 * @description the book copy id
 	 */
 	id: number;
+	disabled?: boolean;
 	onReturned?: (data: BookCopy) => void;
 }
 
 export function ReturnBookCopy(props: ReturnBookCopyProps) {
-	const {id, onReturned} = props;
+	const {id, disabled, onReturned} = props;
 
 	const disclosure = useDisclosure();
 	const form = useForm({
@@ -55,7 +56,7 @@ export function ReturnBookCopy(props: ReturnBookCopyProps) {
 		>
 			<Dialog.Context>
 				{(api) => (
-					<Menu.Item value="return" onSelect={() => api.setOpen(true)}>
+					<Menu.Item value="return" disabled={disabled} onSelect={() => api.setOpen(true)}>
 						<CornerDownLeftIcon />
 						Return
 					</Menu.Item>

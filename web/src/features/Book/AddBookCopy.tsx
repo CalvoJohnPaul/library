@@ -11,19 +11,17 @@ import {Dialog} from '@/components/ui/Dialog';
 import {FeaturedIcon} from '@/components/ui/FeaturedIcon';
 import {Field} from '@/components/ui/Field';
 import {useBookCopiesQuery} from '@/hooks/useBookCopiesQuery';
-import {useBookQuery} from '@/hooks/useBookQuery';
-import {useBooksQuery} from '@/hooks/useBooksQuery';
 import {useCreateBookCopyMutation} from '@/hooks/useCreateBookCopyMutation';
 import {type UseDisclosureReturn, useDisclosure} from '@/hooks/useDisclosure';
 import {client} from '@/utils/client';
 import {toaster} from '@/utils/toaster';
 import {useBookContext} from './BookContext';
 
-export interface AddBookCopyProps {
+export function AddBookCopy({
+	trigger,
+}: {
 	trigger?: ReactNode | ((disclosure: UseDisclosureReturn) => ReactNode);
-}
-
-export function AddBookCopy({trigger}: AddBookCopyProps) {
+}) {
 	const book = useBookContext();
 	const disclosure = useDisclosure();
 	const form = useForm({
@@ -34,32 +32,10 @@ export function AddBookCopy({trigger}: AddBookCopyProps) {
 	});
 
 	const mutation = useCreateBookCopyMutation({
-		onSuccess: async () => {
-			await Promise.all([
-				client.invalidateQueries({
-					refetchType: 'active',
-					queryKey: useBookCopiesQuery.getQueryKey(),
-					exact: false,
-					type: 'all',
-				}),
-				client.invalidateQueries({
-					refetchType: 'active',
-					queryKey: useBookQuery.getQueryKey(),
-					exact: false,
-					type: 'all',
-				}),
-				client.invalidateQueries({
-					refetchType: 'active',
-					queryKey: useBooksQuery.getQueryKey(),
-					exact: false,
-					type: 'all',
-				}),
-			]);
-
+		onSuccess: () => {
 			disclosure.setOpen(false);
-			toaster.success({
-				description: 'Book copy has been added.',
-			});
+			toaster.success({description: 'Book copy has been added.'});
+			client.invalidateQueries({queryKey: useBookCopiesQuery.getQueryKey()});
 		},
 		onError: (error) => {
 			toaster.error({

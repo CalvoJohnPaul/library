@@ -24,6 +24,7 @@ import {client} from '@/utils/client';
 import {getBookGenreLabel, getBookGenreOptions, getBookYearPublishedOptions} from '@/utils/common';
 import {toaster} from '@/utils/toaster';
 import {AddBook} from './AddBook';
+import {BookProvider} from './BookContext';
 import {DeleteBook} from './DeleteBook';
 import {EditBook} from './EditBook';
 
@@ -332,8 +333,10 @@ export function Books() {
 									<Portal>
 										<Menu.Positioner>
 											<Menu.Content>
-												<EditBook id={book.id} />
-												<DeleteBook id={book.id} />
+												<BookProvider value={book}>
+													<EditBook />
+													<DeleteBook />
+												</BookProvider>
 											</Menu.Content>
 										</Menu.Positioner>
 									</Portal>

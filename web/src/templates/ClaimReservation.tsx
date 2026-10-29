@@ -17,11 +17,12 @@ export interface ClaimReservationProps {
 	 * @description the reservation id
 	 */
 	id: number;
+	disabled?: boolean;
 	onClaimed?: (data: Reservation) => void;
 }
 
 export function ClaimReservation(props: ClaimReservationProps) {
-	const {id, onClaimed} = props;
+	const {id, disabled, onClaimed} = props;
 
 	const disclosure = useDisclosure();
 	const [remarks, setRemarks] = useState('');
@@ -46,7 +47,7 @@ export function ClaimReservation(props: ClaimReservationProps) {
 		>
 			<Dialog.Context>
 				{(api) => (
-					<Menu.Item value="claim" onSelect={() => api.setOpen(true)}>
+					<Menu.Item value="claim" disabled={disabled} onSelect={() => api.setOpen(true)}>
 						<CheckCircle2Icon />
 						Claim
 					</Menu.Item>

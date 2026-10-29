@@ -1,6 +1,6 @@
 import {Portal} from '@ark-ui/react';
 import {zodResolver} from '@hookform/resolvers/zod';
-import {type Member, type Paginated, UpdateMemberDataInputDefinition} from '@library/types';
+import {UpdateMemberDataInputDefinition} from '@library/types';
 import {isNil, omitBy} from 'es-toolkit';
 import {isEmpty} from 'es-toolkit/compat';
 import {PenSquareIcon} from 'lucide-react';
@@ -40,26 +40,10 @@ export function EditMember() {
 
 	const disclosure = useDisclosure();
 	const mutation = useUpdateMemberMutation({
-		onSuccess: async (next) => {
-			client.setQueriesData<Paginated<Member>>(
-				{
-					queryKey: useMembersQuery.getQueryKey(),
-					exact: false,
-					type: 'all',
-				},
-				(data) => {
-					if (!data) return data;
-					return {
-						...data,
-						rows: data.rows.map((prev) => (prev.id === next.id ? next : prev)),
-					};
-				},
-			);
-
+		onSuccess: () => {
 			disclosure.setOpen(false);
-			toaster.success({
-				description: 'Changes have been saved.',
-			});
+			toaster.success({description: 'Changes have been saved.'});
+			client.invalidateQueries({queryKey: useMembersQuery.getQueryKey()});
 		},
 		onError: (error) => {
 			toaster.error({

@@ -5,17 +5,21 @@ import {Button} from '@/components/ui/Button';
 import {Dialog} from '@/components/ui/Dialog';
 import {FeaturedIcon} from '@/components/ui/FeaturedIcon';
 import {Menu} from '@/components/ui/Menu';
+import {useBooksQuery} from '@/hooks/useBooksQuery';
 import {useDeleteBookMutation} from '@/hooks/useDeleteBookMutation';
 import {useDisclosure} from '@/hooks/useDisclosure';
+import {client} from '@/utils/client';
 import {toaster} from '@/utils/toaster';
+import {useBookContext} from './BookContext';
 
-export function DeleteBook({id, onDeleted}: {id: number; onDeleted?: () => void}) {
+export function DeleteBook() {
+	const book = useBookContext();
 	const disclosure = useDisclosure();
 	const mutation = useDeleteBookMutation({
 		onSuccess: () => {
 			disclosure.setOpen(false);
 			toaster.success({description: 'Book has been deleted.'});
-			onDeleted?.();
+			client.invalidateQueries({queryKey: useBooksQuery.getQueryKey()});
 		},
 		onError: (error) => {
 			toaster.error({
@@ -71,7 +75,7 @@ export function DeleteBook({id, onDeleted}: {id: number; onDeleted?: () => void}
 							<Button
 								accent="danger"
 								disabled={mutation.isPending}
-								onClick={() => mutation.mutate(id)}
+								onClick={() => mutation.mutate(book.id)}
 							>
 								{mutation.isPending ? <SpinnerIcon className="size-5" /> : 'Confirm'}
 							</Button>

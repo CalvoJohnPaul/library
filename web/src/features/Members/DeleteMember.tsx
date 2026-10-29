@@ -16,18 +16,10 @@ export function DeleteMember() {
 	const member = useMemberContext();
 	const disclosure = useDisclosure();
 	const mutation = useDeleteMemberMutation({
-		onSuccess: async () => {
-			await client.invalidateQueries({
-				refetchType: 'active',
-				queryKey: useMembersQuery.getQueryKey(),
-				exact: false,
-				type: 'all',
-			});
-
+		onSuccess: () => {
 			disclosure.setOpen(false);
-			toaster.success({
-				description: 'Member has been deleted.',
-			});
+			toaster.success({description: 'Member has been deleted.'});
+			client.invalidateQueries({queryKey: useMembersQuery.getQueryKey()});
 		},
 		onError: (error) => {
 			toaster.error({

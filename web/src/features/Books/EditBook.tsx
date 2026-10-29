@@ -1,6 +1,6 @@
 import {Portal} from '@ark-ui/react';
 import {zodResolver} from '@hookform/resolvers/zod';
-import {type Book, UpdateBookDataInputDefinition} from '@library/types';
+import {UpdateBookDataInputDefinition} from '@library/types';
 import {isNil, omitBy} from 'es-toolkit';
 import {isEmpty} from 'es-toolkit/compat';
 import {PenSquareIcon} from 'lucide-react';
@@ -12,43 +12,27 @@ import {Dialog} from '@/components/ui/Dialog';
 import {FeaturedIcon} from '@/components/ui/FeaturedIcon';
 import {Field} from '@/components/ui/Field';
 import {Menu} from '@/components/ui/Menu';
-import {useBookQuery} from '@/hooks/useBookQuery';
+import {useBooksQuery} from '@/hooks/useBooksQuery';
 import {useDisclosure} from '@/hooks/useDisclosure';
-import {useTimeout} from '@/hooks/useTimeout';
 import {useUpdateBookMutation} from '@/hooks/useUpdateBookMutation';
+import {client} from '@/utils/client';
 import {getBookGenreOptions, getBookYearPublishedOptions} from '@/utils/common';
 import {toaster} from '@/utils/toaster';
+import {useBookContext} from './BookContext';
 
-export function EditBook({id, onUpdated}: {id: number; onUpdated?: (data: Book) => void}) {
+export function EditBook() {
+	const book = useBookContext();
 	const form = useForm({
 		resolver: zodResolver(UpdateBookDataInputDefinition),
-		defaultValues: {
-			genre: null,
-			title: '',
-			author: '',
-			yearPublished: null,
-		},
+		defaultValues: book,
 	});
 
 	const disclosure = useDisclosure();
-	const query = useBookQuery(id, {
-		enabled: disclosure.open,
-	});
-
-	useTimeout(
-		() => {
-			if (query.data) {
-				form.reset(query.data);
-			}
-		},
-		query.data ? 1 : null,
-	);
-
 	const mutation = useUpdateBookMutation({
-		onSuccess: async (data) => {
+		onSuccess: () => {
 			disclosure.setOpen(false);
 			toaster.success({description: 'Changes have been saved.'});
-			onUpdated?.(data);
+			client.invalidateQueries({queryKey: useBooksQuery.getQueryKey()});
 		},
 		onError: (error) => {
 			toaster.error({
@@ -81,7 +65,7 @@ export function EditBook({id, onUpdated}: {id: number; onUpdated?: (data: Book) 
 							onSubmit={form.handleSubmit((data) => {
 								data = omitBy(
 									data,
-									(value, key) => isNil(value) || value === '' || query.data?.[key] === value,
+									(value, key) => isNil(value) || value === '' || book[key] === value,
 								);
 
 								if (isEmpty(data)) {
@@ -90,7 +74,7 @@ export function EditBook({id, onUpdated}: {id: number; onUpdated?: (data: Book) 
 								}
 
 								mutation.mutate({
-									id,
+									id: book.id,
 									data,
 								});
 							})}
@@ -172,7 +156,7 @@ export function EditBook({id, onUpdated}: {id: number; onUpdated?: (data: Book) 
 										</Button>
 									)}
 								</Dialog.Context>
-								<Button type="submit" disabled={mutation.isPending || query.isLoading}>
+								<Button type="submit" disabled={mutation.isPending}>
 									{mutation.isPending ? <SpinnerIcon className="size-5" /> : 'Submit'}
 								</Button>
 							</Dialog.Footer>

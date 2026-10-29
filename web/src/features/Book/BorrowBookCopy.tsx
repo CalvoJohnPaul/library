@@ -14,23 +14,19 @@ import {Field} from '@/components/ui/Field';
 import {IconButton} from '@/components/ui/IconButton';
 import {Menu} from '@/components/ui/Menu';
 import {useBookCopiesQuery} from '@/hooks/useBookCopiesQuery';
-import {useBookQuery} from '@/hooks/useBookQuery';
-import {useBooksQuery} from '@/hooks/useBooksQuery';
 import {useBorrowBookCopyMutation} from '@/hooks/useBorrowBookCopyMutation';
 import {useCreateMemberMutation} from '@/hooks/useCreateMemberMutation';
 import {useDisclosure} from '@/hooks/useDisclosure';
-import {useMemberQuery} from '@/hooks/useMemberQuery';
 import {type MembersInput, useMembersQuery} from '@/hooks/useMembersQuery';
-import {useTransactionsQuery} from '@/hooks/useTransactionsQuery';
 import {client} from '@/utils/client';
 import {getMemberCourseOptions, getMemberYearAndSectionOptions} from '@/utils/common';
 import {toaster} from '@/utils/toaster';
-import {useCopyContext} from './CopyContext';
+import {useBookCopyContext} from './BookCopyContext';
 
 type Step = 'SEARCH' | 'CONFIRM' | 'CREATE' | 'SUCCESS';
 
 export function BorrowBookCopy() {
-	const copy = useCopyContext();
+	const copy = useBookCopyContext();
 	const disclosure = useDisclosure();
 
 	const [step, setStep] = useState<Step>('SEARCH');
@@ -73,52 +69,11 @@ export function BorrowBookCopy() {
 	});
 
 	const createMemberMutation = useCreateMemberMutation();
-	const borrowMutation = useBorrowBookCopyMutation({
-		async onSuccess(_result, input) {
+	const borrowBookCopyMutation = useBorrowBookCopyMutation({
+		async onSuccess() {
 			setStep('SUCCESS');
-
-			Promise.all([
-				client.invalidateQueries({
-					refetchType: 'active',
-					queryKey: useBookCopiesQuery.getQueryKey(),
-					exact: false,
-					type: 'all',
-				}),
-				client.invalidateQueries({
-					refetchType: 'active',
-					queryKey: useBookQuery.getQueryKey(),
-					exact: false,
-					type: 'all',
-				}),
-				client.invalidateQueries({
-					refetchType: 'active',
-					queryKey: useBooksQuery.getQueryKey(),
-					exact: false,
-					type: 'all',
-				}),
-				client.invalidateQueries({
-					refetchType: 'active',
-					queryKey: useMemberQuery.getQueryKey(input.data.memberId),
-					exact: false,
-					type: 'all',
-				}),
-				client.invalidateQueries({
-					refetchType: 'active',
-					queryKey: useMembersQuery.getQueryKey(),
-					exact: false,
-					type: 'all',
-				}),
-				client.invalidateQueries({
-					refetchType: 'active',
-					queryKey: useTransactionsQuery.getQueryKey(),
-					exact: false,
-					type: 'all',
-				}),
-			]);
-
-			toaster.success({
-				description: 'Book copy has been borrowed.',
-			});
+			toaster.success({description: 'Book copy has been borrowed.'});
+			client.invalidateQueries({queryKey: useBookCopiesQuery.getQueryKey()});
 		},
 		onError(error) {
 			toaster.error({
@@ -177,7 +132,7 @@ export function BorrowBookCopy() {
 	};
 
 	const handleBorrow = (memberId: number) => {
-		borrowMutation.mutate({
+		borrowBookCopyMutation.mutate({
 			id: copy.id,
 			data: {
 				memberId,
@@ -210,7 +165,9 @@ export function BorrowBookCopy() {
 	});
 
 	const pending =
-		lookupMemberMutation.isPending || createMemberMutation.isPending || borrowMutation.isPending;
+		lookupMemberMutation.isPending ||
+		createMemberMutation.isPending ||
+		borrowBookCopyMutation.isPending;
 
 	return (
 		<Dialog.Root
@@ -430,7 +387,11 @@ export function BorrowBookCopy() {
 										)}
 									</Dialog.Context>
 									<Button onClick={() => handleBorrow(member.id)} disabled={pending}>
-										{borrowMutation.isPending ? <SpinnerIcon className="size-5" /> : 'Confirm'}
+										{borrowBookCopyMutation.isPending ? (
+											<SpinnerIcon className="size-5" />
+										) : (
+											'Confirm'
+										)}
 									</Button>
 								</Dialog.Footer>
 							)}

@@ -328,20 +328,22 @@ export function Transactions() {
 					cell(transaction) {
 						return (
 							<Menu.Root>
-								<Menu.Trigger
-									disabled={
-										transaction.status !== 'PENDING' ||
-										transaction.type !== 'BORROW' ||
-										!transaction.bookCopy
-									}
-									className="disabled:opacity-50"
-								>
+								<Menu.Trigger className="disabled:opacity-50">
 									<SettingsIcon className="size-5" />
 								</Menu.Trigger>
 								<Portal>
 									<Menu.Positioner>
 										<Menu.Content>
-											{transaction.bookCopy && <ReturnBookCopy id={transaction.bookCopy.id} />}
+											{transaction.bookCopy && (
+												<ReturnBookCopy
+													id={transaction.bookCopy.id}
+													onReturned={() => {
+														client.invalidateQueries({
+															queryKey: useTransactionsQuery.getQueryKey(),
+														});
+													}}
+												/>
+											)}
 										</Menu.Content>
 									</Menu.Positioner>
 								</Portal>

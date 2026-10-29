@@ -215,8 +215,19 @@ export function Reservations() {
 							<Portal>
 								<Menu.Positioner>
 									<Menu.Content>
-										<ClaimReservation id={reservation.id} />
-										<UnreserveReservation id={reservation.id} />
+										<ClaimReservation
+											id={reservation.id}
+											onClaimed={() => {
+												client.invalidateQueries({queryKey: useReservationsQuery.getQueryKey()});
+											}}
+										/>
+
+										<UnreserveReservation
+											id={reservation.id}
+											onUnreserved={() => {
+												client.invalidateQueries({queryKey: useReservationsQuery.getQueryKey()});
+											}}
+										/>
 									</Menu.Content>
 								</Menu.Positioner>
 							</Portal>

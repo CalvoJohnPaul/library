@@ -440,11 +440,7 @@ function Logout() {
 	const mutation = useDestroySessionMutation({
 		onSuccess() {
 			client
-				.invalidateQueries({
-					queryKey: useMeQuery.getQueryKey(),
-					exact: false,
-					type: 'all',
-				})
+				.invalidateQueries({queryKey: useMeQuery.getQueryKey()})
 				.then(() => {
 					navigate('/');
 				})

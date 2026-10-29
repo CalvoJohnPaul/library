@@ -11,14 +11,13 @@ import {Field} from '@/components/ui/Field';
 import {Menu} from '@/components/ui/Menu';
 import {useBookCopiesQuery} from '@/hooks/useBookCopiesQuery';
 import {useDisclosure} from '@/hooks/useDisclosure';
-import {useTransactionsQuery} from '@/hooks/useTransactionsQuery';
 import {useUpdateBookCopyMutation} from '@/hooks/useUpdateBookCopyMutation';
 import {client} from '@/utils/client';
 import {toaster} from '@/utils/toaster';
-import {useCopyContext} from './CopyContext';
+import {useBookCopyContext} from './BookCopyContext';
 
 export function EditBookCopy() {
-	const copy = useCopyContext();
+	const copy = useBookCopyContext();
 	const form = useForm({
 		resolver: zodResolver(UpdateBookCopyDataInputDefinition),
 		defaultValues: {
@@ -28,26 +27,10 @@ export function EditBookCopy() {
 
 	const disclosure = useDisclosure();
 	const mutation = useUpdateBookCopyMutation({
-		onSuccess: async () => {
-			await Promise.all([
-				client.invalidateQueries({
-					refetchType: 'active',
-					queryKey: useBookCopiesQuery.getQueryKey(),
-					exact: false,
-					type: 'all',
-				}),
-				client.invalidateQueries({
-					refetchType: 'active',
-					queryKey: useTransactionsQuery.getQueryKey(),
-					exact: false,
-					type: 'all',
-				}),
-			]);
-
+		onSuccess: () => {
 			disclosure.setOpen(false);
-			toaster.success({
-				description: 'Changes have been saved.',
-			});
+			toaster.success({description: 'Changes have been saved.'});
+			client.invalidateQueries({queryKey: useBookCopiesQuery.getQueryKey()});
 		},
 		onError: (error) => {
 			toaster.error({

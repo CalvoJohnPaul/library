@@ -17,11 +17,12 @@ export interface UnreserveReservationProps {
 	 * @description the reservation id
 	 */
 	id: number;
+	disabled?: boolean;
 	onUnreserved?: (data: Reservation) => void;
 }
 
 export function UnreserveReservation(props: UnreserveReservationProps) {
-	const {id, onUnreserved} = props;
+	const {id, disabled, onUnreserved} = props;
 
 	const disclosure = useDisclosure();
 	const [remarks, setRemarks] = useState('');
@@ -46,7 +47,7 @@ export function UnreserveReservation(props: UnreserveReservationProps) {
 		>
 			<Dialog.Context>
 				{(api) => (
-					<Menu.Item value="unreserve" onSelect={() => api.setOpen(true)}>
+					<Menu.Item value="unreserve" disabled={disabled} onSelect={() => api.setOpen(true)}>
 						<XCircleIcon />
 						Unreserve
 					</Menu.Item>
