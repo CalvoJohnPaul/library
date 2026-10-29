@@ -175,10 +175,10 @@ function EditAccount() {
 
 	const disclosure = useDisclosure();
 	const mutation = useUpdateMeMutation({
-		onSuccess: (next) => {
-			client.setQueryData(useMeQuery.getQueryKey(), next);
+		onSuccess: (data) => {
+			client.setQueryData(useMeQuery.getQueryKey(), data);
 			disclosure.setOpen(false);
-			form.reset(next);
+			form.reset(data);
 			toaster.success({
 				description: 'Changes have been saved.',
 			});
@@ -305,8 +305,8 @@ function ChangePassword() {
 
 	const disclosure = useDisclosure();
 	const mutation = useUpdateMeMutation({
-		onSuccess: (next) => {
-			client.setQueryData(useMeQuery.getQueryKey(), next);
+		onSuccess: (data) => {
+			client.setQueryData(useMeQuery.getQueryKey(), data);
 			disclosure.setOpen(false);
 			toaster.success({
 				description: 'Password has been changed.',
