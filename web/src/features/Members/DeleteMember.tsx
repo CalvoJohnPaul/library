@@ -54,7 +54,7 @@ export function DeleteMember() {
 							<div>
 								<Dialog.Title>Delete member</Dialog.Title>
 								<Dialog.Description>
-									Are you sure you want to delete this member? This action cannot be undone.
+									Are you sure you want to delete this member? This action is irreversible.
 								</Dialog.Description>
 							</div>
 							<Dialog.CloseTrigger />

@@ -54,7 +54,7 @@ export function DeleteBook() {
 							<div>
 								<Dialog.Title>Delete book</Dialog.Title>
 								<Dialog.Description>
-									Are you sure you want to delete this book? This action cannot be undone.
+									Are you sure you want to delete this book? This action is irreversible.
 								</Dialog.Description>
 							</div>
 							<Dialog.CloseTrigger />
