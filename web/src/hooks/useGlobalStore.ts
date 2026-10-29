@@ -4,21 +4,21 @@ import {persist} from 'zustand/middleware';
 import {create} from 'zustand/react';
 
 export interface GlobalStore {
-	sidebarHidden: boolean;
-	setSidebarHidden: Dispatch<SetStateAction<boolean>>;
+	sidebarCollapsed: boolean;
+	setSidebarCollapsed: Dispatch<SetStateAction<boolean>>;
 }
 
 export const useGlobalStore = create<GlobalStore>()(
 	persist(
 		(set) => ({
-			sidebarHidden: false,
-			setSidebarHidden(value) {
-				set(({sidebarHidden}) => ({sidebarHidden: callIfFn(value, sidebarHidden)}));
+			sidebarCollapsed: false,
+			setSidebarCollapsed(value) {
+				set(({sidebarCollapsed}) => ({sidebarCollapsed: callIfFn(value, sidebarCollapsed)}));
 			},
 		}),
 		{
 			name: 'library/global-store',
-			partialize: (v) => pick(v, ['sidebarHidden']),
+			partialize: (v) => pick(v, ['sidebarCollapsed']),
 		},
 	),
 );

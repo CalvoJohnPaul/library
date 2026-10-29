@@ -6,7 +6,7 @@ import {isNil, omitBy} from 'es-toolkit';
 import {isEmpty} from 'es-toolkit/compat';
 import {LockKeyholeIcon, LogOutIcon, SquarePenIcon} from 'lucide-react';
 import {Controller, useForm} from 'react-hook-form';
-import {Link, useNavigate} from 'react-router';
+import {Link} from 'react-router';
 import * as z from 'zod';
 import {useShallow} from 'zustand/shallow';
 import {PasswordField} from '@/components/forms/PasswordField';
@@ -17,11 +17,11 @@ import {Dialog} from '@/components/ui/Dialog';
 import {FeaturedIcon} from '@/components/ui/FeaturedIcon';
 import {Field} from '@/components/ui/Field';
 import {Menu} from '@/components/ui/Menu';
-import {useDestroySessionMutation} from '@/hooks/useDestroySessionMutation';
 import {useDisclosure} from '@/hooks/useDisclosure';
 import {useGlobalStore} from '@/hooks/useGlobalStore';
 import {useMeQuery} from '@/hooks/useMeQuery';
 import {useUpdateMeMutation} from '@/hooks/useUpdateMeMutation';
+import {Logout} from '@/templates/Logout';
 import {client} from '@/utils/client';
 import {toaster} from '@/utils/toaster';
 
@@ -31,8 +31,8 @@ export function Navbar() {
 		? createAvatar(funEmoji, {seed: query.data.id.toString()}).toDataUri()
 		: '';
 
-	const [sidebarHidden, setSidebarHidden] = useGlobalStore(
-		useShallow((o) => [o.sidebarHidden, o.setSidebarHidden]),
+	const [sidebarCollapsed, setSidebarCollapsed] = useGlobalStore(
+		useShallow((o) => [o.sidebarCollapsed, o.setSidebarCollapsed]),
 	);
 
 	return (
@@ -41,10 +41,10 @@ export function Navbar() {
 				<button
 					type="button"
 					onClick={() => {
-						setSidebarHidden((prev) => !prev);
+						setSidebarCollapsed((prev) => !prev);
 					}}
 					className="text-gray-700"
-					data-state={sidebarHidden ? 'closed' : 'open'}
+					data-state={sidebarCollapsed ? 'closed' : 'open'}
 				>
 					<svg
 						xmlns="http://www.w3.org/2000/svg"
@@ -91,7 +91,19 @@ export function Navbar() {
 							<EditAccount />
 							<ChangePassword />
 							<Menu.Separator />
-							<Logout />
+							<Logout
+								trigger={({setOpen}) => (
+									<Menu.Item
+										value="logout"
+										onSelect={() => {
+											setOpen(true);
+										}}
+									>
+										<LogOutIcon />
+										Log out
+									</Menu.Item>
+								)}
+							/>
 						</Menu.Content>
 					</Menu.Positioner>
 				</Menu.Root>
@@ -374,32 +386,5 @@ function ChangePassword() {
 				</Dialog.Positioner>
 			</Portal>
 		</Dialog.Root>
-	);
-}
-
-function Logout() {
-	const navigate = useNavigate();
-	const mutation = useDestroySessionMutation({
-		onSuccess() {
-			client
-				.invalidateQueries({queryKey: useMeQuery.getQueryKey()})
-				.then(() => {
-					navigate('/');
-				})
-				.catch(console.error);
-		},
-	});
-
-	return (
-		<Menu.Item
-			value="logout"
-			disabled={mutation.isPending}
-			onSelect={() => {
-				mutation.mutate();
-			}}
-		>
-			<LogOutIcon />
-			Log out
-		</Menu.Item>
 	);
 }

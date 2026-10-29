@@ -1,4 +1,3 @@
-import {Presence} from '@ark-ui/react';
 import {
 	BookOpenIcon,
 	Calendar1Icon,
@@ -7,12 +6,11 @@ import {
 	RotateCcwClockIcon,
 	UsersIcon,
 } from 'lucide-react';
-import {NavLink, useNavigate} from 'react-router';
+import {NavLink} from 'react-router';
+import {twMerge as cx} from 'tailwind-merge';
 import {useShallow} from 'zustand/shallow';
-import {useDestroySessionMutation} from '@/hooks/useDestroySessionMutation';
 import {useGlobalStore} from '@/hooks/useGlobalStore';
-import {useMeQuery} from '@/hooks/useMeQuery';
-import {client} from '@/utils/client';
+import {Logout} from '@/templates/Logout';
 
 const links = [
 	{
@@ -43,57 +41,58 @@ const links = [
 ];
 
 export function Sidebar() {
-	const navigate = useNavigate();
-	const mutation = useDestroySessionMutation({
-		onSuccess() {
-			client
-				.invalidateQueries({queryKey: useMeQuery.getQueryKey()})
-				.then(() => {
-					navigate('/');
-				})
-				.catch(console.error);
-		},
-	});
-
-	const hidden = useGlobalStore(useShallow((o) => o.sidebarHidden));
-	const cssVars: Record<string, string | number> = {
-		'--width': '224px',
-	};
+	const collapsed = useGlobalStore(useShallow((o) => o.sidebarCollapsed));
 
 	return (
-		<Presence present={!hidden} lazyMount skipAnimationOnMount asChild>
-			<nav
-				className="sticky top-16 h-[calc(100vh-4rem)] shrink-0 ui-closed:animate-collapse-x-out ui-open:animate-collapse-x-in overflow-hidden border-gray-200 border-r font-heading text-gray-700"
-				style={cssVars}
-			>
-				<ul className="w-56 space-y-1 p-4">
-					{links.map((link) => (
-						<li key={link.href} className="contents">
-							<NavLink
-								to={link.href}
-								className="flex w-full items-center gap-2 rounded-md px-3 py-2 font-medium aria-page:text-blue-500"
-							>
-								<link.icon className="size-5" />
-								{link.label}
-							</NavLink>
-						</li>
-					))}
-
-					<li className="contents">
-						<button
-							type="button"
-							className="flex w-full items-center gap-2 rounded-md px-3 py-2 font-medium"
-							disabled={mutation.isPending}
-							onClick={() => {
-								mutation.mutate();
-							}}
+		<nav
+			className={cx(
+				'sticky top-16 h-[calc(100vh-4rem)] shrink-0 overflow-hidden border-gray-200 border-r font-heading text-gray-700 transition-[width] duration-300 ease-in-out',
+				collapsed ? 'w-20' : 'w-56',
+			)}
+		>
+			<ul className="w-56 space-y-1 p-4">
+				{links.map((link) => (
+					<li key={link.href} className="contents">
+						<NavLink
+							to={link.href}
+							title={collapsed ? link.label : undefined}
+							className="flex w-full items-center gap-2 rounded-md px-3 py-2 font-medium aria-page:text-blue-500"
 						>
-							<LogOutIcon className="size-5" />
-							Log out
-						</button>
+							<link.icon className="size-5 shrink-0" />
+							<span
+								className={cx(
+									'transition-opacity duration-150',
+									collapsed ? 'opacity-0' : 'opacity-100',
+								)}
+							>
+								{link.label}
+							</span>
+						</NavLink>
 					</li>
-				</ul>
-			</nav>
-		</Presence>
+				))}
+
+				<li className="contents">
+					<Logout
+						trigger={
+							<button
+								type="button"
+								title={collapsed ? 'Log out' : undefined}
+								className="flex w-full items-center gap-2 rounded-md px-3 py-2 font-medium"
+							>
+								<LogOutIcon className="size-5 shrink-0" />
+								<span
+									className={cx(
+										'transition-opacity duration-150',
+										collapsed ? 'opacity-0' : 'opacity-100',
+									)}
+								>
+									Log out
+								</span>
+							</button>
+						}
+					/>
+				</li>
+			</ul>
+		</nav>
 	);
 }
