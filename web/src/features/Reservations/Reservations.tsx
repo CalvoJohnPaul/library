@@ -5,7 +5,7 @@ import {
 	SortOrderDefinition,
 } from '@library/types';
 import {format} from 'date-fns';
-import {SettingsIcon} from 'lucide-react';
+import {PlusIcon, SettingsIcon} from 'lucide-react';
 import {
 	parseAsInteger,
 	parseAsIsoDate,
@@ -17,7 +17,9 @@ import {
 import {Link} from 'react-router';
 import {DataTable} from '@/components/DataTable';
 import {Badge} from '@/components/ui/Badge';
+import {IconButton} from '@/components/ui/IconButton';
 import {Menu} from '@/components/ui/Menu';
+import {Tooltip} from '@/components/ui/Tooltip';
 import {type BooksInput, useBooksQuery} from '@/hooks/useBooksQuery';
 import {useExportReservationsMutation} from '@/hooks/useExportReservationsMutation';
 import {type MembersInput, useMembersQuery} from '@/hooks/useMembersQuery';
@@ -331,6 +333,29 @@ export function Reservations() {
 				}
 				sortOrder={state.sortOrder ?? null}
 				onSortOrderChange={(sortOrder) => setState({sortOrder})}
+				cta={
+					<AddReservation
+						trigger={({setOpen}) => (
+							<Tooltip.Root>
+								<Tooltip.Trigger asChild>
+									<IconButton variant="outline" accent="gray" onClick={() => setOpen(true)}>
+										<PlusIcon className="size-5" />
+									</IconButton>
+								</Tooltip.Trigger>
+								<Portal>
+									<Tooltip.Positioner>
+										<Tooltip.Content>
+											<Tooltip.Arrow>
+												<Tooltip.ArrowTip />
+											</Tooltip.Arrow>
+											Add reservation
+										</Tooltip.Content>
+									</Tooltip.Positioner>
+								</Portal>
+							</Tooltip.Root>
+						)}
+					/>
+				}
 			/>
 		</>
 	);

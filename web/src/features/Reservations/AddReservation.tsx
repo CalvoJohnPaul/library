@@ -1,7 +1,9 @@
 import {Portal} from '@ark-ui/react';
 import {zodResolver} from '@hookform/resolvers/zod';
 import {type CreateReservationInput, CreateReservationInputDefinition} from '@library/types';
+import {isFunction} from 'es-toolkit';
 import {PlusIcon} from 'lucide-react';
+import type {ReactNode} from 'react';
 import {Controller, useForm} from 'react-hook-form';
 import {AsyncComboboxField} from '@/components/forms/AsyncComboboxField';
 import {SpinnerIcon} from '@/components/icons/SpinnerIcon';
@@ -11,13 +13,17 @@ import {FeaturedIcon} from '@/components/ui/FeaturedIcon';
 import {Field} from '@/components/ui/Field';
 import {type BooksInput, useBooksQuery} from '@/hooks/useBooksQuery';
 import {useCreateReservationMutation} from '@/hooks/useCreateReservationMutation';
-import {useDisclosure} from '@/hooks/useDisclosure';
+import {type UseDisclosureReturn, useDisclosure} from '@/hooks/useDisclosure';
 import {type MembersInput, useMembersQuery} from '@/hooks/useMembersQuery';
 import {useReservationsQuery} from '@/hooks/useReservationsQuery';
 import {client} from '@/utils/client';
 import {toaster} from '@/utils/toaster';
 
-export function AddReservation() {
+export function AddReservation({
+	trigger,
+}: {
+	trigger?: ReactNode | ((disclosure: UseDisclosureReturn) => ReactNode);
+}) {
 	const disclosure = useDisclosure();
 	const form = useForm<CreateReservationInput>({
 		resolver: zodResolver(CreateReservationInputDefinition),
@@ -41,10 +47,14 @@ export function AddReservation() {
 			onExitComplete={() => form.reset({remarks: ''})}
 		>
 			<Dialog.Trigger asChild>
-				<Button>
-					<PlusIcon className="size-5" />
-					Create reservation
-				</Button>
+				{isFunction(trigger)
+					? trigger(disclosure)
+					: (trigger ?? (
+							<Button>
+								<PlusIcon />
+								Add reservation
+							</Button>
+						))}
 			</Dialog.Trigger>
 			<Portal>
 				<Dialog.Backdrop />
