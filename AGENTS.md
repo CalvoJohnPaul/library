@@ -26,6 +26,7 @@
 	- `src/features/` contains domain screens and feature state.
 	- `src/components/` contains reusable UI, form, and data-table components.
 	- `src/hooks/` contains shared React hooks.
+	- `src/templates/` contains reusable action and dialog templates.
 	- `src/utils/`, `src/config/`, and `src/types/` contain shared support code.
 	- `public/` contains static assets.
 
