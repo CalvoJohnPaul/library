@@ -73,7 +73,12 @@ export function Logout({
 									</Button>
 								)}
 							</Dialog.Context>
-							<Button type="submit" accent="danger" disabled={mutation.isPending}>
+							<Button
+								type="submit"
+								accent="danger"
+								disabled={mutation.isPending}
+								onClick={() => mutation.mutate()}
+							>
 								{mutation.isPending ? <SpinnerIcon className="size-5" /> : 'Proceed'}
 							</Button>
 						</Dialog.Footer>
