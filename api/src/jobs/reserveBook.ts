@@ -5,36 +5,73 @@ const reserveBookTask = new AsyncTask(
 	'reserve_book',
 	async () => {
 		console.log(`job 'reserveBook' started`);
+
 		const reservations = await prisma.reservation.findMany({
-			where: {status: 'PENDING', bookCopyId: null},
-			select: {id: true, bookId: true},
-			orderBy: {dateTimeCreated: 'asc'},
+			where: {
+				status: 'PENDING',
+				bookCopyId: null,
+			},
+			select: {
+				id: true,
+				bookId: true,
+			},
+			orderBy: {
+				dateTimeCreated: 'asc',
+			},
 		});
 
 		for (const reservation of reservations) {
 			try {
 				const copy = await prisma.bookCopy.findFirst({
-					where: {bookId: reservation.bookId, status: 'AVAILABLE'},
-					select: {id: true},
+					where: {
+						bookId: reservation.bookId,
+						status: 'AVAILABLE',
+					},
+					select: {
+						id: true,
+					},
 				});
-				if (!copy) continue;
+
+				if (!copy) {
+					continue;
+				}
 
 				await prisma.$transaction(async (tx) => {
 					const assigned = await tx.reservation.updateMany({
-						where: {id: reservation.id, status: 'PENDING', bookCopyId: null},
-						data: {bookCopyId: copy.id},
+						where: {
+							id: reservation.id,
+							status: 'PENDING',
+							bookCopyId: null,
+						},
+						data: {
+							bookCopyId: copy.id,
+						},
 					});
-					if (assigned.count === 0) return;
+
+					if (assigned.count === 0) {
+						return;
+					}
+
 					const reserved = await tx.bookCopy.updateMany({
-						where: {id: copy.id, bookId: reservation.bookId, status: 'AVAILABLE'},
-						data: {status: 'RESERVED'},
+						where: {
+							id: copy.id,
+							bookId: reservation.bookId,
+							status: 'AVAILABLE',
+						},
+						data: {
+							status: 'RESERVED',
+						},
 					});
-					if (reserved.count === 0) throw new Error('Copy is no longer available');
+
+					if (reserved.count === 0) {
+						throw new Error('Copy is no longer available');
+					}
 				});
 			} catch (error) {
 				console.error(`Failed to assign a copy to reservation ${reservation.id}`, error);
 			}
 		}
+
 		console.log(`job 'reserveBook' completed`);
 	},
 	(error) => {
