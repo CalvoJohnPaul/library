@@ -1,6 +1,6 @@
 import {Portal} from '@ark-ui/react';
 import {zodResolver} from '@hookform/resolvers/zod';
-import {type BookCopy, ReturnBookCopyDataInputDefinition, type Transaction} from '@library/types';
+import {type BookCopy, ReturnBookCopyDataInputDefinition} from '@library/types';
 import {CornerDownLeftIcon} from 'lucide-react';
 import {useForm} from 'react-hook-form';
 import {SpinnerIcon} from '@/components/icons/SpinnerIcon';
@@ -18,7 +18,7 @@ export interface ReturnBookCopyProps {
 	 * @description the book copy id
 	 */
 	id: number;
-	onReturned?: (data: {bookCopy: BookCopy; transaction: Transaction}) => void;
+	onReturned?: (data: BookCopy) => void;
 }
 
 export function ReturnBookCopy(props: ReturnBookCopyProps) {

@@ -9,7 +9,6 @@ import {
 	ReturnBookCopyDataInputDefinition,
 	SortOrderDefinition,
 	SuccessfulHttpResponseDefinition,
-	TransactionDefinition,
 	UpdateBookCopyDataInputDefinition,
 	VoidSuccessfulHttpResponseDefinition,
 } from '@library/types';
@@ -500,12 +499,7 @@ const plugin: FastifyPluginAsyncZod = async (app) => {
 				}),
 				body: BorrowBookCopyDataInputDefinition,
 				response: {
-					200: SuccessfulHttpResponseDefinition(
-						z.object({
-							bookCopy: BookCopyDefinition,
-							transaction: TransactionDefinition,
-						}),
-					),
+					200: SuccessfulHttpResponseDefinition(BookCopyDefinition),
 					400: FailedHttpResponseDefinition,
 					401: FailedHttpResponseDefinition,
 					403: FailedHttpResponseDefinition,
@@ -707,39 +701,18 @@ const plugin: FastifyPluginAsyncZod = async (app) => {
 			return reply.send({
 				ok: true,
 				data: {
-					bookCopy: {
-						id: bookCopy.id,
-						isbn: bookCopy.isbn,
-						book: {
-							id: bookCopy.book.id,
-							title: bookCopy.book.title,
-							genre: bookCopy.book.genre,
-							author: bookCopy.book.author,
-							yearPublished: bookCopy.book.yearPublished,
-						},
-						status: bookCopy.status,
-						dateTimeCreated: bookCopy.dateTimeCreated,
-						dateTimeUpdated: bookCopy.dateTimeUpdated,
+					id: bookCopy.id,
+					isbn: bookCopy.isbn,
+					book: {
+						id: bookCopy.book.id,
+						title: bookCopy.book.title,
+						genre: bookCopy.book.genre,
+						author: bookCopy.book.author,
+						yearPublished: bookCopy.book.yearPublished,
 					},
-					transaction: {
-						id: transaction.id,
-						type: transaction.type,
-						status: transaction.status,
-						ticket: transaction.ticket,
-						remarks: transaction.remarks,
-						member: {
-							id: transaction.member.id,
-							externalId: transaction.member.externalId,
-							name: transaction.member.name,
-							course: transaction.member.course,
-							yearAndSection: transaction.member.yearAndSection,
-						},
-						book: null,
-						bookCopy: transaction.bookCopy,
-						reservation: transaction.reservation,
-						dateTimeCreated: transaction.dateTimeCreated,
-						dateTimeUpdated: transaction.dateTimeUpdated,
-					},
+					status: bookCopy.status,
+					dateTimeCreated: bookCopy.dateTimeCreated,
+					dateTimeUpdated: bookCopy.dateTimeUpdated,
 				},
 			});
 		},
@@ -757,12 +730,7 @@ const plugin: FastifyPluginAsyncZod = async (app) => {
 				}),
 				body: ReturnBookCopyDataInputDefinition,
 				response: {
-					200: SuccessfulHttpResponseDefinition(
-						z.object({
-							bookCopy: BookCopyDefinition,
-							transaction: TransactionDefinition,
-						}),
-					),
+					200: SuccessfulHttpResponseDefinition(BookCopyDefinition),
 					400: FailedHttpResponseDefinition,
 					401: FailedHttpResponseDefinition,
 					403: FailedHttpResponseDefinition,
@@ -897,39 +865,18 @@ const plugin: FastifyPluginAsyncZod = async (app) => {
 			return reply.send({
 				ok: true,
 				data: {
-					bookCopy: {
-						id: bookCopy.id,
-						isbn: bookCopy.isbn,
-						book: {
-							id: bookCopy.book.id,
-							title: bookCopy.book.title,
-							genre: bookCopy.book.genre,
-							author: bookCopy.book.author,
-							yearPublished: bookCopy.book.yearPublished,
-						},
-						status: bookCopy.status,
-						dateTimeCreated: bookCopy.dateTimeCreated,
-						dateTimeUpdated: bookCopy.dateTimeUpdated,
+					id: bookCopy.id,
+					isbn: bookCopy.isbn,
+					book: {
+						id: bookCopy.book.id,
+						title: bookCopy.book.title,
+						genre: bookCopy.book.genre,
+						author: bookCopy.book.author,
+						yearPublished: bookCopy.book.yearPublished,
 					},
-					transaction: {
-						id: transaction.id,
-						type: transaction.type,
-						status: transaction.status,
-						ticket: transaction.ticket,
-						remarks: transaction.remarks,
-						member: {
-							id: transaction.member.id,
-							externalId: transaction.member.externalId,
-							name: transaction.member.name,
-							course: transaction.member.course,
-							yearAndSection: transaction.member.yearAndSection,
-						},
-						book: null,
-						bookCopy: transaction.bookCopy,
-						reservation: transaction.reservation,
-						dateTimeCreated: transaction.dateTimeCreated,
-						dateTimeUpdated: transaction.dateTimeUpdated,
-					},
+					status: bookCopy.status,
+					dateTimeCreated: bookCopy.dateTimeCreated,
+					dateTimeUpdated: bookCopy.dateTimeUpdated,
 				},
 			});
 		},

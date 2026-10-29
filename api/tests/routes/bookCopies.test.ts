@@ -120,7 +120,7 @@ function mockBorrow() {
 		};
 	};
 	fixture.mock.transaction.update = async () => borrow;
-	return {copy, member};
+	return {copy, member, borrow};
 }
 
 test('POST /book-copies/:id/borrow', async () => {
@@ -150,13 +150,14 @@ test('POST /book-copies/:id/borrow', async () => {
 		payload: {memberId: member.id, remarks},
 	});
 	assert.equal(response.statusCode, 200, response.body);
-	assert.equal(response.json().data.bookCopy.status, 'BORROWED');
-	assert.equal(response.json().data.transaction.member.id, member.id);
-	assert.equal(response.json().data.transaction.reservation, null);
+	assert.equal(response.json().data.status, 'BORROWED');
+	assert.equal(response.json().data.isbn, copy.isbn);
+	assert.equal(response.json().data.bookCopy, undefined);
+	assert.equal(response.json().data.transaction, undefined);
 	assert.equal(created.length, 1);
 	assert.equal(created[0].type, 'BORROW');
 	assert.equal(created[0].status, 'PENDING');
-	assert.equal(created[0].ticket, response.json().data.transaction.ticket);
+	assert.ok(created[0].ticket);
 	assert.equal(created[0].bookCopyId, copy.id);
 	assert.equal(created[0].memberId, member.id);
 	assert.equal(created[0].remarks, remarks);
@@ -165,7 +166,7 @@ test('POST /book-copies/:id/borrow', async () => {
 
 test('POST /book-copies/:id/return', async () => {
 	const headers = await fixture.auth();
-	const {copy, member} = mockBorrow();
+	const {copy, member, borrow} = mockBorrow();
 	const created: {
 		type: string;
 		status: string;
@@ -200,9 +201,10 @@ test('POST /book-copies/:id/return', async () => {
 		payload: {remarks},
 	});
 	assert.equal(response.statusCode, 200, response.body);
-	assert.equal(response.json().data.bookCopy.status, 'AVAILABLE');
-	assert.equal(response.json().data.transaction.type, 'RETURN');
-	assert.equal(response.json().data.transaction.reservation, null);
+	assert.equal(response.json().data.status, 'AVAILABLE');
+	assert.equal(response.json().data.isbn, copy.isbn);
+	assert.equal(response.json().data.bookCopy, undefined);
+	assert.equal(response.json().data.transaction, undefined);
 	assert.equal(created.length, 2);
 	assert.deepEqual(
 		created.map(({type, status}) => ({type, status})),
@@ -211,13 +213,13 @@ test('POST /book-copies/:id/return', async () => {
 			{type: 'RETURN', status: 'COMPLETED'},
 		],
 	);
-	assert.equal(created[0].ticket, borrowed.json().data.transaction.ticket);
+	assert.equal(borrowed.json().data.status, 'BORROWED');
 	assert.equal(created[1].ticket, created[0].ticket);
 	assert.equal(created[1].memberId, member.id);
 	assert.equal(created[1].bookCopyId, copy.id);
 	assert.equal((created[1] as {remarks?: string}).remarks, remarks);
 	assert.deepEqual(updates, [
-		{where: {id: borrowed.json().data.transaction.id}, data: {status: 'COMPLETED'}},
+		{where: {id: borrow.id}, data: {status: 'COMPLETED'}},
 	]);
 });
 
@@ -434,9 +436,8 @@ test('POST /book-copies/:id/borrow claims a reserved copy for its member', async
 		payload: {memberId: member.id},
 	});
 	assert.equal(response.statusCode, 200, response.body);
-	assert.equal(response.json().data.bookCopy.status, 'BORROWED');
-	assert.equal(response.json().data.transaction.ticket, ticket);
-	assert.deepEqual(response.json().data.transaction.reservation, {id: 1, status: 'COMPLETED'});
+	assert.equal(response.json().data.status, 'BORROWED');
+	assert.equal(response.json().data.transaction, undefined);
 	assert.deepEqual(reservations, [
 		{
 			where: {id: 1, status: 'PENDING', bookCopyId: copy.id},
@@ -527,9 +528,9 @@ test('returning a claimed reserved copy records RETURN with the reservation tick
 		payload: {},
 	});
 	assert.equal(returned.statusCode, 200, returned.body);
-	assert.equal(returned.json().data.bookCopy.status, 'AVAILABLE');
-	assert.deepEqual(borrow.json().data.transaction.reservation, {id: 1, status: 'COMPLETED'});
-	assert.deepEqual(returned.json().data.transaction.reservation, {id: 1, status: 'COMPLETED'});
+	assert.equal(returned.json().data.status, 'AVAILABLE');
+	assert.equal(borrow.json().data.transaction, undefined);
+	assert.equal(returned.json().data.transaction, undefined);
 	assert.equal(created[0].reservationId, 1);
 	assert.equal(created[1].reservationId, 1);
 	assert.deepEqual(
@@ -563,7 +564,7 @@ test('POST /book-copies/:id/return stays allowed while the book is reserved', as
 		payload: {},
 	});
 	assert.equal(response.statusCode, 200, response.body);
-	assert.equal(response.json().data.bookCopy.status, 'AVAILABLE');
+	assert.equal(response.json().data.status, 'AVAILABLE');
 });
 
 test('POST /book-copies/:id/return rejects a reserved copy that was not borrowed', async () => {

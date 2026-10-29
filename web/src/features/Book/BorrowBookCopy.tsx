@@ -1,8 +1,7 @@
 import {Portal} from '@ark-ui/react';
 import {zodResolver} from '@hookform/resolvers/zod';
-import {CreateMemberInputDefinition, type Member, type Transaction} from '@library/types';
+import {CreateMemberInputDefinition, type Member} from '@library/types';
 import {useMutation} from '@tanstack/react-query';
-import {format} from 'date-fns';
 import {ArrowRightIcon, CircleCheckIcon, PenSquareIcon, RepeatIcon} from 'lucide-react';
 import {useState} from 'react';
 import {Controller, useForm, useWatch} from 'react-hook-form';
@@ -36,7 +35,6 @@ export function BorrowBookCopy() {
 
 	const [step, setStep] = useState<Step>('SEARCH');
 	const [member, setMember] = useState<Member | null>(null);
-	const [transaction, setTransaction] = useState<Transaction | null>(null);
 	const [searchValue, setSearchValue] = useState('');
 	const [searchError, setSearchError] = useState('');
 
@@ -76,8 +74,7 @@ export function BorrowBookCopy() {
 
 	const createMemberMutation = useCreateMemberMutation();
 	const borrowMutation = useBorrowBookCopyMutation({
-		async onSuccess(result) {
-			setTransaction(result.transaction);
+		async onSuccess(_result, input) {
 			setStep('SUCCESS');
 
 			Promise.all([
@@ -101,7 +98,7 @@ export function BorrowBookCopy() {
 				}),
 				client.invalidateQueries({
 					refetchType: 'active',
-					queryKey: useMemberQuery.getQueryKey(result.transaction.member.id),
+					queryKey: useMemberQuery.getQueryKey(input.data.memberId),
 					exact: false,
 					type: 'all',
 				}),
@@ -135,7 +132,6 @@ export function BorrowBookCopy() {
 		setSearchValue('');
 		setSearchError('');
 		setMember(null);
-		setTransaction(null);
 		form.reset({
 			externalId: '',
 			name: '',
@@ -388,32 +384,20 @@ export function BorrowBookCopy() {
 								</Dialog.Body>
 							)}
 
-							{step === 'SUCCESS' && transaction && (
+							{step === 'SUCCESS' && member && (
 								<Dialog.Body>
 									<dl className="space-y-2 rounded-md border border-gray-200 bg-white p-4 text-sm">
 										<div className="flex justify-between gap-4">
-											<dt className="font-semibold text-gray-600">Reference</dt>
-											<dd>{transaction.ticket}</dd>
-										</div>
-										<div className="flex justify-between gap-4">
 											<dt className="font-semibold text-gray-600">Borrower</dt>
-											<dd>{transaction.member.name}</dd>
+											<dd>{member.name}</dd>
 										</div>
 										<div className="flex justify-between gap-4">
 											<dt className="font-semibold text-gray-600">Book</dt>
-											<dd>
-												{transaction.book?.title ??
-													transaction.bookCopy?.book.title ??
-													copy.book.title}
-											</dd>
+											<dd>{copy.book.title}</dd>
 										</div>
 										<div className="flex justify-between gap-4">
 											<dt className="font-semibold text-gray-600">ISBN</dt>
-											<dd>{transaction.bookCopy?.isbn ?? copy.isbn}</dd>
-										</div>
-										<div className="flex justify-between gap-4">
-											<dt className="font-semibold text-gray-600">Date borrowed</dt>
-											<dd>{format(transaction.dateTimeCreated, 'MMM dd, yyyy hh:mm a')}</dd>
+											<dd>{copy.isbn}</dd>
 										</div>
 									</dl>
 								</Dialog.Body>

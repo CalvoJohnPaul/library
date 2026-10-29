@@ -1,6 +1,6 @@
 import {Portal} from '@ark-ui/react';
 import {zodResolver} from '@hookform/resolvers/zod';
-import {CreateBookInputDefinition} from '@library/types';
+import {type Book, CreateBookInputDefinition} from '@library/types';
 import {isFunction} from 'es-toolkit';
 import {PlusIcon} from 'lucide-react';
 import type {ReactNode} from 'react';
@@ -11,36 +11,27 @@ import {Button} from '@/components/ui/Button';
 import {Dialog} from '@/components/ui/Dialog';
 import {FeaturedIcon} from '@/components/ui/FeaturedIcon';
 import {Field} from '@/components/ui/Field';
-import {useBooksQuery} from '@/hooks/useBooksQuery';
 import {useCreateBookMutation} from '@/hooks/useCreateBookMutation';
 import {type UseDisclosureReturn, useDisclosure} from '@/hooks/useDisclosure';
-import {client} from '@/utils/client';
 import {getBookGenreOptions, getBookYearPublishedOptions} from '@/utils/common';
 import {toaster} from '@/utils/toaster';
 
 export interface AddBookProps {
 	trigger?: ReactNode | ((disclosure: UseDisclosureReturn) => ReactNode);
+	onAdded?: (data: Book) => void;
 }
 
-export function AddBook({trigger}: AddBookProps) {
+export function AddBook({trigger, onAdded}: AddBookProps = {}) {
 	const disclosure = useDisclosure();
 	const form = useForm({
 		resolver: zodResolver(CreateBookInputDefinition),
 	});
 
 	const mutation = useCreateBookMutation({
-		onSuccess: async () => {
-			await client.invalidateQueries({
-				refetchType: 'active',
-				queryKey: useBooksQuery.getQueryKey(),
-				exact: false,
-				type: 'all',
-			});
-
+		onSuccess: (data) => {
 			disclosure.setOpen(false);
-			toaster.success({
-				description: 'Book has been added.',
-			});
+			toaster.success({description: 'Book has been added.'});
+			onAdded?.(data);
 		},
 		onError: (error) => {
 			toaster.error({

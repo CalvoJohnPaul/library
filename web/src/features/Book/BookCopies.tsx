@@ -19,6 +19,7 @@ import {Badge} from '@/components/ui/Badge';
 import {Menu} from '@/components/ui/Menu';
 import {type BookCopiesInput, useBookCopiesQuery} from '@/hooks/useBookCopiesQuery';
 import {useExportBookCopiesMutation} from '@/hooks/useExportBookCopiesMutation';
+import {ReturnBookCopy} from '@/templates/ReturnBookCopy';
 import {getBookCopyStatusLabel, getBookCopyStatusOptions} from '@/utils/common';
 import {toaster} from '@/utils/toaster';
 import {useBookContext} from './BookContext';
@@ -26,7 +27,6 @@ import {BorrowBookCopy} from './BorrowBookCopy';
 import {CopyProvider} from './CopyContext';
 import {DeleteCopy} from './DeleteCopy';
 import {EditBookCopy} from './EditBookCopy';
-import {ReturnBookCopy} from './ReturnBookCopy';
 
 export function Copies() {
 	const book = useBookContext();
@@ -203,7 +203,7 @@ export function Copies() {
 											<CopyProvider value={copy}>
 												<EditBookCopy />
 												{copy.status === 'AVAILABLE' && <BorrowBookCopy />}
-												{copy.status === 'BORROWED' && <ReturnBookCopy />}
+												{copy.status === 'BORROWED' && <ReturnBookCopy id={copy.id} />}
 												<Menu.Separator />
 												<DeleteCopy />
 											</CopyProvider>
