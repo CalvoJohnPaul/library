@@ -3,6 +3,7 @@ import {Outlet} from 'react-router';
 import {useMeQuery} from '@/hooks/useMeQuery';
 import {Login} from './Login';
 import {Navbar} from './Navbar';
+import {Sidebar} from './Sidebar';
 
 export function RootLayout() {
 	const query = useMeQuery();
@@ -24,9 +25,12 @@ export function RootLayout() {
 	return (
 		<>
 			<Navbar />
-			<main className="mx-auto p-12">
-				<Outlet />
-			</main>
+			<div className="relative flex w-full items-start">
+				<Sidebar />
+				<main className="min-w-0 grow p-12">
+					<Outlet />
+				</main>
+			</div>
 		</>
 	);
 }

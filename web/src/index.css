@@ -33,8 +33,9 @@
 
 @theme {
 	--font-*: initial;
-	--font-sans: "Inter", sans-serif;
+	--font-sans: "Google Sans", sans-serif;
 	--font-mono: "Fira Code", monospace;
+	--font-heading: "Open Sans", sans-serif;
 
 	--z-dropdown: 1000;
 	--z-sticky: 1100;

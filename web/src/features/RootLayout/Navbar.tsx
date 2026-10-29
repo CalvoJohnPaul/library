@@ -4,21 +4,11 @@ import {createAvatar} from '@dicebear/core';
 import {zodResolver} from '@hookform/resolvers/zod';
 import {isNil, omitBy} from 'es-toolkit';
 import {isEmpty} from 'es-toolkit/compat';
-import {
-	BookOpenIcon,
-	CalendarIcon,
-	ChartColumnBigIcon,
-	LockKeyholeIcon,
-	LogOutIcon,
-	RotateCcwClockIcon,
-	SettingsIcon,
-	SquarePenIcon,
-	UsersIcon,
-} from 'lucide-react';
+import {LockKeyholeIcon, LogOutIcon, SquarePenIcon} from 'lucide-react';
 import {Controller, useForm} from 'react-hook-form';
-import {Link, NavLink, useNavigate} from 'react-router';
-import {cx} from 'tailwind-variants';
+import {Link, useNavigate} from 'react-router';
 import * as z from 'zod';
+import {useShallow} from 'zustand/shallow';
 import {PasswordField} from '@/components/forms/PasswordField';
 import {SpinnerIcon} from '@/components/icons/SpinnerIcon';
 import {Avatar} from '@/components/ui/Avatar';
@@ -27,9 +17,9 @@ import {Dialog} from '@/components/ui/Dialog';
 import {FeaturedIcon} from '@/components/ui/FeaturedIcon';
 import {Field} from '@/components/ui/Field';
 import {Menu} from '@/components/ui/Menu';
-import {Tooltip} from '@/components/ui/Tooltip';
 import {useDestroySessionMutation} from '@/hooks/useDestroySessionMutation';
 import {useDisclosure} from '@/hooks/useDisclosure';
+import {useGlobalStore} from '@/hooks/useGlobalStore';
 import {useMeQuery} from '@/hooks/useMeQuery';
 import {useUpdateMeMutation} from '@/hooks/useUpdateMeMutation';
 import {client} from '@/utils/client';
@@ -37,128 +27,75 @@ import {toaster} from '@/utils/toaster';
 
 export function Navbar() {
 	const query = useMeQuery();
-	const links = [
-		{
-			icon: ChartColumnBigIcon,
-			label: 'Dashboard',
-			href: '/',
-		},
-		{
-			icon: BookOpenIcon,
-			label: 'Books',
-			href: '/books',
-		},
-		{
-			icon: RotateCcwClockIcon,
-			label: 'Transactions',
-			href: '/transactions',
-		},
-		{
-			icon: UsersIcon,
-			label: 'Members',
-			href: '/members',
-		},
-		{
-			icon: CalendarIcon,
-			label: 'Reservations',
-			href: '/reservations',
-		},
-	];
+	const avatar = query.data
+		? createAvatar(funEmoji, {seed: query.data.id.toString()}).toDataUri()
+		: '';
+
+	const [sidebarHidden, setSidebarHidden] = useGlobalStore(
+		useShallow((o) => [o.sidebarHidden, o.setSidebarHidden]),
+	);
 
 	return (
-		<header className="flex h-16 items-center border-gray-200 border-b px-12">
-			<Link to="/" className="block">
-				<h2 className="logo-shine block font-extrabold text-xl tracking-wider">read.</h2>
-			</Link>
+		<header className="sticky top-0 z-sticky flex h-16 items-center border-gray-200 border-b bg-white pr-12 pl-7">
+			<div className="flex items-center gap-2">
+				<button
+					type="button"
+					onClick={() => {
+						setSidebarHidden((prev) => !prev);
+					}}
+					className="text-gray-700"
+					data-state={sidebarHidden ? 'closed' : 'open'}
+				>
+					<svg
+						xmlns="http://www.w3.org/2000/svg"
+						width="24"
+						height="24"
+						fill="none"
+						viewBox="0 0 24 24"
+						stroke="currentColor"
+						strokeWidth="2"
+						strokeLinecap="round"
+						strokeLinejoin="round"
+						className="size-5"
+					>
+						<path d="M3 8.5h18m-18 7h18" />
+					</svg>
+				</button>
+				<Link to="/" className="block">
+					<h2 className="logo-shine block font-bold font-heading text-xl tracking-wider">read.</h2>
+				</Link>
+			</div>
 			<div className="grow"></div>
-			<nav className="flex gap-1">
-				<ul className="contents">
-					{links.map((link) => (
-						<li key={link.href} className="contents">
-							<Tooltip.Root>
-								<Tooltip.Trigger asChild>
-									<NavLink
-										to={link.href}
-										className="block p-2 text-gray-600 aria-page:font-medium aria-page:text-blue-500"
-									>
-										<link.icon className="size-6" />
-									</NavLink>
-								</Tooltip.Trigger>
-								<Portal>
-									<Tooltip.Positioner>
-										<Tooltip.Content>
-											<Tooltip.Arrow>
-												<Tooltip.ArrowTip />
-											</Tooltip.Arrow>
-											{link.label}
-										</Tooltip.Content>
-									</Tooltip.Positioner>
-								</Portal>
-							</Tooltip.Root>
-						</li>
-					))}
+			<div className="flex gap-1">
+				<Menu.Root ids={{trigger: 'settings-trigger'}}>
+					<Menu.Trigger disabled={query.isLoading}>
+						<Avatar.Root size="sm">
+							<Avatar.Image src={avatar} />
+							<Avatar.Fallback />
+						</Avatar.Root>
+					</Menu.Trigger>
 
-					<li className="contents">
-						<Menu.Root ids={{trigger: 'settings-trigger'}}>
-							<Menu.Context>
-								{(api) => (
-									<Tooltip.Root ids={{trigger: 'settings-trigger'}} disabled={api.open}>
-										<Tooltip.Trigger
-											onClick={() => {
-												api.setOpen(!api.open);
-											}}
-											disabled={query.isPending}
-											className={cx(
-												'block p-2 text-gray-600 aria-page:font-medium',
-												api.open && 'text-blue-500',
-											)}
-										>
-											<SettingsIcon className="size-6" />
-										</Tooltip.Trigger>
-
-										<Portal>
-											<Tooltip.Positioner>
-												<Tooltip.Content>
-													<Tooltip.Arrow>
-														<Tooltip.ArrowTip />
-													</Tooltip.Arrow>
-													Settings
-												</Tooltip.Content>
-											</Tooltip.Positioner>
-										</Portal>
-									</Tooltip.Root>
-								)}
-							</Menu.Context>
-
-							<Portal>
-								<Menu.Positioner>
-									<Menu.Content>
-										<div className="flex items-center gap-2 py-2 pr-4 pl-2">
-											<Avatar.Root>
-												<Avatar.Image
-													src={createAvatar(funEmoji, {
-														seed: query.data?.id.toString(),
-													}).toDataUri()}
-												/>
-												<Avatar.Fallback />
-											</Avatar.Root>
-											<div>
-												<p className="font-semibold leading-tight">{query.data?.name}</p>
-												<p className="text-gray-600 text-sm leading-tight">{query.data?.email}</p>
-											</div>
-										</div>
-										<Menu.Separator />
-										<EditAccount />
-										<ChangePassword />
-										<Menu.Separator />
-										<Logout />
-									</Menu.Content>
-								</Menu.Positioner>
-							</Portal>
-						</Menu.Root>
-					</li>
-				</ul>
-			</nav>
+					<Menu.Positioner>
+						<Menu.Content>
+							<div className="flex items-center gap-2 py-2 pr-4 pl-2">
+								<Avatar.Root>
+									<Avatar.Image src={avatar} />
+									<Avatar.Fallback />
+								</Avatar.Root>
+								<div>
+									<p className="font-semibold leading-tight">{query.data?.name}</p>
+									<p className="text-gray-600 text-sm leading-tight">{query.data?.email}</p>
+								</div>
+							</div>
+							<Menu.Separator />
+							<EditAccount />
+							<ChangePassword />
+							<Menu.Separator />
+							<Logout />
+						</Menu.Content>
+					</Menu.Positioner>
+				</Menu.Root>
+			</div>
 		</header>
 	);
 }
