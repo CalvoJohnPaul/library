@@ -21,6 +21,9 @@ export function useMeQuery(
 	>,
 ) {
 	return useQuery({
+		refetchOnMount: true,
+		refetchOnReconnect: true,
+		refetchOnWindowFocus: true,
 		...options,
 		queryKey: getQueryKey(),
 		queryFn: async ({signal}) => {

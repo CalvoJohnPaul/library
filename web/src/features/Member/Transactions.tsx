@@ -197,7 +197,7 @@ export function Transactions() {
 
 							if (search.trim() === '' && value.length > 0) {
 								input = {
-									title: {in: value},
+									id: {in: value},
 									page: 1,
 								};
 							} else {
@@ -216,7 +216,7 @@ export function Transactions() {
 
 								return data.rows.map((book) => ({
 									value: book.id.toString(),
-									label: book.title,
+									label: `${book.title} (${book.author})`,
 								}));
 							} catch {
 								return [];

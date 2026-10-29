@@ -152,7 +152,7 @@ export function Reservations() {
 								});
 								return data.rows.map((member) => ({
 									value: member.id.toString(),
-									label: member.name,
+									label: `${member.name} (${member.externalId})`,
 								}));
 							} catch {
 								return [];

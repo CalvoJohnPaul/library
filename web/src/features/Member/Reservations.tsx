@@ -150,7 +150,10 @@ export function Reservations() {
 									queryKey: useBooksQuery.getQueryKey(input),
 									queryFn: useBooksQuery.getQueryFn(input),
 								});
-								return data.rows.map((book) => ({value: book.id.toString(), label: book.title}));
+								return data.rows.map((book) => ({
+									value: book.id.toString(),
+									label: `${book.title} (${book.author})`,
+								}));
 							} catch {
 								return [];
 							}

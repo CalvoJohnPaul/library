@@ -4,7 +4,7 @@ import {useControllableState} from '@radix-ui/react-use-controllable-state';
 import {useDebouncedCallback} from '@tanstack/react-pacer';
 import {SearchIcon, XIcon} from 'lucide-react';
 import {useRef, useState} from 'react';
-import {useTimeout} from '@/hooks/useTimeout';
+import {SpinnerIcon} from '@/components/icons/SpinnerIcon';
 import type {Option} from '@/types/index';
 import {Combobox} from '../ui/Combobox';
 import {Popover} from '../ui/Popover';
@@ -76,26 +76,28 @@ function AsyncComboboxField__single(props: AsyncComboboxField__singleProps) {
 	});
 
 	const loadSeqRef = useRef(0);
+	const openRef = useRef(false);
+	const inputValueRef = useRef(inputValue);
+	inputValueRef.current = inputValue;
+	const [isLoading, setIsLoading] = useState(false);
 
 	const loadOptions = useDebouncedCallback(
-		async (inputValue: string, value: string) => {
-			const seq = ++loadSeqRef.current;
-			const l = await props.options(inputValue, value);
-			if (seq !== loadSeqRef.current) return;
-			set(l);
+		async (inputValue: string, value: string, seq: number) => {
+			if (!openRef.current || seq !== loadSeqRef.current) return;
+			try {
+				const l = await props.options(inputValue, value);
+				if (openRef.current && seq === loadSeqRef.current) set(l);
+			} finally {
+				if (openRef.current && seq === loadSeqRef.current) setIsLoading(false);
+			}
 		},
 		{wait: 250},
 	);
 
-	const [inited, setInited] = useState(false);
-
-	useTimeout(
-		() => {
-			setInited(true);
-			loadOptions('', value);
-		},
-		!inited ? 1 : null,
-	);
+	const requestOptions = (inputValue: string, value: string) => {
+		setIsLoading(true);
+		loadOptions(inputValue, value, ++loadSeqRef.current);
+	};
 
 	const content = (
 		<Combobox.Positioner>
@@ -108,11 +110,19 @@ function AsyncComboboxField__single(props: AsyncComboboxField__singleProps) {
 				))}
 				<Combobox.Empty className="p-8">
 					<div className="mx-auto grid size-10 place-items-center rounded-md border border-gray-200">
-						<SearchIcon className="size-5 text-gray-600" />
+						{isLoading ? (
+							<SpinnerIcon className="size-5 text-gray-600" />
+						) : (
+							<SearchIcon className="size-5 text-gray-600" />
+						)}
 					</div>
-					<h2 className="mt-2 text-center font-semibold text-gray-700 text-sm">No results found</h2>
+					<h2 className="mt-2 text-center font-semibold text-gray-700 text-sm">
+						{isLoading ? 'Searching' : 'No results found'}
+					</h2>
 					<p className="text-center text-gray-500 text-xs">
-						There are no items that match your current search or filters.
+						{isLoading
+							? 'Searching records. Please wait'
+							: 'There are no items that match your current search or filters.'}
 					</p>
 				</Combobox.Empty>
 			</Combobox.Content>
@@ -121,14 +131,23 @@ function AsyncComboboxField__single(props: AsyncComboboxField__singleProps) {
 
 	return (
 		<Combobox.Root
+			onOpenChange={(details) => {
+				openRef.current = details.open;
+				if (details.open) requestOptions(inputValueRef.current, value);
+				else {
+					loadSeqRef.current++;
+					setIsLoading(false);
+				}
+			}}
 			value={value ? [value] : []}
 			onValueChange={(details) => {
 				setValue(details.value.at(0) ?? '');
 			}}
 			inputValue={inputValue}
-			onInputValueChange={async (details) => {
+			onInputValueChange={(details) => {
+				inputValueRef.current = details.inputValue;
 				setInputValue(details.inputValue);
-				loadOptions(details.inputValue, value);
+				if (openRef.current) requestOptions(details.inputValue, value);
 			}}
 			collection={collection}
 			multiple={false}
@@ -190,27 +209,31 @@ function AsyncComboboxField__multi(props: AsyncComboboxField__multiProps) {
 	const labelOf = (value: string) => labels[value] ?? collection.stringify(value) ?? value;
 
 	const loadSeqRef = useRef(0);
+	const openRef = useRef(false);
+	const inputValueRef = useRef(inputValue);
+	inputValueRef.current = inputValue;
+	const [isLoading, setIsLoading] = useState(false);
 
 	const loadOptions = useDebouncedCallback(
-		async (inputValue: string, value: string[]) => {
-			const seq = ++loadSeqRef.current;
-			const l = await props.options(inputValue, value);
-			if (seq !== loadSeqRef.current) return;
-			rememberLabels(l);
-			set(l);
+		async (inputValue: string, value: string[], seq: number) => {
+			if (!openRef.current || seq !== loadSeqRef.current) return;
+			try {
+				const l = await props.options(inputValue, value);
+				if (openRef.current && seq === loadSeqRef.current) {
+					rememberLabels(l);
+					set(l);
+				}
+			} finally {
+				if (openRef.current && seq === loadSeqRef.current) setIsLoading(false);
+			}
 		},
 		{wait: 250},
 	);
 
-	const [inited, setInited] = useState(false);
-
-	useTimeout(
-		() => {
-			setInited(true);
-			loadOptions('', value);
-		},
-		!inited ? 1 : null,
-	);
+	const requestOptions = (inputValue: string, value: string[]) => {
+		setIsLoading(true);
+		loadOptions(inputValue, value, ++loadSeqRef.current);
+	};
 
 	const content = (
 		<Combobox.Positioner>
@@ -223,11 +246,19 @@ function AsyncComboboxField__multi(props: AsyncComboboxField__multiProps) {
 				))}
 				<Combobox.Empty className="p-8">
 					<div className="mx-auto grid size-10 place-items-center rounded-md border border-gray-200">
-						<SearchIcon className="size-5 text-gray-600" />
+						{isLoading ? (
+							<SpinnerIcon className="size-5 text-gray-600" />
+						) : (
+							<SearchIcon className="size-5 text-gray-600" />
+						)}
 					</div>
-					<h2 className="mt-2 text-center font-semibold text-gray-700 text-sm">No results found</h2>
+					<h2 className="mt-2 text-center font-semibold text-gray-700 text-sm">
+						{isLoading ? 'Searching' : 'No results found'}
+					</h2>
 					<p className="text-center text-gray-500 text-xs">
-						There are no items that match your current search or filters.
+						{isLoading
+							? 'Searching records. Please wait'
+							: 'There are no items that match your current search or filters.'}
 					</p>
 				</Combobox.Empty>
 			</Combobox.Content>
@@ -236,6 +267,14 @@ function AsyncComboboxField__multi(props: AsyncComboboxField__multiProps) {
 
 	return (
 		<Combobox.Root
+			onOpenChange={(details) => {
+				openRef.current = details.open;
+				if (details.open) requestOptions(inputValueRef.current, value);
+				else {
+					loadSeqRef.current++;
+					setIsLoading(false);
+				}
+			}}
 			value={value}
 			onValueChange={(details) => {
 				rememberLabels(collection.items.filter((item) => details.value.includes(item.value)));
@@ -243,8 +282,9 @@ function AsyncComboboxField__multi(props: AsyncComboboxField__multiProps) {
 			}}
 			inputValue={inputValue}
 			onInputValueChange={(details) => {
+				inputValueRef.current = details.inputValue;
 				setInputValue(details.inputValue);
-				loadOptions(details.inputValue, value);
+				if (openRef.current) requestOptions(details.inputValue, value);
 			}}
 			collection={collection}
 			multiple

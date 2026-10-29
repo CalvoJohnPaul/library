@@ -158,7 +158,7 @@ export function Members() {
 
 									return (
 										data.rows.map((member) => ({
-											label: member.name,
+											label: `${member.name} (${member.externalId})`,
 											value: member.id.toString(),
 										})) ?? []
 									);
@@ -199,7 +199,7 @@ export function Members() {
 
 									return (
 										data.rows.map((member) => ({
-											label: member.name,
+											label: `${member.name} (${member.externalId})`,
 											value: member.id.toString(),
 										})) ?? []
 									);

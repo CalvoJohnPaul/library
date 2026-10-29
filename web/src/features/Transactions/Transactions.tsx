@@ -235,7 +235,7 @@ export function Transactions() {
 
 									return data.rows.map((book) => ({
 										value: book.id.toString(),
-										label: book.title,
+										label: `${book.title} (${book.author})`,
 									}));
 								} catch {
 									return [];
@@ -297,7 +297,7 @@ export function Transactions() {
 
 								return data.rows.map((member) => ({
 									value: member.id.toString(),
-									label: member.name,
+									label: `${member.name} (${member.externalId})`,
 								}));
 							},
 							value: state.member ?? [],
