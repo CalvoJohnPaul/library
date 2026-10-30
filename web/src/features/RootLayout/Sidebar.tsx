@@ -57,7 +57,7 @@ export function Sidebar() {
 		<nav
 			className={cx(
 				'sticky top-16 h-[calc(100vh-4rem)] shrink-0 overflow-hidden border-gray-200 border-r p-4 font-heading text-gray-700 transition-[width] duration-250 ease-in-out',
-				collapsed ? 'w-20' : 'w-56',
+				collapsed ? 'w-20' : 'w-64',
 			)}
 		>
 			<Search />
@@ -178,7 +178,7 @@ function Search() {
 				}}
 			>
 				<Tooltip.Trigger asChild>
-					<Dialog.Trigger className="flex h-11 w-full items-center gap-2 overflow-hidden rounded-md border border-gray-200 px-3 text-left">
+					<Dialog.Trigger className="flex h-11 w-full items-center gap-2 overflow-hidden whitespace-nowrap rounded-md border border-gray-200 px-3 text-left">
 						<SearchIcon className="size-5 shrink-0 text-gray-500" />
 						<Presence
 							present={!collapsed}
@@ -331,13 +331,13 @@ function SearchResultLink({result}: {result: SearchResult}) {
 				navigate(path);
 			}}
 			className={cx(
-				'flex items-center gap-2 text-left transition-opacity duration-50',
+				'flex w-full items-center gap-2 text-left transition-opacity duration-50',
 				!visible && 'opacity-60',
 			)}
 		>
 			<div
 				className={cx(
-					'p-2',
+					'rounded-sm p-2',
 					result.type === 'BOOK' && 'bg-blue-50 text-blue-500',
 					result.type === 'MEMBER' && 'bg-emerald-50 text-emerald-500',
 					result.type === 'RESERVATION' && 'bg-rose-50 text-rose-500',

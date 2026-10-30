@@ -34,7 +34,9 @@ export function Login() {
 		<>
 			<title>Log in | USAT</title>
 			<main className="px-12 py-32">
-				<h1 className="text-center font-bold text-2xl">Log in</h1>
+				<div className="flex items-center justify-center">
+					<h1 className="logo-shine font-bold font-heading text-2xl tracking-wide">Log in</h1>
+				</div>
 
 				<form
 					onSubmit={form.handleSubmit((data) => {

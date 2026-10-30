@@ -49,7 +49,7 @@
 @theme {
 	--font-*: initial;
 	--font-sans: "Google Sans", sans-serif;
-	--font-mono: "Fira Code", monospace;
+	--font-mono: "Jetbrains Mono", monospace;
 	--font-heading: "Open Sans", sans-serif;
 
 	--z-dropdown: 1000;
