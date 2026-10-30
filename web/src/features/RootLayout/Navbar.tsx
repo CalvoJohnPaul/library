@@ -36,7 +36,7 @@ export function Navbar() {
 	);
 
 	return (
-		<header className="sticky top-0 z-sticky flex h-16 items-center border-gray-200 border-b bg-white pr-12 pl-7">
+		<header className="sticky top-0 z-sticky grid h-16 grid-cols-3 items-center gap-3 border-gray-200 border-b bg-white pr-12 pl-7">
 			<div className="flex items-center gap-2">
 				<button
 					type="button"
@@ -52,8 +52,8 @@ export function Navbar() {
 					<h2 className="logo-shine block font-bold font-heading text-xl tracking-wider">USAT</h2>
 				</Link>
 			</div>
-			<div className="grow"></div>
-			<div className="flex gap-1">
+			<div />
+			<div className="flex justify-end gap-1">
 				<Menu.Root ids={{trigger: 'settings-trigger'}}>
 					<Menu.Trigger disabled={query.isLoading}>
 						<Avatar.Root size="sm">

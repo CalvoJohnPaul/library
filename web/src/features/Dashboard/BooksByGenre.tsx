@@ -117,6 +117,7 @@ export function BooksByGenre(props: BooksByGenreProps) {
 					/>
 					<Legend
 						position="right"
+						itemSorter={(item) => genres.findIndex((datum) => datum.genre === item.value)}
 						wrapperStyle={{fontSize: '0.75rem'}}
 						iconType="circle"
 						iconSize={8}

@@ -19,6 +19,7 @@ import healthRoute from '../../src/routes/health.js';
 import meRoute from '../../src/routes/me.js';
 import membersRoute from '../../src/routes/members.js';
 import reservationsRoute from '../../src/routes/reservations.js';
+import searchRoute from '../../src/routes/search.js';
 import sessionsRoute from '../../src/routes/sessions.js';
 import statsRoute from '../../src/routes/stats.js';
 import transactionsRoute from '../../src/routes/transactions.js';
@@ -53,6 +54,7 @@ const {mock, mockPrisma} = vi.hoisted(() => {
 			member: model(),
 			reservation: model(),
 			transaction: model(),
+			$queryRaw: unmocked,
 			$connect: async () => {},
 			$disconnect: async () => {},
 			$transaction: async (input: unknown): Promise<unknown> =>
@@ -101,6 +103,7 @@ export function createFixture() {
 		await app.register(meRoute);
 		await app.register(membersRoute, {prefix: '/members'});
 		await app.register(reservationsRoute, {prefix: '/reservations'});
+		await app.register(searchRoute, {prefix: '/search'});
 		await app.register(sessionsRoute);
 		await app.register(statsRoute, {prefix: '/stats'});
 		await app.register(transactionsRoute, {prefix: '/transactions'});
@@ -118,6 +121,7 @@ export function createFixture() {
 		] as const) {
 			Object.assign(mock[name], fresh[name]);
 		}
+		mock.$queryRaw = fresh.$queryRaw;
 	});
 	afterAll(async () => {
 		await app?.close();
