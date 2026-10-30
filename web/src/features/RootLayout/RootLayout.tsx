@@ -37,7 +37,6 @@ export function RootLayout() {
 
 function hideSplash() {
 	const splash = document.getElementById('splash');
-	document.body.style.overflowY = 'auto';
 	if (!splash) return;
 	splash.hidden = true;
 	splash.style.display = 'none';
