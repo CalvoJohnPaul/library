@@ -171,16 +171,39 @@ function Search() {
 				setInput('');
 			}}
 		>
-			<Dialog.Trigger className="flex h-11 w-full items-center gap-2 overflow-hidden rounded-md border border-gray-200 px-3 text-left">
-				<SearchIcon className="size-5 shrink-0 text-gray-500" />
-				<Presence
-					present={!collapsed}
-					className="flex grow ui-closed:animate-fade-out ui-open:animate-fade-in items-center leading-none"
-				>
-					<span className="grow text-gray-400">Search</span>
-					<span className="rounded font-mono text-gray-600 text-xs tracking-tighter">Ctrl K</span>
-				</Presence>
-			</Dialog.Trigger>
+			<Tooltip.Root
+				disabled={!collapsed}
+				positioning={{
+					placement: 'right',
+				}}
+			>
+				<Tooltip.Trigger asChild>
+					<Dialog.Trigger className="flex h-11 w-full items-center gap-2 overflow-hidden rounded-md border border-gray-200 px-3 text-left">
+						<SearchIcon className="size-5 shrink-0 text-gray-500" />
+						<Presence
+							present={!collapsed}
+							className="flex grow ui-closed:animate-fade-out ui-open:animate-fade-in items-center leading-none"
+						>
+							<span className="grow text-gray-400">Search</span>
+							<span className="rounded font-mono text-gray-600 text-xs tracking-tighter">
+								Ctrl K
+							</span>
+						</Presence>
+					</Dialog.Trigger>
+				</Tooltip.Trigger>
+
+				<Portal>
+					<Tooltip.Positioner>
+						<Tooltip.Content>
+							<Tooltip.Arrow>
+								<Tooltip.ArrowTip />
+							</Tooltip.Arrow>
+							Search
+						</Tooltip.Content>
+					</Tooltip.Positioner>
+				</Portal>
+			</Tooltip.Root>
+
 			<Portal>
 				<Dialog.Backdrop />
 				<Dialog.Positioner className="items-start p-4 pt-24">
