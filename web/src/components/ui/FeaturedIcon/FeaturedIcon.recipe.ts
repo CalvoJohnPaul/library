@@ -17,7 +17,7 @@ export const featuredIconRecipe = tv({
 			'after:z-1',
 			'after:rounded-md',
 		],
-		icon: 'z-3 stroke-[1.33333]',
+		icon: 'z-3',
 	},
 	variants: {
 		size: {
