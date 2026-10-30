@@ -14,7 +14,7 @@ export const numberInputRecipe = tv({
 			'border',
 			'border-gray-200',
 			'bg-white',
-			'ui-invalid:border-red-400',
+			'ui-invalid:border-rose-400',
 		],
 		input: 'row-span-2 w-full bg-transparent px-4 outline-none',
 		decrementTrigger:

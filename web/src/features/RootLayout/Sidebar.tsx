@@ -1,3 +1,4 @@
+import {Portal, Presence} from '@ark-ui/react';
 import {
 	BookOpenIcon,
 	Calendar1Icon,
@@ -9,6 +10,7 @@ import {
 import {NavLink} from 'react-router';
 import {twMerge as cx} from 'tailwind-merge';
 import {useShallow} from 'zustand/shallow';
+import {Tooltip} from '@/components/ui/Tooltip';
 import {useGlobalStore} from '@/hooks/useGlobalStore';
 import {Logout} from '@/templates/Logout';
 
@@ -24,11 +26,6 @@ const links = [
 		href: '/books',
 	},
 	{
-		icon: RotateCcwClockIcon,
-		label: 'Transactions',
-		href: '/transactions',
-	},
-	{
 		icon: UsersIcon,
 		label: 'Members',
 		href: '/members',
@@ -38,6 +35,11 @@ const links = [
 		label: 'Reservations',
 		href: '/reservations',
 	},
+	{
+		icon: RotateCcwClockIcon,
+		label: 'Transactions',
+		href: '/transactions',
+	},
 ];
 
 export function Sidebar() {
@@ -46,49 +48,70 @@ export function Sidebar() {
 	return (
 		<nav
 			className={cx(
-				'sticky top-16 h-[calc(100vh-4rem)] shrink-0 overflow-hidden border-gray-200 border-r font-heading text-gray-700 transition-[width] duration-300 ease-in-out',
+				'sticky top-16 h-[calc(100vh-4rem)] shrink-0 overflow-hidden border-gray-200 border-r font-heading text-gray-700 transition-[width] duration-250 ease-in-out',
 				collapsed ? 'w-20' : 'w-56',
 			)}
 		>
-			<ul className="w-56 space-y-1 p-4">
+			<ul className="w-full space-y-1 p-4">
 				{links.map((link) => (
 					<li key={link.href} className="contents">
-						<NavLink
-							to={link.href}
-							title={collapsed ? link.label : undefined}
-							className="flex w-full items-center gap-2 rounded-md px-3 py-2 font-medium aria-page:text-blue-500"
+						<Tooltip.Root
+							disabled={!collapsed}
+							positioning={{
+								placement: 'right',
+							}}
 						>
-							<link.icon className="size-5 shrink-0" />
-							<span
-								className={cx(
-									'transition-opacity duration-150',
-									collapsed ? 'opacity-0' : 'opacity-100',
-								)}
-							>
-								{link.label}
-							</span>
-						</NavLink>
+							<Tooltip.Trigger asChild>
+								<NavLink to={link.href} className={triggerCss}>
+									<link.icon className={iconCss} />
+									<Presence present={!collapsed} asChild>
+										<span className={labelCss}>{link.label}</span>
+									</Presence>
+								</NavLink>
+							</Tooltip.Trigger>
+							<Portal>
+								<Tooltip.Positioner>
+									<Tooltip.Content>
+										<Tooltip.Arrow>
+											<Tooltip.ArrowTip />
+										</Tooltip.Arrow>
+										{link.label}
+									</Tooltip.Content>
+								</Tooltip.Positioner>
+							</Portal>
+						</Tooltip.Root>
 					</li>
 				))}
 
 				<li className="contents">
 					<Logout
 						trigger={
-							<button
-								type="button"
-								title={collapsed ? 'Log out' : undefined}
-								className="flex w-full items-center gap-2 rounded-md px-3 py-2 font-medium"
+							<Tooltip.Root
+								disabled={!collapsed}
+								positioning={{
+									placement: 'right',
+								}}
 							>
-								<LogOutIcon className="size-5 shrink-0" />
-								<span
-									className={cx(
-										'transition-opacity duration-150',
-										collapsed ? 'opacity-0' : 'opacity-100',
-									)}
-								>
-									Log out
-								</span>
-							</button>
+								<Tooltip.Trigger asChild>
+									<button type="button" className={triggerCss}>
+										<LogOutIcon className={iconCss} />
+										<Presence present={!collapsed} asChild>
+											<span className={labelCss}>Log out</span>
+										</Presence>
+									</button>
+								</Tooltip.Trigger>
+
+								<Portal>
+									<Tooltip.Positioner>
+										<Tooltip.Content>
+											<Tooltip.Arrow>
+												<Tooltip.ArrowTip />
+											</Tooltip.Arrow>
+											Log out
+										</Tooltip.Content>
+									</Tooltip.Positioner>
+								</Portal>
+							</Tooltip.Root>
 						}
 					/>
 				</li>
@@ -96,3 +119,7 @@ export function Sidebar() {
 		</nav>
 	);
 }
+
+const triggerCss = cx`flex w-full items-center gap-2 whitespace-nowrap rounded-md px-3 py-2 font-medium aria-page:text-blue-500`;
+const iconCss = cx`size-5 shrink-0`;
+const labelCss = cx`ui-closed:animate-fade-out ui-open:animate-fade-in leading-none`;

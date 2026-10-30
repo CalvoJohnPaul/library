@@ -106,7 +106,7 @@ export function Books() {
 
 	return (
 		<>
-			<title>Books | read.</title>
+			<title>Books | USAT</title>
 			<div className="mb-6 flex items-center gap-3">
 				<div className="grow">
 					<h1 className="font-bold text-xl">Books</h1>

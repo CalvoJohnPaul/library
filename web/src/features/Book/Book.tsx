@@ -46,7 +46,7 @@ export function Book() {
 	if (!query.data) {
 		return (
 			<div className="mx-auto max-w-md py-24 text-center">
-				<title>Book not found | read.</title>
+				<title>Book not found | USAT</title>
 				<h1 className="mt-5 font-bold text-xl">Book not found</h1>
 				<p className="mt-1 text-gray-600 text-sm">
 					The book you are looking for no longer exists or has been removed.
@@ -63,7 +63,7 @@ export function Book() {
 
 	return (
 		<>
-			<title>{`${query.data.title} | read.`}</title>
+			<title>{`${query.data.title} | USAT`}</title>
 			<BookProvider value={query.data}>
 				<Tabs.Root
 					value={tab}

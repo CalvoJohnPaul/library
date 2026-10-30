@@ -4,7 +4,7 @@ import {anatomyToRecipeSlots} from '@/utils/anatomyToRecipeSlots';
 
 export const comboboxRecipe = tv({
 	slots: anatomyToRecipeSlots(comboboxAnatomy, {
-		control: 'flex h-11 grow ui-invalid:border-red-400 bg-white',
+		control: 'flex h-11 grow ui-invalid:border-rose-400 bg-white',
 		input:
 			'h-11 grow rounded-l-md border border-gray-200 border-r-0 bg-white pl-4 outline-none disabled:opacity-65',
 		trigger:

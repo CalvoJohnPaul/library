@@ -4,7 +4,7 @@ import {createAvatar} from '@dicebear/core';
 import {zodResolver} from '@hookform/resolvers/zod';
 import {isNil, omitBy} from 'es-toolkit';
 import {isEmpty} from 'es-toolkit/compat';
-import {LockKeyholeIcon, LogOutIcon, SquarePenIcon} from 'lucide-react';
+import {LockKeyholeIcon, LogOutIcon, MenuIcon, SquarePenIcon} from 'lucide-react';
 import {Controller, useForm} from 'react-hook-form';
 import {Link} from 'react-router';
 import * as z from 'zod';
@@ -46,23 +46,10 @@ export function Navbar() {
 					className="text-gray-700"
 					data-state={sidebarCollapsed ? 'closed' : 'open'}
 				>
-					<svg
-						xmlns="http://www.w3.org/2000/svg"
-						width="24"
-						height="24"
-						fill="none"
-						viewBox="0 0 24 24"
-						stroke="currentColor"
-						strokeWidth="2"
-						strokeLinecap="round"
-						strokeLinejoin="round"
-						className="size-5"
-					>
-						<path d="M3 8.5h18m-18 7h18" />
-					</svg>
+					<MenuIcon className="size-5" />
 				</button>
 				<Link to="/" className="block">
-					<h2 className="logo-shine block font-bold font-heading text-xl tracking-wider">read.</h2>
+					<h2 className="logo-shine block font-bold font-heading text-xl tracking-wider">USAT</h2>
 				</Link>
 			</div>
 			<div className="grow"></div>

@@ -32,19 +32,23 @@ export const featuredIconRecipe = tv({
 		},
 		accent: {
 			primary: {
-				root: 'before:bg-blue-600 after:bg-blue-600/25',
+				root: 'before:bg-blue-600 after:bg-blue-100',
 				icon: 'text-blue-50',
 			},
 			danger: {
-				root: 'before:bg-red-600 after:bg-red-600/25',
-				icon: 'text-red-50',
+				root: 'before:bg-rose-600 after:bg-rose-100',
+				icon: 'text-rose-50',
+			},
+			success: {
+				root: 'before:bg-emerald-600 after:bg-emerald-100',
+				icon: 'text-rose-50',
 			},
 			warning: {
-				root: 'before:bg-amber-600 after:bg-amber-600/25',
+				root: 'before:bg-amber-600 after:bg-amber-100',
 				icon: 'text-amber-50',
 			},
 			info: {
-				root: 'before:bg-blue-600 after:bg-blue-600/25',
+				root: 'before:bg-blue-600 after:bg-blue-100',
 				icon: 'text-blue-50',
 			},
 		},

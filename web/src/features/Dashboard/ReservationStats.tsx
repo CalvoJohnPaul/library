@@ -9,13 +9,13 @@ export function ReservationStats() {
 			title: 'Pending reservations',
 			count: totalPendingReservations,
 			icon: CalendarClockIcon,
-			accent: 'border-amber-600/25 bg-amber-600/10 text-amber-700',
+			accent: 'border-amber-50 bg-amber-50 text-amber-600',
 		},
 		{
 			title: 'Ready to claim',
 			count: totalReadyToClaimReservations,
 			icon: CircleCheckIcon,
-			accent: 'border-emerald-600/25 bg-emerald-600/10 text-emerald-700',
+			accent: 'border-emerald-50 bg-emerald-50 text-emerald-600',
 		},
 	];
 

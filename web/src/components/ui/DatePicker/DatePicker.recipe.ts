@@ -13,7 +13,7 @@ export const datePickerRecipe = tv({
 			'border-gray-200',
 			'bg-white',
 			'rounded-md',
-			'ui-invalid:border-red-400',
+			'ui-invalid:border-rose-400',
 		],
 		trigger: [
 			'size-11',

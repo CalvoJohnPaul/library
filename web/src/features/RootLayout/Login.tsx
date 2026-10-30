@@ -32,7 +32,7 @@ export function Login() {
 
 	return (
 		<>
-			<title>Log in | read.</title>
+			<title>Log in | USAT</title>
 			<main className="px-12 py-32">
 				<h1 className="text-center font-bold text-2xl">Log in</h1>
 

@@ -155,8 +155,8 @@ export function DateField(props: DateFieldProps) {
 								'justify-start',
 								'px-4',
 								'text-left',
-								'ui-invalid:border-red-400',
-								'ui-open:ui-invalid:border-red-400',
+								'ui-invalid:border-rose-400',
+								'ui-open:ui-invalid:border-rose-400',
 							)}
 							data-invalid={dataAttr(api.invalid)}
 						>

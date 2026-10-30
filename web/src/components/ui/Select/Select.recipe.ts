@@ -6,7 +6,7 @@ export const selectRecipe = tv({
 	slots: anatomyToRecipeSlots(selectAnatomy, {
 		control: 'flex gap-2',
 		trigger:
-			'flex h-11 grow items-center rounded-md border border-gray-200 ui-invalid:border-red-400 ui-open:ui-invalid:border-red-400 bg-white px-4 disabled:opacity-65',
+			'flex h-11 grow items-center rounded-md border border-gray-200 ui-invalid:border-rose-400 ui-open:ui-invalid:border-rose-400 bg-white px-4 disabled:opacity-65',
 		clearTrigger:
 			'flex icon:size-5 size-11 items-center justify-center rounded-md border border-gray-200 bg-white icon:text-gray-600',
 		valueText: 'grow text-left',

@@ -44,7 +44,7 @@ export function ColumnsControl() {
 
 	return (
 		<Presence present={columnsControl.open} asChild>
-			<div className="shrink-0 ui-closed:animate-collapse-x-out ui-open:animate-collapse-x-in overflow-hidden rounded-lg border border-gray-200 [--width:20rem]">
+			<div className="shrink-0 ui-closed:animate-collapse-x-out ui-open:animate-collapse-x-in overflow-hidden rounded-lg border border-gray-200 [--width:18rem]">
 				<div className="w-(--width) overflow-hidden p-4">
 					<DndContext
 						sensors={sensors}

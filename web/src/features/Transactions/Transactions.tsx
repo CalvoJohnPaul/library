@@ -112,7 +112,7 @@ export function Transactions() {
 
 	return (
 		<>
-			<title>Transactions | read.</title>
+			<title>Transactions | USAT</title>
 			<div className="mb-6 flex items-center gap-3">
 				<div className="grow">
 					<h1 className="font-bold text-xl">Transactions</h1>
@@ -343,7 +343,7 @@ export function Transactions() {
 									{overdue && (
 										<Tooltip.Root>
 											<Tooltip.Trigger>
-												<AlertTriangleIcon className="size-4 text-red-500" />
+												<AlertTriangleIcon className="size-4 text-rose-500" />
 											</Tooltip.Trigger>
 											<Portal>
 												<Tooltip.Positioner>

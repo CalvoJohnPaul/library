@@ -42,7 +42,7 @@ export function Member() {
 	if (!query.data) {
 		return (
 			<div className="mx-auto max-w-md py-24 text-center">
-				<title>Member not found | read.</title>
+				<title>Member not found | USAT</title>
 				<h1 className="mt-5 font-bold text-xl">Member not found</h1>
 				<p className="mt-1 text-gray-600 text-sm">
 					The member you are looking for no longer exists or has been removed.
@@ -59,7 +59,7 @@ export function Member() {
 
 	return (
 		<>
-			<title>{`${query.data.name} | read.`}</title>
+			<title>{`${query.data.name} | USAT`}</title>
 			<MemberProvider value={query.data}>
 				<div>
 					<Link to="/members" className="flex items-center gap-1 text-blue-500 text-xs">

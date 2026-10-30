@@ -22,7 +22,7 @@ export function Filters() {
 
 	return (
 		<Presence present={filters.open} asChild>
-			<div className="shrink-0 ui-closed:animate-collapse-x-out ui-open:animate-collapse-x-in overflow-hidden rounded-lg border border-gray-200 [--width:24rem]">
+			<div className="shrink-0 ui-closed:animate-collapse-x-out ui-open:animate-collapse-x-in overflow-hidden rounded-lg border border-gray-200 [--width:22rem]">
 				<div className="w-(--width) overflow-hidden p-4">
 					<div className="space-y-2">
 						{dataTable.columns.map((col) => {

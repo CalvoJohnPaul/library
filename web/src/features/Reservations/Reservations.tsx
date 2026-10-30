@@ -80,7 +80,7 @@ export function Reservations() {
 
 	return (
 		<>
-			<title>Reservations | read.</title>
+			<title>Reservations | USAT</title>
 			<div className="mb-6 flex items-center gap-3">
 				<div className="grow">
 					<h1 className="font-bold text-xl">Reservations</h1>

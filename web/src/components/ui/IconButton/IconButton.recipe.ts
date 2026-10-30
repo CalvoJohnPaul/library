@@ -14,9 +14,9 @@ export const iconButtonRecipe = tv({
 				'[--fg:var(--color-blue-600)]',
 			],
 			danger: [
-				'[--bg:var(--color-red-600)]',
-				'[--border:var(--color-red-500)]',
-				'[--fg:var(--color-red-600)]',
+				'[--bg:var(--color-rose-600)]',
+				'[--border:var(--color-rose-500)]',
+				'[--fg:var(--color-rose-600)]',
 			],
 			gray: [
 				'[--bg:var(--color-gray-900)]',

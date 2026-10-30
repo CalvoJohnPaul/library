@@ -19,16 +19,16 @@ const ICONS_MAP = {
 };
 
 const ACCENT_MAP = {
-	books: cx`border-blue-600/25 bg-blue-600/10 text-blue-700`,
-	copies: cx`border-green-600/25 bg-green-600/10 text-green-700`,
-	members: cx`border-violet-600/25 bg-violet-600/10 text-violet-700`,
-	borrows: cx`border-amber-600/25 bg-amber-600/10 text-amber-700`,
+	books: cx`border-blue-50 bg-blue-50 text-blue-600`,
+	copies: cx`border-emerald-50 bg-emerald-50 text-emerald-600`,
+	members: cx`border-violet-50 bg-violet-50 text-violet-600`,
+	borrows: cx`border-amber-50 bg-amber-50 text-amber-600`,
 };
 
 const DELTA_BADGE_ACCENTS = {
-	up: cx`border-emerald-600/25 bg-emerald-600/10 text-emerald-700`,
-	down: cx`border-rose-600/25 bg-rose-600/10 text-rose-700`,
-	flat: cx`border-gray-600/25 bg-gray-600/10 text-gray-700`,
+	up: cx`border-emerald-50 bg-emerald-50 text-emerald-600`,
+	down: cx`border-rose-50 bg-rose-50 text-rose-600`,
+	flat: cx`border-gray-50 bg-gray-50 text-gray-600`,
 };
 
 function DeltaBadge({

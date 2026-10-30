@@ -281,7 +281,7 @@ export function Transactions() {
 								{overdue && (
 									<Tooltip.Root>
 										<Tooltip.Trigger>
-											<AlertTriangleIcon className="size-4 text-red-500" />
+											<AlertTriangleIcon className="size-4 text-rose-500" />
 										</Tooltip.Trigger>
 										<Portal>
 											<Tooltip.Positioner>
