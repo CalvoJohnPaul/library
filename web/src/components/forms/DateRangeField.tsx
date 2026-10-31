@@ -42,7 +42,7 @@ export function DateRangeField(props: DateRangeFieldProps) {
 								<DatePicker.ViewControl>
 									<DatePicker.PrevTrigger />
 									<DatePicker.ViewTrigger>
-										<span className="rounded-md px-1.5 py-0.5 font-semibold text-gray-700 text-sm hover:bg-gray-50 hover:text-gray-900">
+										<span className="rounded-md px-1.5 py-0.5 font-semibold text-gray-700 text-sm hover:bg-gray-50 hover:text-gray-900 dark:text-neutral-200 dark:hover:bg-neutral-900 dark:hover:text-neutral-50">
 											{format(api.visibleRange.start.toDate(tz), 'MMMM yyyy')}
 										</span>
 									</DatePicker.ViewTrigger>
@@ -79,7 +79,7 @@ export function DateRangeField(props: DateRangeFieldProps) {
 								<DatePicker.ViewControl>
 									<DatePicker.PrevTrigger />
 									<DatePicker.ViewTrigger>
-										<span className="rounded-md px-1.5 py-0.5 font-semibold text-gray-700 text-sm hover:bg-gray-50 hover:text-gray-900">
+										<span className="rounded-md px-1.5 py-0.5 font-semibold text-gray-700 text-sm hover:bg-gray-50 hover:text-gray-900 dark:text-neutral-200 dark:hover:bg-neutral-900 dark:hover:text-neutral-50">
 											{format(api.visibleRange.start.toDate(tz), 'MMMM yyyy')}
 										</span>
 									</DatePicker.ViewTrigger>
@@ -109,7 +109,7 @@ export function DateRangeField(props: DateRangeFieldProps) {
 								<DatePicker.ViewControl>
 									<DatePicker.PrevTrigger />
 									<DatePicker.ViewTrigger>
-										<span className="rounded-md px-1.5 py-0.5 font-semibold text-gray-700 text-sm hover:bg-gray-50 hover:text-gray-900">
+										<span className="rounded-md px-1.5 py-0.5 font-semibold text-gray-700 text-sm hover:bg-gray-50 hover:text-gray-900 dark:text-neutral-200 dark:hover:bg-neutral-900 dark:hover:text-neutral-50">
 											{format(api.visibleRange.start.toDate(tz), 'MMMM yyyy')}
 										</span>
 									</DatePicker.ViewTrigger>
@@ -170,8 +170,8 @@ export function DateRangeField(props: DateRangeFieldProps) {
 								'justify-start',
 								'px-4',
 								'text-left',
-								'ui-invalid:border-rose-400',
-								'ui-open:ui-invalid:border-rose-400',
+								'ui-invalid:border-rose-400 dark:ui-invalid:border-rose-300',
+								'ui-open:ui-invalid:border-rose-400 dark:ui-open:ui-invalid:border-rose-300',
 							)}
 							data-invalid={dataAttr(api.invalid)}
 						>
@@ -190,7 +190,7 @@ export function DateRangeField(props: DateRangeFieldProps) {
 							</span>
 
 							<ChevronDownIcon
-								className="ui-open:rotate-180 text-gray-600 transition-transform duration-300"
+								className="ui-open:rotate-180 text-gray-600 transition-transform duration-300 dark:text-neutral-300"
 								data-state={api.open ? 'open' : 'closed'}
 							/>
 						</DatePicker.Trigger>

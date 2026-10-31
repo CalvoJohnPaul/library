@@ -109,17 +109,17 @@ function AsyncComboboxField__single(props: AsyncComboboxField__singleProps) {
 					</Combobox.Item>
 				))}
 				<Combobox.Empty className="p-8">
-					<div className="mx-auto grid size-10 place-items-center rounded-md border border-gray-200">
+					<div className="mx-auto grid size-10 place-items-center rounded-md border border-gray-200 dark:border-neutral-700">
 						{isLoading ? (
-							<SpinnerIcon className="size-5 text-gray-600" />
+							<SpinnerIcon className="size-5 text-gray-600 dark:text-neutral-300" />
 						) : (
-							<SearchIcon className="size-5 text-gray-600" />
+							<SearchIcon className="size-5 text-gray-600 dark:text-neutral-300" />
 						)}
 					</div>
-					<h2 className="mt-2 text-center font-semibold text-gray-700 text-sm">
+					<h2 className="mt-2 text-center font-semibold text-gray-700 text-sm dark:text-neutral-200">
 						{isLoading ? 'Searching' : 'No results found'}
 					</h2>
-					<p className="text-center text-gray-500 text-xs">
+					<p className="text-center text-gray-500 text-xs dark:text-neutral-400">
 						{isLoading
 							? 'Searching records. Please wait'
 							: 'There are no items that match your current search or filters.'}
@@ -245,17 +245,17 @@ function AsyncComboboxField__multi(props: AsyncComboboxField__multiProps) {
 					</Combobox.Item>
 				))}
 				<Combobox.Empty className="p-8">
-					<div className="mx-auto grid size-10 place-items-center rounded-md border border-gray-200">
+					<div className="mx-auto grid size-10 place-items-center rounded-md border border-gray-200 dark:border-neutral-700">
 						{isLoading ? (
-							<SpinnerIcon className="size-5 text-gray-600" />
+							<SpinnerIcon className="size-5 text-gray-600 dark:text-neutral-300" />
 						) : (
-							<SearchIcon className="size-5 text-gray-600" />
+							<SearchIcon className="size-5 text-gray-600 dark:text-neutral-300" />
 						)}
 					</div>
-					<h2 className="mt-2 text-center font-semibold text-gray-700 text-sm">
+					<h2 className="mt-2 text-center font-semibold text-gray-700 text-sm dark:text-neutral-200">
 						{isLoading ? 'Searching' : 'No results found'}
 					</h2>
-					<p className="text-center text-gray-500 text-xs">
+					<p className="text-center text-gray-500 text-xs dark:text-neutral-400">
 						{isLoading
 							? 'Searching records. Please wait'
 							: 'There are no items that match your current search or filters.'}

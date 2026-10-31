@@ -194,7 +194,10 @@ export function Transactions() {
 					cell(transaction) {
 						const book = transaction.book ?? transaction.bookCopy?.book;
 						return book ? (
-							<Link to={`/books/${book.id}`} className="block max-w-64 truncate text-blue-500">
+							<Link
+								to={`/books/${book.id}`}
+								className="block max-w-64 truncate text-blue-500 dark:text-blue-400"
+							>
 								{book.title}
 							</Link>
 						) : null;
@@ -281,7 +284,7 @@ export function Transactions() {
 								{overdue && (
 									<Tooltip.Root>
 										<Tooltip.Trigger>
-											<AlertTriangleIcon className="size-4 text-rose-500" />
+											<AlertTriangleIcon className="size-4 text-rose-500 dark:text-rose-400" />
 										</Tooltip.Trigger>
 										<Portal>
 											<Tooltip.Positioner>

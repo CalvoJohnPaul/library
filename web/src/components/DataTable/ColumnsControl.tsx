@@ -44,7 +44,7 @@ export function ColumnsControl() {
 
 	return (
 		<Presence present={columnsControl.open} asChild>
-			<div className="shrink-0 ui-closed:animate-collapse-x-out ui-open:animate-collapse-x-in overflow-hidden rounded-lg border border-gray-200 [--width:18rem]">
+			<div className="shrink-0 ui-closed:animate-collapse-x-out ui-open:animate-collapse-x-in overflow-hidden rounded-lg border border-gray-200 [--width:18rem] dark:border-neutral-700">
 				<div className="w-(--width) overflow-hidden p-4">
 					<DndContext
 						sensors={sensors}
@@ -76,14 +76,20 @@ export function ColumnsControl() {
 										}}
 										disabled={!col.hideable}
 									>
-										<div className="grow truncate text-base text-gray-700">{col.heading}</div>
+										<div className="grow truncate text-base text-gray-700 dark:text-neutral-200">
+											{col.heading}
+										</div>
 									</CheckField>
 								);
 
 								if (!col.orderable) {
 									return (
 										<div key={col.id} className="not-last:mb-1.5 flex items-center gap-1.5">
-											<button type="button" className="text-gray-500" disabled>
+											<button
+												type="button"
+												className="text-gray-500 dark:text-neutral-400"
+												disabled
+											>
 												<GripIcon className="size-5" />
 											</button>
 											{content}
@@ -123,7 +129,7 @@ function SortableItem(props: {id: string; children: React.ReactNode}) {
 				type="button"
 				{...listeners}
 				{...attributes}
-				className="cursor-grab ui-dragging:cursor-grabbing text-gray-500"
+				className="cursor-grab ui-dragging:cursor-grabbing text-gray-500 dark:text-neutral-400"
 				data-dragging={isDragging || undefined}
 			>
 				<GripIcon className="size-5" />

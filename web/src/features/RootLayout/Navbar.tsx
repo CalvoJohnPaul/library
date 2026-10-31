@@ -36,20 +36,20 @@ export function Navbar() {
 	);
 
 	return (
-		<header className="sticky top-0 z-sticky grid h-16 grid-cols-3 items-center gap-3 border-gray-200 border-b bg-white pr-12 pl-7">
+		<header className="sticky top-0 z-sticky grid h-16 grid-cols-3 items-center gap-3 border-gray-200 border-b bg-white pr-12 pl-7 dark:border-neutral-700 dark:bg-neutral-900">
 			<div className="flex items-center gap-2">
 				<button
 					type="button"
 					onClick={() => {
 						setSidebarCollapsed((prev) => !prev);
 					}}
-					className="text-gray-700"
+					className="text-gray-700 dark:text-neutral-200"
 					data-state={sidebarCollapsed ? 'closed' : 'open'}
 				>
 					<MenuIcon className="size-5" />
 				</button>
 				<Link to="/" className="block">
-					<h2 className="logo-shine block font-bold font-heading text-xl tracking-wider">USAT</h2>
+					<h2 className="logo-shine block font-bold font-heading text-xl tracking-wider dark:logo-shine-dark">USAT</h2>
 				</Link>
 			</div>
 			<div />
@@ -71,7 +71,9 @@ export function Navbar() {
 								</Avatar.Root>
 								<div>
 									<p className="font-semibold leading-tight">{query.data?.name}</p>
-									<p className="text-gray-600 text-sm leading-tight">{query.data?.email}</p>
+									<p className="text-gray-600 text-sm leading-tight dark:text-neutral-300">
+										{query.data?.email}
+									</p>
 								</div>
 							</div>
 							<Menu.Separator />

@@ -22,6 +22,9 @@ export const buttonRecipe = tv({
 				'[--bg:var(--color-gray-900)]',
 				'[--border:var(--color-gray-200)]',
 				'[--fg:var(--color-gray-700)]',
+				'dark:[--bg:var(--color-neutral-50)]',
+				'dark:[--border:var(--color-neutral-700)]',
+				'dark:[--fg:var(--color-neutral-200)]',
 			],
 			warning: [
 				'[--bg:var(--color-amber-600)]',

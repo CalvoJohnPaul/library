@@ -130,7 +130,10 @@ export function Reservations() {
 					id: 'member',
 					heading: 'Member',
 					cell: (reservation) => (
-						<Link to={`/members/${reservation.member.id}`} className="text-blue-500">
+						<Link
+							to={`/members/${reservation.member.id}`}
+							className="text-blue-500 dark:text-blue-400"
+						>
 							{reservation.member.name}
 						</Link>
 					),

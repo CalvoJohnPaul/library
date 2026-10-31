@@ -11,10 +11,12 @@ export function TopBorrowingMembers() {
 	const max = roundedBarMax(members.map((member) => member.total));
 
 	return (
-		<section className="flex flex-col rounded-xl border border-gray-200 bg-white p-5">
+		<section className="flex flex-col rounded-xl border border-gray-200 bg-white p-5 dark:border-neutral-700 dark:bg-neutral-900">
 			<div className="mb-5">
 				<h2 className="font-semibold text-sm">Top borrowing members</h2>
-				<p className="text-gray-600 text-xs">Most active members this month</p>
+				<p className="text-gray-600 text-xs dark:text-neutral-300">
+					Most active members this month
+				</p>
 			</div>
 			<ol className="flex flex-col gap-4">
 				{members.map(({member, total}) => (
@@ -30,18 +32,20 @@ export function TopBorrowingMembers() {
 							<div className="flex items-baseline justify-between gap-2">
 								<p className="flex min-w-0 items-baseline gap-1 font-medium text-sm">
 									<span className="truncate">{member.name}</span>
-									<span aria-hidden className="text-gray-300">
+									<span aria-hidden className="text-gray-300 dark:text-neutral-600">
 										·
 									</span>
-									<span className="whitespace-nowrap text-gray-500 text-xs">
+									<span className="whitespace-nowrap text-gray-500 text-xs dark:text-neutral-400">
 										{member.externalId}
 									</span>
 								</p>
-								<p className="whitespace-nowrap text-gray-600 text-xs">{total} borrows</p>
+								<p className="whitespace-nowrap text-gray-600 text-xs dark:text-neutral-300">
+									{total} borrows
+								</p>
 							</div>
 							<ProgressLinear.Root className="mt-1.5" value={total} max={max}>
-								<ProgressLinear.Track className="h-1.5 grow bg-gray-100">
-									<ProgressLinear.Range className="h-1.5 animate-progress-fill bg-emerald-400" />
+								<ProgressLinear.Track className="h-1.5 grow bg-gray-100 dark:bg-neutral-800">
+									<ProgressLinear.Range className="h-1.5 animate-progress-fill bg-emerald-400 dark:bg-emerald-300" />
 								</ProgressLinear.Track>
 							</ProgressLinear.Root>
 						</div>

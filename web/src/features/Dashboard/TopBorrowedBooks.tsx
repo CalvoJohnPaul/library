@@ -41,11 +41,11 @@ export function TopBorrowedBooks(props: TopBorrowedBooksProps) {
 	const shorten = (text: string) => (text.length > 25 ? `${text.slice(0, 24)}…` : text);
 
 	return (
-		<section className="flex flex-col rounded-xl border border-gray-200 bg-white p-5">
+		<section className="flex flex-col rounded-xl border border-gray-200 bg-white p-5 dark:border-neutral-700 dark:bg-neutral-900">
 			<div className="mb-4 flex items-start justify-between gap-2">
 				<div>
 					<h2 className="font-semibold text-sm">Top borrowed books</h2>
-					<p className="text-gray-600 text-xs">
+					<p className="text-gray-600 text-xs dark:text-neutral-300">
 						{genre === null
 							? 'Most borrowed this month'
 							: `Most borrowed this month · ${getBookGenreLabel(genre)}`}
@@ -55,7 +55,7 @@ export function TopBorrowedBooks(props: TopBorrowedBooksProps) {
 					<button
 						type="button"
 						onClick={() => setGenre(null)}
-						className="rounded-full border border-gray-200 px-2.5 py-1 text-gray-600 text-xs hover:bg-gray-100"
+						className="rounded-full border border-gray-200 px-2.5 py-1 text-gray-600 text-xs hover:bg-gray-100 dark:border-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-800"
 					>
 						All genres
 					</button>
@@ -63,7 +63,7 @@ export function TopBorrowedBooks(props: TopBorrowedBooksProps) {
 			</div>
 
 			{items.length === 0 ? (
-				<p className="grid min-h-68.75 flex-1 place-items-center text-center text-gray-600 text-xs">
+				<p className="grid min-h-68.75 flex-1 place-items-center text-center text-gray-600 text-xs dark:text-neutral-300">
 					No borrows in this genre this month
 				</p>
 			) : (
@@ -72,14 +72,14 @@ export function TopBorrowedBooks(props: TopBorrowedBooksProps) {
 						<BarChart data={items} layout="vertical" barCategoryGap="25%" margin={{right: 32}}>
 							<CartesianGrid
 								strokeDasharray="3 3"
-								stroke="var(--color-gray-200)"
+								stroke="var(--chart-grid)"
 								horizontal={false}
 							/>
 							<XAxis
 								type="number"
 								tickLine={false}
 								axisLine={false}
-								tick={{fontSize: 11, fill: 'var(--color-gray-600)'}}
+								tick={{fontSize: 11, fill: 'var(--chart-label)'}}
 								allowDecimals={false}
 								tickFormatter={(value: number) => value.toLocaleString()}
 								domain={[0, ticks[4]]}
@@ -97,10 +97,10 @@ export function TopBorrowedBooks(props: TopBorrowedBooksProps) {
 
 									return (
 										<text x={x} y={y} textAnchor="end">
-											<tspan x={x} dy="-0.2em" fontSize={11} fill="var(--color-gray-700)">
+										<tspan x={x} dy="-0.2em" fontSize={11} fill="var(--chart-label)">
 												{shorten(item.title)}
 											</tspan>
-											<tspan x={x} dy="1.3em" fontSize={10} fill="var(--color-gray-500)">
+										<tspan x={x} dy="1.3em" fontSize={10} fill="var(--chart-muted)">
 												{shorten(item.author)}
 											</tspan>
 										</text>
@@ -113,7 +113,7 @@ export function TopBorrowedBooks(props: TopBorrowedBooksProps) {
 									borderRadius: '0.5rem',
 									fontSize: '0.75rem',
 								}}
-								cursor={{fill: 'var(--color-gray-100)'}}
+								cursor={{fill: 'var(--chart-cursor)'}}
 								labelFormatter={(value) => {
 									const item = items.find((book) => book.id === Number(value));
 									return item ? `${item.title} — ${item.author}` : value;

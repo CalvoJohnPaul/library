@@ -6,12 +6,12 @@ export const selectRecipe = tv({
 	slots: anatomyToRecipeSlots(selectAnatomy, {
 		control: 'flex gap-2',
 		trigger:
-			'flex h-11 grow items-center rounded-md border border-gray-200 ui-invalid:border-rose-400 ui-open:ui-invalid:border-rose-400 bg-white px-4 disabled:opacity-65',
+			'flex h-11 grow items-center rounded-md border border-gray-200 ui-invalid:border-rose-400 ui-open:ui-invalid:border-rose-400 bg-white px-4 disabled:opacity-65 dark:border-neutral-700 dark:ui-invalid:border-rose-300 dark:ui-open:ui-invalid:border-rose-300 dark:bg-neutral-900',
 		clearTrigger:
-			'flex icon:size-5 size-11 items-center justify-center rounded-md border border-gray-200 bg-white icon:text-gray-600',
+			'flex icon:size-5 size-11 items-center justify-center rounded-md border border-gray-200 bg-white icon:text-gray-600 dark:border-neutral-700 dark:bg-neutral-900 dark:icon:text-neutral-300',
 		valueText: 'grow text-left',
 		indicator:
-			'size-5 ui-closed:rotate-0 ui-open:rotate-180 text-gray-600 transition-transform duration-300',
+			'size-5 ui-closed:rotate-0 ui-open:rotate-180 text-gray-600 transition-transform duration-300 dark:text-neutral-300',
 		positioner: 'z-dropdown',
 		content: [
 			'z-dropdown',
@@ -19,8 +19,8 @@ export const selectRecipe = tv({
 			'overflow-y-auto',
 			'rounded-lg',
 			'border',
-			'border-gray-200',
-			'bg-white',
+			'border-gray-200 dark:border-neutral-700',
+			'bg-white dark:bg-neutral-900',
 			'p-1',
 
 			'ui-placement-bottom:ui-open:animate-popover-in-bottom',
@@ -64,10 +64,10 @@ export const selectRecipe = tv({
 			'duration-200',
 			'ui-disabled:cursor-not-allowed',
 			'ui-disabled:opacity-65',
-			'ui-highlighted:bg-gray-50',
+			'ui-highlighted:bg-gray-50 dark:ui-highlighted:bg-neutral-900',
 			'icon:size-5',
 		],
 		itemText: 'grow',
-		itemIndicator: 'flex size-5 text-blue-500!',
+		itemIndicator: 'flex size-5 text-blue-500 dark:text-blue-400!',
 	}),
 });

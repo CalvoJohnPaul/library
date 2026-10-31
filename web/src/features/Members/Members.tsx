@@ -107,7 +107,9 @@ export function Members() {
 			<div className="mb-6 flex items-center gap-3">
 				<div className="grow">
 					<h1 className="font-bold text-xl">Members</h1>
-					<p className="text-gray-600 text-sm">Manage member information below.</p>
+					<p className="text-gray-600 text-sm dark:text-neutral-300">
+						Manage member information below.
+					</p>
 				</div>
 
 				<AddMember />
@@ -124,7 +126,7 @@ export function Members() {
 						id: 'id',
 						heading: 'ID',
 						cell: (member) => (
-							<Link to={`/members/${member.id}`} className="text-blue-500">
+							<Link to={`/members/${member.id}`} className="text-blue-500 dark:text-blue-400">
 								{member.externalId}
 							</Link>
 						),

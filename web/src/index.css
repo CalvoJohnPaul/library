@@ -385,6 +385,31 @@
 	}
 }
 
+:root {
+	color-scheme: light;
+	--chart-grid: var(--color-gray-200);
+	--chart-label: var(--color-gray-600);
+	--chart-muted: var(--color-gray-500);
+	--chart-cursor: var(--color-gray-100);
+	--chart-surface: var(--color-white);
+}
+
+@media (prefers-color-scheme: dark) {
+	:root {
+		color-scheme: dark;
+		--chart-grid: var(--color-neutral-700);
+		--chart-label: var(--color-neutral-300);
+		--chart-muted: var(--color-neutral-400);
+		--chart-cursor: var(--color-neutral-800);
+		--chart-surface: var(--color-neutral-900);
+	}
+
+	::placeholder,
+	[data-placeholder-shown] {
+		color: var(--color-neutral-500);
+	}
+}
+
 @utility z-* {
 	z-index: --value(--z-\*, integer);
 }
@@ -421,6 +446,15 @@
 	background-clip: text;
 	color: transparent;
 	animation: logo-shine 5s linear infinite;
+}
+
+@utility logo-shine-dark {
+	background-image: linear-gradient(
+		110deg,
+		var(--color-neutral-50) 42%,
+		var(--color-neutral-400) 50%,
+		var(--color-neutral-50) 58%
+	);
 }
 
 @custom-variant icon (& svg);

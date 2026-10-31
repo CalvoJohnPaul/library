@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en" class="scroll-smooth scheme-light ">
+<html lang="en" class="scroll-smooth">
 	<head>
 		<meta charset="UTF-8">
 		<link rel="icon" type="image/svg+xml" href="/favicon.svg">
@@ -9,7 +9,7 @@
 		#splash {
 			position: fixed;
 			inset: 0;
-			background: white;
+			background: var(--color-white, white);
 			z-index: 9999;
 			display: flex;
 			justify-content: center;
@@ -20,9 +20,15 @@
 			width: 56px;
 			height: 56px;
 		}
+
+		@media (prefers-color-scheme: dark) {
+			#splash {
+				background: #171717;
+			}
+		}
 		</style>
 	</head>
-	<body class="minh-dvh bg-white font-sans text-gray-800 antialiased">
+	<body class="minh-dvh bg-white font-sans text-gray-800 antialiased dark:bg-neutral-950 dark:text-neutral-100">
 		<div id="root"></div>
 		<div id="splash">
 			<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24">

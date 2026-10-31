@@ -26,24 +26,26 @@ export function ReservationActivity() {
 	const ticks = Array.from({length: 5}, (_, index) => index * tickStep);
 
 	return (
-		<section className="rounded-xl border border-gray-200 bg-white p-5">
+		<section className="rounded-xl border border-gray-200 bg-white p-5 dark:border-neutral-700 dark:bg-neutral-900">
 			<div className="mb-4">
 				<h2 className="font-semibold text-sm">Reservation activity</h2>
-				<p className="text-gray-600 text-xs">Reserved and unreserved books over the last 7 days</p>
+				<p className="text-gray-600 text-xs dark:text-neutral-300">
+					Reserved and unreserved books over the last 7 days
+				</p>
 			</div>
 			<ResponsiveContainer width="100%" height={180}>
 				<BarChart data={activity} barGap={1}>
-					<CartesianGrid strokeDasharray="3 3" stroke="var(--color-gray-200)" vertical={false} />
+					<CartesianGrid strokeDasharray="3 3" stroke="var(--chart-grid)" vertical={false} />
 					<XAxis
 						dataKey="date"
 						tickLine={false}
 						axisLine={false}
-						tick={{fontSize: 10, fill: 'var(--color-gray-600)'}}
+						tick={{fontSize: 10, fill: 'var(--chart-label)'}}
 					/>
 					<YAxis
 						tickLine={false}
 						axisLine={false}
-						tick={{fontSize: 10, fill: 'var(--color-gray-600)'}}
+						tick={{fontSize: 10, fill: 'var(--chart-label)'}}
 						width={60}
 						allowDecimals={false}
 						tickFormatter={(value: number) => value.toLocaleString()}
@@ -53,7 +55,7 @@ export function ReservationActivity() {
 					/>
 					<Tooltip
 						contentStyle={{borderRadius: '0.5rem', fontSize: '0.75rem'}}
-						cursor={{fill: 'var(--color-gray-100)'}}
+						cursor={{fill: 'var(--chart-cursor)'}}
 					/>
 					<Legend wrapperStyle={{fontSize: '0.75rem'}} iconType="circle" iconSize={8} />
 					<Bar

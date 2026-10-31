@@ -110,7 +110,9 @@ export function Books() {
 			<div className="mb-6 flex items-center gap-3">
 				<div className="grow">
 					<h1 className="font-bold text-xl">Books</h1>
-					<p className="text-gray-600 text-sm">Manage your book collection below.</p>
+					<p className="text-gray-600 text-sm dark:text-neutral-300">
+						Manage your book collection below.
+					</p>
 				</div>
 				<AddBook />
 			</div>
@@ -127,7 +129,10 @@ export function Books() {
 						heading: 'Title',
 						cell(book) {
 							return (
-								<Link to={`/books/${book.id}`} className="block max-w-64 truncate text-blue-500">
+								<Link
+									to={`/books/${book.id}`}
+									className="block max-w-64 truncate text-blue-500 dark:text-blue-400"
+								>
 									{book.title}
 								</Link>
 							);

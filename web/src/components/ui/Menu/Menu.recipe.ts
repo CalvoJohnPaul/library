@@ -12,8 +12,8 @@ export const menuRecipe = tv({
 			'overflow-y-auto',
 			'rounded-lg',
 			'border',
-			'border-gray-200',
-			'bg-white',
+			'border-gray-200 dark:border-neutral-700',
+			'bg-white dark:bg-neutral-900',
 			'p-1',
 
 			'ui-placement-bottom:ui-open:animate-popover-in-bottom',
@@ -57,10 +57,10 @@ export const menuRecipe = tv({
 			'duration-200',
 			'ui-disabled:cursor-not-allowed',
 			'ui-disabled:opacity-65',
-			'ui-highlighted:bg-gray-50',
+			'ui-highlighted:bg-gray-50 dark:ui-highlighted:bg-neutral-900',
 			'icon:size-5',
 		],
 		itemText: 'grow',
-		separator: 'relative -mx-1 my-1 border-gray-200 border-t',
+		separator: 'relative -mx-1 my-1 border-gray-200 border-t dark:border-neutral-700',
 	}),
 });

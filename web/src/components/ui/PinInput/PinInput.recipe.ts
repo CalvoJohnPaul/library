@@ -13,10 +13,10 @@ export const pinInputRecipe = tv({
 			'font-semibold',
 			'text-center',
 			'border',
-			'border-gray-200',
-			'bg-white',
+			'border-gray-200 dark:border-neutral-700',
+			'bg-white dark:bg-neutral-900',
 			'outline-none',
-			'ui-invalid:border-rose-400',
+			'ui-invalid:border-rose-400 dark:ui-invalid:border-rose-300',
 		],
 	}),
 });

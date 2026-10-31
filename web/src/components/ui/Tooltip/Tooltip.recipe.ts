@@ -9,12 +9,12 @@ export const tooltipRecipe = tv({
 			'max-w-80',
 			'max-h-(--available-height)',
 			'rounded-md',
-			'bg-gray-900',
+			'bg-gray-900 dark:bg-neutral-50',
 			'px-3',
 			'py-2',
 			'text-sm',
 			'font-medium',
-			'text-gray-100',
+			'text-gray-100 dark:text-neutral-800',
 
 			'ui-placement-bottom:ui-open:animate-popover-in-bottom',
 			'ui-placement-bottom-start:ui-open:animate-popover-in-bottom',
@@ -44,6 +44,6 @@ export const tooltipRecipe = tv({
 			'ui-placement-right-start:ui-closed:animate-popover-out-right',
 			'ui-placement-right-end:ui-closed:animate-popover-out-right',
 		],
-		arrow: 'arrow-bg-gray-900 arrow-size-[0.875rem]',
+		arrow: 'arrow-bg-gray-900 arrow-size-[0.875rem] dark:arrow-bg-neutral-50',
 	}),
 });

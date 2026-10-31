@@ -37,8 +37,8 @@ export function Book() {
 	if (query.isLoading) {
 		return (
 			<div className="flex items-center gap-1.5">
-				<SpinnerIcon className="size-4.5 text-blue-500" />
-				<span className="text-gray-600">Loading.</span>
+				<SpinnerIcon className="size-4.5 text-blue-500 dark:text-blue-400" />
+				<span className="text-gray-600 dark:text-neutral-300">Loading.</span>
 			</div>
 		);
 	}
@@ -48,7 +48,7 @@ export function Book() {
 			<div className="mx-auto max-w-md py-24 text-center">
 				<title>Book not found | USAT</title>
 				<h1 className="mt-5 font-bold text-xl">Book not found</h1>
-				<p className="mt-1 text-gray-600 text-sm">
+				<p className="mt-1 text-gray-600 text-sm dark:text-neutral-300">
 					The book you are looking for no longer exists or has been removed.
 				</p>
 				<Button asChild variant="outline" accent="gray" className="mt-6">
@@ -74,7 +74,10 @@ export function Book() {
 					unmountOnExit
 				>
 					<div>
-						<Link to="/books" className="flex items-center gap-1 text-blue-500 text-xs">
+						<Link
+							to="/books"
+							className="flex items-center gap-1 text-blue-500 text-xs dark:text-blue-400"
+						>
 							<ArrowLeftIcon className="size-3.5" />
 							Go to books
 						</Link>
@@ -83,7 +86,9 @@ export function Book() {
 					<div className="mb-6 flex items-center gap-3">
 						<div className="grow">
 							<h1 className="font-bold text-xl">{query.data.title}</h1>
-							<p className="text-gray-600 text-sm">Manage the details of your book below.</p>
+							<p className="text-gray-600 text-sm dark:text-neutral-300">
+								Manage the details of your book below.
+							</p>
 						</div>
 
 						<Tabs.Context>{(api) => <>{api.value === 'copies' && <AddBookCopy />}</>}</Tabs.Context>

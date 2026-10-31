@@ -116,7 +116,9 @@ export function Transactions() {
 			<div className="mb-6 flex items-center gap-3">
 				<div className="grow">
 					<h1 className="font-bold text-xl">Transactions</h1>
-					<p className="text-gray-600 text-sm">View transaction history below.</p>
+					<p className="text-gray-600 text-sm dark:text-neutral-300">
+						View transaction history below.
+					</p>
 				</div>
 			</div>
 			<DataTable
@@ -205,7 +207,10 @@ export function Transactions() {
 						cell: (transaction) => {
 							const book = transaction.book ?? transaction.bookCopy?.book;
 							return book ? (
-								<Link to={`/books/${book.id}`} className="block max-w-64 truncate text-blue-500">
+								<Link
+									to={`/books/${book.id}`}
+									className="block max-w-64 truncate text-blue-500 dark:text-blue-400"
+								>
 									{book.title}
 								</Link>
 							) : null;
@@ -269,7 +274,7 @@ export function Transactions() {
 						cell: (transaction) => (
 							<Link
 								to={`/members/${transaction.member.id}`}
-								className="block max-w-48 truncate text-blue-500"
+								className="block max-w-48 truncate text-blue-500 dark:text-blue-400"
 							>
 								{transaction.member.name}
 							</Link>
@@ -343,7 +348,7 @@ export function Transactions() {
 									{overdue && (
 										<Tooltip.Root>
 											<Tooltip.Trigger>
-												<AlertTriangleIcon className="size-4 text-rose-500" />
+												<AlertTriangleIcon className="size-4 text-rose-500 dark:text-rose-400" />
 											</Tooltip.Trigger>
 											<Portal>
 												<Tooltip.Positioner>

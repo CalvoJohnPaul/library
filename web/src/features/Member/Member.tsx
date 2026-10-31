@@ -33,8 +33,8 @@ export function Member() {
 	if (query.isLoading) {
 		return (
 			<div className="flex items-center gap-1.5">
-				<SpinnerIcon className="size-4.5 text-blue-500" />
-				<span className="text-gray-600">Loading.</span>
+				<SpinnerIcon className="size-4.5 text-blue-500 dark:text-blue-400" />
+				<span className="text-gray-600 dark:text-neutral-300">Loading.</span>
 			</div>
 		);
 	}
@@ -44,7 +44,7 @@ export function Member() {
 			<div className="mx-auto max-w-md py-24 text-center">
 				<title>Member not found | USAT</title>
 				<h1 className="mt-5 font-bold text-xl">Member not found</h1>
-				<p className="mt-1 text-gray-600 text-sm">
+				<p className="mt-1 text-gray-600 text-sm dark:text-neutral-300">
 					The member you are looking for no longer exists or has been removed.
 				</p>
 				<Button asChild variant="outline" accent="gray" className="mt-6">
@@ -62,7 +62,10 @@ export function Member() {
 			<title>{`${query.data.name} | USAT`}</title>
 			<MemberProvider value={query.data}>
 				<div>
-					<Link to="/members" className="flex items-center gap-1 text-blue-500 text-xs">
+					<Link
+						to="/members"
+						className="flex items-center gap-1 text-blue-500 text-xs dark:text-blue-400"
+					>
 						<ArrowLeftIcon className="size-3.5" />
 						Go to members
 					</Link>
@@ -71,7 +74,9 @@ export function Member() {
 				<div className="mb-6 flex items-center gap-3">
 					<div className="grow">
 						<h1 className="font-bold text-xl">{query.data.name}</h1>
-						<p className="text-gray-600 text-sm">Manage the details of your member below.</p>
+						<p className="text-gray-600 text-sm dark:text-neutral-300">
+							Manage the details of your member below.
+						</p>
 					</div>
 				</div>
 

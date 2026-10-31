@@ -84,7 +84,9 @@ export function Reservations() {
 			<div className="mb-6 flex items-center gap-3">
 				<div className="grow">
 					<h1 className="font-bold text-xl">Reservations</h1>
-					<p className="text-gray-600 text-sm">Manage book reservations below.</p>
+					<p className="text-gray-600 text-sm dark:text-neutral-300">
+						Manage book reservations below.
+					</p>
 				</div>
 				<AddReservation />
 			</div>
@@ -152,7 +154,10 @@ export function Reservations() {
 						id: 'member',
 						heading: 'Member',
 						cell: (reservation) => (
-							<Link to={`/members/${reservation.member.id}`} className="text-blue-500">
+							<Link
+								to={`/members/${reservation.member.id}`}
+								className="text-blue-500 dark:text-blue-400"
+							>
 								{reservation.member.name}
 							</Link>
 						),
@@ -188,7 +193,10 @@ export function Reservations() {
 						id: 'book',
 						heading: 'Book',
 						cell: (reservation) => (
-							<Link to={`/books/${reservation.book.id}`} className="text-blue-500">
+							<Link
+								to={`/books/${reservation.book.id}`}
+								className="text-blue-500 dark:text-blue-400"
+							>
 								{reservation.book.title}
 							</Link>
 						),

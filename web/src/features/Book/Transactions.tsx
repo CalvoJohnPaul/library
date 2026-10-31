@@ -209,7 +209,7 @@ export function Transactions() {
 						return (
 							<Link
 								to={`/members/${transaction.member.id}`}
-								className="block max-w-48 truncate text-blue-500"
+								className="block max-w-48 truncate text-blue-500 dark:text-blue-400"
 							>
 								{transaction.member.name}
 							</Link>
@@ -288,7 +288,7 @@ export function Transactions() {
 								{overdue && (
 									<Tooltip.Root>
 										<Tooltip.Trigger>
-											<AlertTriangleIcon className="size-4 text-rose-500" />
+											<AlertTriangleIcon className="size-4 text-rose-500 dark:text-rose-400" />
 										</Tooltip.Trigger>
 										<Portal>
 											<Tooltip.Positioner>

@@ -5,10 +5,10 @@ import {anatomyToRecipeSlots} from '@/utils/anatomyToRecipeSlots';
 export const passwordInputRecipe = tv({
 	slots: anatomyToRecipeSlots(passwordInputAnatomy, {
 		control:
-			'flex h-11 overflow-hidden rounded-md border border-gray-200 ui-invalid:border-rose-400 bg-white',
+			'flex h-11 overflow-hidden rounded-md border border-gray-200 ui-invalid:border-rose-400 bg-white dark:border-neutral-700 dark:ui-invalid:border-rose-300 dark:bg-neutral-900',
 		input: 'grow px-4 outline-none',
 		visibilityTrigger:
 			'flex aspect-square h-full shrink-0 cursor-pointer items-center justify-center',
-		indicator: 'size-5 text-gray-600',
+		indicator: 'size-5 text-gray-600 dark:text-neutral-300',
 	}),
 });

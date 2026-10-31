@@ -130,7 +130,7 @@ export function Reservations() {
 					id: 'book',
 					heading: 'Book',
 					cell: (reservation) => (
-						<Link to={`/books/${reservation.book.id}`} className="text-blue-500">
+						<Link to={`/books/${reservation.book.id}`} className="text-blue-500 dark:text-blue-400">
 							{reservation.book.title}
 						</Link>
 					),

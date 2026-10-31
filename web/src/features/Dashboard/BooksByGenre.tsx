@@ -14,13 +14,13 @@ import {useDashboardContext} from './DashboardContext';
 
 const GENRE_SLICE_COUNT = 6;
 const GENRE_COLORS_MAP = [
-	{fill: 'var(--color-blue-400)', label: 'var(--color-blue-500)'},
-	{fill: 'var(--color-emerald-400)', label: 'var(--color-emerald-500)'},
-	{fill: 'var(--color-purple-400)', label: 'var(--color-purple-500)'},
-	{fill: 'var(--color-amber-400)', label: 'var(--color-amber-500)'},
-	{fill: 'var(--color-rose-400)', label: 'var(--color-rose-500)'},
-	{fill: 'var(--color-cyan-400)', label: 'var(--color-cyan-500)'},
-	{fill: 'var(--color-stone-300)', label: 'var(--color-stone-500)'},
+	{fill: 'light-dark(#3b82f6, #60a5fa)', label: 'light-dark(#2563eb, #93c5fd)'},
+	{fill: 'light-dark(#10b981, #34d399)', label: 'light-dark(#059669, #6ee7b7)'},
+	{fill: 'light-dark(#a855f7, #c084fc)', label: 'light-dark(#9333ea, #d8b4fe)'},
+	{fill: 'light-dark(#f59e0b, #fbbf24)', label: 'light-dark(#d97706, #fcd34d)'},
+	{fill: 'light-dark(#f43f5e, #fb7185)', label: 'light-dark(#e11d48, #fda4af)'},
+	{fill: 'light-dark(#06b6d4, #22d3ee)', label: 'light-dark(#0891b2, #67e8f9)'},
+	{fill: 'light-dark(#a8a29e, #a3a3a3)', label: 'light-dark(#78716c, #d4d4d4)'},
 ];
 
 interface GenreDatum {
@@ -70,10 +70,10 @@ export function BooksByGenre(props: BooksByGenreProps) {
 	});
 
 	return (
-		<section className="rounded-xl border border-gray-200 bg-white p-5">
+		<section className="rounded-xl border border-gray-200 bg-white p-5 dark:border-neutral-700 dark:bg-neutral-900">
 			<div className="mb-4">
 				<h2 className="font-semibold text-sm">Books by genre</h2>
-				<p className="text-gray-600 text-xs">
+				<p className="text-gray-600 text-xs dark:text-neutral-300">
 					{genre === null
 						? 'Distribution across the catalog · click a genre to filter'
 						: `Distribution across the catalog · ${getBookGenreLabel(genre)}`}
@@ -90,7 +90,7 @@ export function BooksByGenre(props: BooksByGenreProps) {
 						outerRadius="80%"
 						cornerRadius={4}
 						paddingAngle={2}
-						stroke="var(--color-white)"
+						stroke="light-dark(#ffffff, #171717)"
 						onClick={(_, index) => {
 							const item = genres[index];
 							if (!item || item.value === null) return;
@@ -111,7 +111,10 @@ export function BooksByGenre(props: BooksByGenreProps) {
 					/>
 					<Tooltip
 						contentStyle={{
+							backgroundColor: 'light-dark(#ffffff, #171717)',
+							border: '1px solid light-dark(#e5e7eb, #404040)',
 							borderRadius: '0.5rem',
+							color: 'light-dark(#171717, #f5f5f5)',
 							fontSize: '0.75rem',
 						}}
 					/>
