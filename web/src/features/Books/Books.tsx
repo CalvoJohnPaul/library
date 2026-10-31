@@ -110,7 +110,7 @@ export function Books() {
 			<div className="mb-6 flex items-center gap-3">
 				<div className="grow">
 					<h1 className="font-bold text-xl">Books</h1>
-					<p className="text-gray-600 text-sm dark:text-neutral-300">
+					<p className="text-neutral-600 text-sm dark:text-neutral-300">
 						Manage your book collection below.
 					</p>
 				</div>

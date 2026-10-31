@@ -5,7 +5,7 @@ import {anatomyToRecipeSlots} from '@/utils/anatomyToRecipeSlots';
 export const avatarRecipe = tv({
 	slots: anatomyToRecipeSlots(avatarAnatomy, {
 		root: 'flex items-center justify-center overflow-hidden rounded-full',
-		fallback: 'font-medium text-gray-600 dark:text-neutral-300',
+		fallback: 'font-medium text-neutral-600 dark:text-neutral-300',
 		image: 'size-full object-cover object-center',
 	}),
 	variants: {

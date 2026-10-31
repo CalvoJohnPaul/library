@@ -5,11 +5,30 @@
 		<link rel="icon" type="image/svg+xml" href="/favicon.svg">
 		<meta name="viewport" content="width=device-width, initial-scale=1.0">
 		<title>USAT</title>
+		<script>
+		(() => {
+			const storageValue = localStorage.getItem('theme');
+
+			if (
+				storageValue === 'dark' ||
+				(storageValue !== 'light' && window.matchMedia('(prefers-color-scheme: dark)').matches)
+			) {
+				localStorage.setItem('theme', 'dark');
+				document.documentElement.classList.add('dark');
+				document.documentElement.style.colorScheme = 'dark';
+			} else {
+				localStorage.setItem('theme', 'light');
+				document.documentElement.classList.remove('dark');
+				document.documentElement.style.colorScheme = 'light';
+			}
+		})();
+		</script>
 		<style>
 		#splash {
 			position: fixed;
 			inset: 0;
 			background: var(--color-white, white);
+			color: #1560fc;
 			z-index: 9999;
 			display: flex;
 			justify-content: center;
@@ -21,23 +40,25 @@
 			height: 56px;
 		}
 
-		@media (prefers-color-scheme: dark) {
-			#splash {
-				background: #171717;
-			}
+		.dark #splash {
+			background: #171717;
+			color: #93c5fd;
 		}
 		</style>
 	</head>
-	<body class="minh-dvh bg-white font-sans text-gray-800 antialiased dark:bg-neutral-950 dark:text-neutral-100">
+	<body
+		class="minh-dvh bg-white font-sans text-neutral-800 antialiased dark:bg-neutral-950 dark:text-neutral-100"
+	>
 		<div id="root"></div>
 		<div id="splash">
 			<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24">
 				<path
-					fill="#DBEAFE"
+					fill="currentColor"
+					opacity="0.25"
 					d="M12,1A11,11,0,1,0,23,12,11,11,0,0,0,12,1Zm0,19a8,8,0,1,1,8-8A8,8,0,0,1,12,20Z"
 				/>
 				<path
-					fill="#1560FC"
+					fill="currentColor"
 					d="M12,4a8,8,0,0,1,7.89,6.7A1.53,1.53,0,0,0,21.38,12h0a1.5,1.5,0,0,0,1.48-1.75,11,11,0,0,0-21.72,0A1.5,1.5,0,0,0,2.62,12h0a1.53,1.53,0,0,0,1.49-1.3A8,8,0,0,1,12,4Z"
 				>
 					<animateTransform

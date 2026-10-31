@@ -198,7 +198,7 @@ export function BorrowBookCopy() {
 							noValidate
 						>
 							<Dialog.Header>
-								<FeaturedIcon.Root accent={step === 'SUCCESS' ? 'info' : undefined}>
+								<FeaturedIcon.Root accent={step === 'SUCCESS' ? 'primary' : undefined}>
 									<FeaturedIcon.Icon>
 										{step === 'SUCCESS' ? <CircleCheckIcon /> : <RepeatIcon />}
 									</FeaturedIcon.Icon>
@@ -247,24 +247,26 @@ export function BorrowBookCopy() {
 
 							{step === 'CONFIRM' && member && (
 								<Dialog.Body>
-									<p className="font-semibold text-gray-600 text-sm dark:text-neutral-300">
+									<p className="font-semibold text-neutral-600 text-sm dark:text-neutral-300">
 										Details
 									</p>
-									<dl className="mt-3 space-y-2 rounded-md border border-gray-200 bg-white p-4 text-sm dark:border-neutral-700 dark:bg-neutral-900">
+									<dl className="mt-3 space-y-2 rounded-md border border-neutral-200 bg-white p-4 text-sm dark:border-neutral-800 dark:bg-neutral-900/40">
 										<div className="flex justify-between gap-4">
-											<dt className="font-semibold text-gray-600 dark:text-neutral-300">ID</dt>
+											<dt className="font-semibold text-neutral-600 dark:text-neutral-300">ID</dt>
 											<dd>{member.externalId}</dd>
 										</div>
 										<div className="flex justify-between gap-4">
-											<dt className="font-semibold text-gray-600 dark:text-neutral-300">Name</dt>
+											<dt className="font-semibold text-neutral-600 dark:text-neutral-300">Name</dt>
 											<dd>{member.name}</dd>
 										</div>
 										<div className="flex justify-between gap-4">
-											<dt className="font-semibold text-gray-600 dark:text-neutral-300">Course</dt>
+											<dt className="font-semibold text-neutral-600 dark:text-neutral-300">
+												Course
+											</dt>
 											<dd>{member.course ?? '—'}</dd>
 										</div>
 										<div className="flex justify-between gap-4">
-											<dt className="font-semibold text-gray-600 dark:text-neutral-300">
+											<dt className="font-semibold text-neutral-600 dark:text-neutral-300">
 												Year and section
 											</dt>
 											<dd>{member.yearAndSection ?? '—'}</dd>
@@ -347,19 +349,19 @@ export function BorrowBookCopy() {
 
 							{step === 'SUCCESS' && member && (
 								<Dialog.Body>
-									<dl className="space-y-2 rounded-md border border-gray-200 bg-white p-4 text-sm dark:border-neutral-700 dark:bg-neutral-900">
+									<dl className="space-y-2 rounded-md border border-neutral-200 bg-white p-4 text-sm dark:border-neutral-800 dark:bg-neutral-900/40">
 										<div className="flex justify-between gap-4">
-											<dt className="font-semibold text-gray-600 dark:text-neutral-300">
+											<dt className="font-semibold text-neutral-600 dark:text-neutral-300">
 												Borrower
 											</dt>
 											<dd>{member.name}</dd>
 										</div>
 										<div className="flex justify-between gap-4">
-											<dt className="font-semibold text-gray-600 dark:text-neutral-300">Book</dt>
+											<dt className="font-semibold text-neutral-600 dark:text-neutral-300">Book</dt>
 											<dd>{copy.book.title}</dd>
 										</div>
 										<div className="flex justify-between gap-4">
-											<dt className="font-semibold text-gray-600 dark:text-neutral-300">ISBN</dt>
+											<dt className="font-semibold text-neutral-600 dark:text-neutral-300">ISBN</dt>
 											<dd>{copy.isbn}</dd>
 										</div>
 									</dl>

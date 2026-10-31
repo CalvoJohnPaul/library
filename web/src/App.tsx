@@ -12,11 +12,12 @@ import {NotFound} from './features/NotFound/NotFound';
 import {Reservations} from './features/Reservations/Reservations';
 import {RootLayout} from './features/RootLayout/RootLayout';
 import {Transactions} from './features/Transactions/Transactions';
+import {ThemeProvider} from './providers/ThemeProvider';
 import {client} from './utils/client';
 
 export function App() {
 	return (
-		<>
+		<ThemeProvider>
 			<NuqsAdapter
 				defaultOptions={{
 					history: 'push',
@@ -42,6 +43,6 @@ export function App() {
 				</QueryClientProvider>
 			</NuqsAdapter>
 			<Toaster />
-		</>
+		</ThemeProvider>
 	);
 }

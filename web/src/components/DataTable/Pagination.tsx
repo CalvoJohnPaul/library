@@ -34,8 +34,8 @@ export function Pagination() {
 	if (!paginationEnabled) return null;
 
 	return (
-		<div className="@container flex items-center gap-3 border-gray-200 border-t p-4 pl-6 dark:border-neutral-700">
-			<p className="grow text-gray-500 text-sm dark:text-neutral-400">
+		<div className="@container flex items-center gap-3 border-neutral-200 border-t p-4 pl-6 dark:border-neutral-800">
+			<p className="grow text-neutral-500 text-sm dark:text-neutral-400">
 				Page {formatNumber(clamp(optimisticPage, totalPages))} of {formatNumber(totalPages)}
 			</p>
 			<Select.Root

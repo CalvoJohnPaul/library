@@ -6,7 +6,7 @@ export const sliderRecipe = tv({
 	slots: anatomyToRecipeSlots(sliderAnatomy, {
 		root: 'flex items-center gap-2',
 		control: 'relative flex h-2 w-full grow items-center',
-		track: 'h-full grow overflow-hidden rounded-full bg-gray-300 dark:bg-neutral-600',
+		track: 'h-full grow overflow-hidden rounded-full bg-neutral-300 dark:bg-neutral-600',
 		range: 'h-full bg-blue-600 dark:bg-blue-300',
 		thumb: [
 			'z-1',
@@ -14,9 +14,9 @@ export const sliderRecipe = tv({
 			'cursor-pointer',
 			'rounded-full',
 			'border-2',
-			'border-gray-200 dark:border-neutral-700',
-			'bg-white dark:bg-neutral-900',
+			'border-neutral-200 dark:border-neutral-800',
+			'bg-white dark:bg-neutral-950',
 		],
-		valueText: 'font-medium text-gray-600 text-sm dark:text-neutral-300',
+		valueText: 'font-medium text-neutral-600 text-sm dark:text-neutral-300',
 	}),
 });

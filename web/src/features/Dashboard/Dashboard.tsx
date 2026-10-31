@@ -42,7 +42,7 @@ export function Dashboard() {
 			<div className="mb-6 flex items-center gap-3">
 				<div className="grow">
 					<h1 className="font-bold text-xl">Dashboard</h1>
-					<p className="text-gray-600 text-sm dark:text-neutral-300">
+					<p className="text-neutral-600 text-sm dark:text-neutral-300">
 						View an overview of your library at a glance.
 					</p>
 				</div>

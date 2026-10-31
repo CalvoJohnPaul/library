@@ -22,7 +22,7 @@ export function Filters() {
 
 	return (
 		<Presence present={filters.open} asChild>
-			<div className="shrink-0 ui-closed:animate-collapse-x-out ui-open:animate-collapse-x-in overflow-hidden rounded-lg border border-gray-200 [--width:22rem] dark:border-neutral-700">
+			<div className="shrink-0 ui-closed:animate-collapse-x-out ui-open:animate-collapse-x-in overflow-hidden rounded-lg border border-neutral-200 [--width:22rem] dark:border-neutral-800">
 				<div className="w-(--width) overflow-hidden p-4">
 					<div className="space-y-2">
 						{dataTable.columns.map((col) => {
@@ -31,7 +31,7 @@ export function Filters() {
 									return (
 										<Field.Root
 											key={col.id}
-											className="w-full rounded-md bg-gray-50 p-2 dark:bg-neutral-900"
+											className="w-full rounded-md bg-neutral-50 p-2 dark:bg-neutral-900/40"
 										>
 											<Field.Label>{col.heading}</Field.Label>
 											<ComboboxField {...omit(col.filter, ['type'])} portalled />
@@ -41,7 +41,7 @@ export function Filters() {
 									return (
 										<Field.Root
 											key={col.id}
-											className="w-full rounded-md bg-gray-50 p-2 dark:bg-neutral-900"
+											className="w-full rounded-md bg-neutral-50 p-2 dark:bg-neutral-900/40"
 										>
 											<Field.Label>{col.heading}</Field.Label>
 											<ComboboxField {...omit(col.filter, ['type'])} portalled />
@@ -55,7 +55,7 @@ export function Filters() {
 									return (
 										<Field.Root
 											key={col.id}
-											className="w-full rounded-md bg-gray-50 p-2 dark:bg-neutral-900"
+											className="w-full rounded-md bg-neutral-50 p-2 dark:bg-neutral-900/40"
 										>
 											<Field.Label>{col.heading}</Field.Label>
 											<AsyncComboboxField {...omit(col.filter, ['type'])} portalled />
@@ -65,7 +65,7 @@ export function Filters() {
 									return (
 										<Field.Root
 											key={col.id}
-											className="w-full rounded-md bg-gray-50 p-2 dark:bg-neutral-900"
+											className="w-full rounded-md bg-neutral-50 p-2 dark:bg-neutral-900/40"
 										>
 											<Field.Label>{col.heading}</Field.Label>
 											<AsyncComboboxField {...omit(col.filter, ['type'])} portalled />
@@ -79,7 +79,7 @@ export function Filters() {
 									return (
 										<Field.Root
 											key={col.id}
-											className="w-full rounded-md bg-gray-50 p-2 dark:bg-neutral-900"
+											className="w-full rounded-md bg-neutral-50 p-2 dark:bg-neutral-900/40"
 										>
 											<Field.Label>{col.heading}</Field.Label>
 											<SelectField {...omit(col.filter, ['type'])} portalled />
@@ -89,7 +89,7 @@ export function Filters() {
 									return (
 										<Field.Root
 											key={col.id}
-											className="w-full rounded-md bg-gray-50 p-2 dark:bg-neutral-900"
+											className="w-full rounded-md bg-neutral-50 p-2 dark:bg-neutral-900/40"
 										>
 											<Field.Label>{col.heading}</Field.Label>
 											<SelectField {...omit(col.filter, ['type'])} portalled />
@@ -102,7 +102,7 @@ export function Filters() {
 								return (
 									<Field.Root
 										key={col.id}
-										className="w-full rounded-md bg-gray-50 p-2 dark:bg-neutral-900"
+										className="w-full rounded-md bg-neutral-50 p-2 dark:bg-neutral-900/40"
 									>
 										<Field.Label>{col.heading}</Field.Label>
 										<DebouncedTextField {...omit(col.filter, ['type'])} />
@@ -114,7 +114,7 @@ export function Filters() {
 								return (
 									<Field.Root
 										key={col.id}
-										className="w-full rounded-md bg-gray-50 p-2 dark:bg-neutral-900"
+										className="w-full rounded-md bg-neutral-50 p-2 dark:bg-neutral-900/40"
 									>
 										<Field.Label>{col.heading}</Field.Label>
 										<DateRangeField {...omit(col.filter, ['type'])} portalled />
@@ -126,7 +126,7 @@ export function Filters() {
 								return (
 									<Field.Root
 										key={col.id}
-										className="w-full rounded-md bg-gray-50 p-2 dark:bg-neutral-900"
+										className="w-full rounded-md bg-neutral-50 p-2 dark:bg-neutral-900/40"
 									>
 										<Field.Label>{col.heading}</Field.Label>
 										<DebouncedNumberRangeField
@@ -142,7 +142,7 @@ export function Filters() {
 								return (
 									<Field.Root
 										key={col.id}
-										className="w-full rounded-md bg-gray-50 p-2 dark:bg-neutral-900"
+										className="w-full rounded-md bg-neutral-50 p-2 dark:bg-neutral-900/40"
 									>
 										<Field.Label>{col.heading}</Field.Label>
 										<ToggleField {...omit(col.filter, ['type'])} />

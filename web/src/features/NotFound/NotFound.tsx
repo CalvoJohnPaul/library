@@ -7,7 +7,7 @@ export function NotFound() {
 		<div className="mx-auto max-w-md py-24 text-center">
 			<title>Page not found | USAT</title>
 			<h1 className="mt-5 font-bold text-xl">Page not found</h1>
-			<p className="mt-1 text-gray-600 text-sm dark:text-neutral-300">
+			<p className="mt-1 text-neutral-600 text-sm dark:text-neutral-300">
 				The page you are looking for no longer exists or has been removed.
 			</p>
 			<Button asChild variant="outline" accent="gray" className="mt-6">

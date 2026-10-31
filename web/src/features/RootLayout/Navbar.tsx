@@ -4,7 +4,14 @@ import {createAvatar} from '@dicebear/core';
 import {zodResolver} from '@hookform/resolvers/zod';
 import {isNil, omitBy} from 'es-toolkit';
 import {isEmpty} from 'es-toolkit/compat';
-import {LockKeyholeIcon, LogOutIcon, MenuIcon, SquarePenIcon} from 'lucide-react';
+import {
+	CloudMoonIcon,
+	CloudSunIcon,
+	LockKeyholeIcon,
+	LogOutIcon,
+	MenuIcon,
+	SquarePenIcon,
+} from 'lucide-react';
 import {Controller, useForm} from 'react-hook-form';
 import {Link} from 'react-router';
 import * as z from 'zod';
@@ -21,12 +28,14 @@ import {useDisclosure} from '@/hooks/useDisclosure';
 import {useGlobalStore} from '@/hooks/useGlobalStore';
 import {useMeQuery} from '@/hooks/useMeQuery';
 import {useUpdateMeMutation} from '@/hooks/useUpdateMeMutation';
+import {useThemeContext} from '@/providers/ThemeProvider';
 import {Logout} from '@/templates/Logout';
 import {client} from '@/utils/client';
 import {toaster} from '@/utils/toaster';
 
 export function Navbar() {
 	const query = useMeQuery();
+	const [theme, setTheme] = useThemeContext();
 	const avatar = query.data
 		? createAvatar(funEmoji, {seed: query.data.id.toString()}).toDataUri()
 		: '';
@@ -36,24 +45,37 @@ export function Navbar() {
 	);
 
 	return (
-		<header className="sticky top-0 z-sticky grid h-16 grid-cols-3 items-center gap-3 border-gray-200 border-b bg-white pr-12 pl-7 dark:border-neutral-700 dark:bg-neutral-900">
+		<header className="sticky top-0 z-sticky grid h-16 grid-cols-3 items-center gap-3 border-neutral-200 border-b bg-white pr-12 pl-7 dark:border-neutral-800 dark:bg-neutral-950">
 			<div className="flex items-center gap-2">
 				<button
 					type="button"
 					onClick={() => {
 						setSidebarCollapsed((prev) => !prev);
 					}}
-					className="text-gray-700 dark:text-neutral-200"
+					className="text-neutral-700 dark:text-neutral-200"
 					data-state={sidebarCollapsed ? 'closed' : 'open'}
 				>
 					<MenuIcon className="size-5" />
 				</button>
 				<Link to="/" className="block">
-					<h2 className="logo-shine block font-bold font-heading text-xl tracking-wider dark:logo-shine-dark">USAT</h2>
+					<h2 className="logo-shine dark:logo-shine-dark block font-bold font-heading text-xl tracking-wider">
+						USAT
+					</h2>
 				</Link>
 			</div>
 			<div />
-			<div className="flex justify-end gap-1">
+			<div className="flex justify-end gap-3">
+				<button
+					type="button"
+					className="shrink-0 p-2 text-neutral-700 dark:text-neutral-300"
+					onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+				>
+					{theme === 'dark' ? (
+						<CloudSunIcon className="size-5.5" />
+					) : (
+						<CloudMoonIcon className="size-5.5" />
+					)}
+				</button>
 				<Menu.Root ids={{trigger: 'settings-trigger'}}>
 					<Menu.Trigger disabled={query.isLoading}>
 						<Avatar.Root size="sm">
@@ -71,7 +93,7 @@ export function Navbar() {
 								</Avatar.Root>
 								<div>
 									<p className="font-semibold leading-tight">{query.data?.name}</p>
-									<p className="text-gray-600 text-sm leading-tight dark:text-neutral-300">
+									<p className="text-neutral-600 text-sm leading-tight dark:text-neutral-300">
 										{query.data?.email}
 									</p>
 								</div>

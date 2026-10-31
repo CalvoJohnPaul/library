@@ -10,8 +10,8 @@ const trigger = cx(
 	'justify-center',
 	'rounded-md',
 	'border',
-	'border-gray-200 dark:border-neutral-700',
-	'bg-white text-gray-700 hover:bg-gray-50 dark:bg-neutral-950 dark:text-neutral-200 dark:hover:bg-neutral-800',
+	'border-neutral-200 dark:border-neutral-800',
+	'bg-white text-neutral-700 hover:bg-neutral-50 dark:bg-neutral-950 dark:text-neutral-200 dark:hover:bg-neutral-800',
 	'px-2',
 	'text-center',
 	'font-semibold',
@@ -28,7 +28,7 @@ export const paginationRecipe = tv({
 	slots: anatomyToRecipeSlots(paginationAnatomy, {
 		root: 'flex gap-2',
 		ellipsis:
-			'flex icon:size-4 size-11 items-center justify-center text-gray-400 dark:text-neutral-500',
+			'flex icon:size-4 size-11 items-center justify-center text-neutral-400 dark:text-neutral-500',
 		item: trigger,
 		firstTrigger: trigger,
 		lastTrigger: trigger,
