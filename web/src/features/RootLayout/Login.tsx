@@ -35,7 +35,9 @@ export function Login() {
 			<title>Log in | USAT</title>
 			<main className="px-12 py-32">
 				<div className="flex items-center justify-center">
-					<h1 className="logo-shine font-bold font-heading text-2xl tracking-wide dark:logo-shine-dark">Log in</h1>
+					<h1 className="logo-shine dark:logo-shine-dark font-bold font-heading text-2xl tracking-wide">
+						Log in
+					</h1>
 				</div>
 
 				<form

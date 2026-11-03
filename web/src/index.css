@@ -45,7 +45,27 @@
 		height: 0;
 	}
 
+	:root {
+		--dashboard-chart-grid: var(--color-neutral-200);
+		--dashboard-chart-label: var(--color-neutral-600);
+		--dashboard-chart-muted: var(--color-neutral-500);
+		--dashboard-chart-cursor: var(--color-neutral-100);
+		--dashboard-chart-surface: var(--color-white);
+		--dashboard-chart-border: var(--color-neutral-200);
+		--dashboard-chart-text: var(--color-neutral-900);
+		--dashboard-chart-item: var(--color-neutral-600);
+	}
+
 	:root.dark {
+		--dashboard-chart-grid: var(--color-neutral-700);
+		--dashboard-chart-label: var(--color-neutral-300);
+		--dashboard-chart-muted: var(--color-neutral-400);
+		--dashboard-chart-cursor: var(--color-neutral-800);
+		--dashboard-chart-surface: var(--color-neutral-900);
+		--dashboard-chart-border: var(--color-neutral-700);
+		--dashboard-chart-text: var(--color-neutral-100);
+		--dashboard-chart-item: var(--color-neutral-300);
+
 		::placeholder,
 		[data-placeholder-shown] {
 			color: var(--color-neutral-500);

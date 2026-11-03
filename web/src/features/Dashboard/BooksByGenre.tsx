@@ -11,7 +11,6 @@ import {
 } from 'recharts';
 import {getBookGenreLabel} from '@/utils/common';
 import {useDashboardContext} from './DashboardContext';
-import {useChartColors} from './useChartColors';
 
 const GENRE_SLICE_COUNT = 6;
 const GENRE_COLORS_MAP = [
@@ -61,7 +60,6 @@ interface BooksByGenreProps {
 
 export function BooksByGenre(props: BooksByGenreProps) {
 	const data = useDashboardContext();
-	const colors = useChartColors();
 
 	const [genre, setGenre] = useControllableState<BookGenre | null>({
 		prop: props.genre,
@@ -98,7 +96,7 @@ export function BooksByGenre(props: BooksByGenreProps) {
 				<h2 className="font-semibold text-sm">Books by genre</h2>
 				<p className="text-neutral-600 text-xs dark:text-neutral-300">
 					{genre === null
-						? 'Distribution across the catalog · click a genre to filter'
+						? 'Distribution across the catalog'
 						: `Distribution across the catalog · ${getBookGenreLabel(genre)}`}
 				</p>
 			</div>
@@ -113,7 +111,7 @@ export function BooksByGenre(props: BooksByGenreProps) {
 						outerRadius="80%"
 						cornerRadius={2}
 						paddingAngle={2}
-						stroke={colors.surface}
+						stroke="var(--dashboard-chart-surface)"
 						onClick={(_, index) => {
 							const item = genres[index];
 							if (!item || item.value === null) return;
@@ -134,14 +132,14 @@ export function BooksByGenre(props: BooksByGenreProps) {
 					/>
 					<Tooltip
 						contentStyle={{
-							backgroundColor: colors.surface,
-							border: `1px solid ${colors.border}`,
+							backgroundColor: 'var(--dashboard-chart-surface)',
+							border: '1px solid var(--dashboard-chart-border)',
 							borderRadius: '0.5rem',
-							color: colors.text,
+							color: 'var(--dashboard-chart-text)',
 							fontSize: '0.75rem',
 						}}
-						labelStyle={{color: colors.text, fontWeight: 600}}
-						itemStyle={{color: colors.item}}
+						labelStyle={{color: 'var(--dashboard-chart-text)', fontWeight: 600}}
+						itemStyle={{color: 'var(--dashboard-chart-item)'}}
 					/>
 					<Legend
 						position="right"

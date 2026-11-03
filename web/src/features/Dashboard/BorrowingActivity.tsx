@@ -10,7 +10,6 @@ import {
 	YAxis,
 } from 'recharts';
 import {useDashboardContext} from './DashboardContext';
-import {useChartColors} from './useChartColors';
 import {roundedAxisMax} from './utils';
 
 const ACTIVITY_SERIES = {
@@ -20,7 +19,6 @@ const ACTIVITY_SERIES = {
 
 export function BorrowingActivity() {
 	const data = useDashboardContext();
-	const colors = useChartColors();
 
 	const activity: {
 		date: string;
@@ -48,17 +46,17 @@ export function BorrowingActivity() {
 			<div className="min-h-68.75 flex-1">
 				<ResponsiveContainer width="100%" height="100%">
 					<BarChart data={activity} barGap={2}>
-						<CartesianGrid strokeDasharray="3 3" stroke={colors.grid} vertical={false} />
+						<CartesianGrid strokeDasharray="3 3" stroke="var(--dashboard-chart-grid)" vertical={false} />
 						<XAxis
 							dataKey="date"
 							tickLine={false}
 							axisLine={false}
-							tick={{fontSize: 11, fill: colors.label}}
+							tick={{fontSize: 11, fill: 'var(--dashboard-chart-label)'}}
 						/>
 						<YAxis
 							tickLine={false}
 							axisLine={false}
-							tick={{fontSize: 11, fill: colors.label}}
+							tick={{fontSize: 11, fill: 'var(--dashboard-chart-label)'}}
 							width={60}
 							allowDecimals={false}
 							tickFormatter={(value: number) => value.toLocaleString()}
@@ -68,15 +66,15 @@ export function BorrowingActivity() {
 						/>
 						<Tooltip
 							contentStyle={{
-								backgroundColor: colors.surface,
-								border: `1px solid ${colors.border}`,
+								backgroundColor: 'var(--dashboard-chart-surface)',
+								border: '1px solid var(--dashboard-chart-border)',
 								borderRadius: '0.5rem',
-								color: colors.text,
+								color: 'var(--dashboard-chart-text)',
 								fontSize: '0.75rem',
 							}}
-							labelStyle={{color: colors.text, fontWeight: 600}}
-							itemStyle={{color: colors.item}}
-							cursor={{fill: colors.cursor}}
+							labelStyle={{color: 'var(--dashboard-chart-text)', fontWeight: 600}}
+							itemStyle={{color: 'var(--dashboard-chart-item)'}}
+							cursor={{fill: 'var(--dashboard-chart-cursor)'}}
 						/>
 						<Legend
 							wrapperStyle={{fontSize: '0.75rem'}}

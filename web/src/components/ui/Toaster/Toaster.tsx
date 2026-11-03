@@ -28,7 +28,7 @@ function Icon(props: {type: ToastType | undefined}) {
 	return (
 		<FeaturedIcon.Root
 			size="sm"
-			accent={props.type === 'error' ? 'danger' : props.type === 'success' ? 'success' : 'info'}
+			accent={props.type === 'error' ? 'danger' : props.type === 'success' ? 'success' : 'primary'}
 		>
 			<FeaturedIcon.Icon>
 				{props.type === 'error' ? (

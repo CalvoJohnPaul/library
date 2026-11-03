@@ -6,22 +6,29 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1.0">
 		<title>USAT</title>
 		<script>
-		(() => {
-			const storageValue = localStorage.getItem('theme');
+		((localStorageKey, darkModeQuery) => {
+			const theme = localStorage.getItem(localStorageKey);
 
-			if (
-				storageValue === 'dark' ||
-				(storageValue !== 'light' && window.matchMedia('(prefers-color-scheme: dark)').matches)
-			) {
-				localStorage.setItem('theme', 'dark');
+			if (theme === 'dark') {
+				localStorage.setItem(localStorageKey, 'dark');
 				document.documentElement.classList.add('dark');
 				document.documentElement.style.colorScheme = 'dark';
-			} else {
-				localStorage.setItem('theme', 'light');
+			} else if (theme === 'light') {
+				localStorage.setItem(localStorageKey, 'light');
 				document.documentElement.classList.remove('dark');
 				document.documentElement.style.colorScheme = 'light';
+			} else {
+				if (window.matchMedia(darkModeQuery).matches) {
+					localStorage.setItem(localStorageKey, 'dark');
+					document.documentElement.classList.add('dark');
+					document.documentElement.style.colorScheme = 'dark';
+				} else {
+					localStorage.setItem(localStorageKey, 'light');
+					document.documentElement.classList.remove('dark');
+					document.documentElement.style.colorScheme = 'light';
+				}
 			}
-		})();
+		})('library/theme', '(prefers-color-scheme: dark)');
 		</script>
 		<style>
 		#splash {

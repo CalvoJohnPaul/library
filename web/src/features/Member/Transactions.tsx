@@ -23,8 +23,6 @@ import {Menu} from '@/components/ui/Menu';
 import {Tooltip} from '@/components/ui/Tooltip';
 import {type BooksInput, useBooksQuery} from '@/hooks/useBooksQuery';
 import {useExportTransactionsMutation} from '@/hooks/useExportTransactionsMutation';
-import {useReservationsQuery} from '@/hooks/useReservationsQuery';
-import {useStatsQuery} from '@/hooks/useStatsQuery';
 import {type TransactionsInput, useTransactionsQuery} from '@/hooks/useTransactionsQuery';
 import {ClaimReservation} from '@/templates/ClaimReservation';
 import {ReturnBookCopy} from '@/templates/ReturnBookCopy';
@@ -95,12 +93,6 @@ export function Transactions() {
 	} satisfies TransactionsInput;
 
 	const query = useTransactionsQuery(filters);
-	const refreshAfterReservation = () => {
-		client.invalidateQueries({queryKey: useTransactionsQuery.getQueryKey()});
-		client.invalidateQueries({queryKey: useReservationsQuery.getQueryKey()});
-		client.invalidateQueries({queryKey: useStatsQuery.getQueryKey()});
-	};
-
 	const exportMutation = useExportTransactionsMutation({
 		onError: (error) => {
 			toaster.error({

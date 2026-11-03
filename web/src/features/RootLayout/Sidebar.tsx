@@ -56,27 +56,28 @@ export function Sidebar() {
 	return (
 		<nav
 			className={cx(
-				'sticky top-16 h-[calc(100vh-4rem)] shrink-0 overflow-hidden border-neutral-200 border-r bg-white p-4 font-heading text-neutral-700 transition-[width] duration-250 ease-in-out dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-200',
+				'sticky top-16 flex h-[calc(100vh-4rem)] shrink-0 flex-col gap-4 overflow-hidden border-neutral-200 border-r bg-white p-4 font-heading text-neutral-700 transition-[width] duration-250 ease-in-out dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-200',
 				collapsed ? 'w-20' : 'w-64',
 			)}
 		>
 			<Search />
+			<nav className="w-full grow">
+				<ul className="w-full space-y-3 px-3">
+					{links.map((link) => (
+						<li key={link.href} className="block w-full">
+							<SidebarLink icon={<link.icon />} label={link.label} href={link.href} />
+						</li>
+					))}
 
-			<ul className="mt-4 w-full space-y-3 px-3">
-				{links.map((link) => (
-					<li key={link.href} className="block w-full">
-						<SidebarLink icon={<link.icon />} label={link.label} href={link.href} />
+					<li className="contents">
+						<Logout
+							trigger={({setOpen}) => (
+								<SidebarLink icon={<LogOutIcon />} label="Log out" onClick={() => setOpen(true)} />
+							)}
+						/>
 					</li>
-				))}
-
-				<li className="contents">
-					<Logout
-						trigger={({setOpen}) => (
-							<SidebarLink icon={<LogOutIcon />} label="Log out" onClick={() => setOpen(true)} />
-						)}
-					/>
-				</li>
-			</ul>
+				</ul>
+			</nav>
 		</nav>
 	);
 }
