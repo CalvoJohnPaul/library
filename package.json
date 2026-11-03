@@ -22,7 +22,9 @@
 		"build": "turbo run build",
 		"test": "turbo run test",
 		"format": "biome format --write .",
-		"lint": "biome lint ."
+		"lint": "biome lint .",
+		"seed": "pnpm --filter @library/api exec prisma db seed",
+		"create-account": "pnpm --filter @library/api exec create-account"
 	},
 	"dependencies": {
 		"@biomejs/biome": "^2.5.15",
