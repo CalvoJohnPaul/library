@@ -202,6 +202,53 @@ export function Transactions() {
 						orderable: true,
 					},
 					{
+						id: 'member',
+						heading: 'Member',
+						cell: (transaction) => (
+							<Link
+								to={`/members/${transaction.member.id}`}
+								className="block max-w-48 truncate text-blue-500 dark:text-blue-400"
+							>
+								{transaction.member.name}
+							</Link>
+						),
+						filter: {
+							type: 'ASYNC_COMBOBOX',
+							options: async (search, value) => {
+								let input: MembersInput;
+
+								if (search.trim() === '' && value.length > 0) {
+									input = {
+										id: {in: value},
+										page: 1,
+									};
+								} else {
+									input = {
+										name: {contains: search},
+										page: 1,
+										pageSize: 25,
+									};
+								}
+
+								const data = await client.query({
+									queryFn: useMembersQuery.getQueryFn(input),
+									queryKey: useMembersQuery.getQueryKey(input),
+								});
+
+								return data.rows.map((member) => ({
+									value: member.id.toString(),
+									label: `${member.name} (${member.externalId})`,
+								}));
+							},
+							value: state.member ?? [],
+							onChange: (member) => setState({member}),
+							multiple: true,
+							placeholder: 'Search member',
+						},
+						hideable: true,
+						orderable: true,
+					},
+					{
 						id: 'book',
 						heading: 'Book',
 						cell: (transaction) => {
@@ -264,53 +311,6 @@ export function Transactions() {
 							placeholder: 'Enter ISBN',
 							value: state.isbn ?? '',
 							onChange: (value) => setState({isbn: value || null}),
-						},
-						hideable: true,
-						orderable: true,
-					},
-					{
-						id: 'member',
-						heading: 'Member',
-						cell: (transaction) => (
-							<Link
-								to={`/members/${transaction.member.id}`}
-								className="block max-w-48 truncate text-blue-500 dark:text-blue-400"
-							>
-								{transaction.member.name}
-							</Link>
-						),
-						filter: {
-							type: 'ASYNC_COMBOBOX',
-							options: async (search, value) => {
-								let input: MembersInput;
-
-								if (search.trim() === '' && value.length > 0) {
-									input = {
-										id: {in: value},
-										page: 1,
-									};
-								} else {
-									input = {
-										name: {contains: search},
-										page: 1,
-										pageSize: 25,
-									};
-								}
-
-								const data = await client.query({
-									queryFn: useMembersQuery.getQueryFn(input),
-									queryKey: useMembersQuery.getQueryKey(input),
-								});
-
-								return data.rows.map((member) => ({
-									value: member.id.toString(),
-									label: `${member.name} (${member.externalId})`,
-								}));
-							},
-							value: state.member ?? [],
-							onChange: (member) => setState({member}),
-							multiple: true,
-							placeholder: 'Search member',
 						},
 						hideable: true,
 						orderable: true,

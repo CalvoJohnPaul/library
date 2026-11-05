@@ -188,21 +188,6 @@ export function Transactions() {
 					orderable: true,
 				},
 				{
-					id: 'isbn',
-					heading: 'ISBN',
-					cell(transaction) {
-						return transaction.bookCopy?.isbn ?? null;
-					},
-					filter: {
-						type: 'TEXT',
-						placeholder: 'Enter ISBN',
-						value: state.isbn ?? '',
-						onChange: (value) => setState({isbn: value || null}),
-					},
-					hideable: true,
-					orderable: true,
-				},
-				{
 					id: 'member',
 					heading: 'Member',
 					cell(transaction) {
@@ -251,6 +236,21 @@ export function Transactions() {
 						onChange: (member) => setState({member}),
 						multiple: true,
 						placeholder: 'Search member',
+					},
+					hideable: true,
+					orderable: true,
+				},
+				{
+					id: 'isbn',
+					heading: 'ISBN',
+					cell(transaction) {
+						return transaction.bookCopy?.isbn ?? null;
+					},
+					filter: {
+						type: 'TEXT',
+						placeholder: 'Enter ISBN',
+						value: state.isbn ?? '',
+						onChange: (value) => setState({isbn: value || null}),
 					},
 					hideable: true,
 					orderable: true,
