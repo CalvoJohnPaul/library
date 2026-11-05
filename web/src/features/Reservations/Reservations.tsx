@@ -25,11 +25,11 @@ import {type BooksInput, useBooksQuery} from '@/hooks/useBooksQuery';
 import {useExportReservationsMutation} from '@/hooks/useExportReservationsMutation';
 import {type MembersInput, useMembersQuery} from '@/hooks/useMembersQuery';
 import {type ReservationsInput, useReservationsQuery} from '@/hooks/useReservationsQuery';
+import {AddReservation} from '@/templates/AddReservation';
 import {ClaimReservation} from '@/templates/ClaimReservation';
 import {UnreserveReservation} from '@/templates/UnreserveReservation';
 import {client} from '@/utils/client';
 import {toaster} from '@/utils/toaster';
-import {AddReservation} from './AddReservation';
 
 export function Reservations() {
 	const [state, setState] = useQueryStates({
@@ -89,7 +89,11 @@ export function Reservations() {
 						Manage book reservations below.
 					</p>
 				</div>
-				<AddReservation />
+				<AddReservation
+					onAdded={() => {
+						client.invalidateQueries({queryKey: useReservationsQuery.getQueryKey()});
+					}}
+				/>
 			</div>
 			<DataTable
 				id="reservations"
@@ -366,6 +370,9 @@ export function Reservations() {
 								</Portal>
 							</Tooltip.Root>
 						)}
+						onAdded={() => {
+							client.invalidateQueries({queryKey: useReservationsQuery.getQueryKey()});
+						}}
 					/>
 				}
 			/>

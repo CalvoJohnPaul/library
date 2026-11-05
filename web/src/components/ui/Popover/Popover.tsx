@@ -8,6 +8,7 @@ const {withContext, withRootProvider} = createRecipeContext(popoverRecipe);
 export const Root = withRootProvider(Popover.Root, {
 	defaultProps: {
 		lazyMount: true,
+		unmountOnExit: true,
 	},
 });
 export const Anchor = withContext(Popover.Anchor, 'anchor');

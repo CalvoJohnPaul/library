@@ -5,12 +5,15 @@ import {SpinnerIcon} from '@/components/icons/SpinnerIcon';
 import {Button} from '@/components/ui/Button/Button';
 import {Tabs} from '@/components/ui/Tabs';
 import {useMemberQuery} from '@/hooks/useMemberQuery';
+import {useReservationsQuery} from '@/hooks/useReservationsQuery';
+import {AddReservation} from '@/templates/AddReservation';
+import {client} from '@/utils/client';
 import {MemberProvider} from './MemberContext';
 import {Reservations} from './Reservations';
 import {Settings} from './Settings';
 import {Transactions} from './Transactions';
 
-const TabDefinition = z.enum(['transactions', 'reservations', 'settings']).catch('transactions');
+const TabDefinition = z.enum(['reservations', 'transactions', 'settings']).catch('reservations');
 
 export function Member() {
 	const {id} = useParams<{id: string}>();
@@ -21,7 +24,7 @@ export function Member() {
 	const setTab = (value: string) => {
 		const tab = TabDefinition.parse(value);
 
-		if (tab === 'transactions') {
+		if (tab === 'reservations') {
 			navigate(`/members/${id}`);
 		} else {
 			navigate(`/members/${id}?tab=${tab}`);
@@ -61,25 +64,6 @@ export function Member() {
 		<>
 			<title>{`${query.data.name} | USAT`}</title>
 			<MemberProvider value={query.data}>
-				<div>
-					<Link
-						to="/members"
-						className="flex items-center gap-1 text-blue-500 text-xs dark:text-blue-400"
-					>
-						<ArrowLeftIcon className="size-3.5" />
-						Go to members
-					</Link>
-				</div>
-
-				<div className="mb-6 flex items-center gap-3">
-					<div className="grow">
-						<h1 className="font-bold text-xl">{query.data.name}</h1>
-						<p className="text-neutral-600 text-sm dark:text-neutral-300">
-							Manage the details of your member below.
-						</p>
-					</div>
-				</div>
-
 				<Tabs.Root
 					value={tab}
 					onValueChange={(details) => {
@@ -88,9 +72,43 @@ export function Member() {
 					lazyMount
 					unmountOnExit
 				>
+					<div>
+						<Link
+							to="/members"
+							className="flex items-center gap-1 text-blue-500 text-xs dark:text-blue-400"
+						>
+							<ArrowLeftIcon className="size-3.5" />
+							Go to members
+						</Link>
+					</div>
+
+					<div className="mb-6 flex items-center gap-3">
+						<div className="grow">
+							<h1 className="font-bold text-xl">{query.data.name}</h1>
+							<p className="text-neutral-600 text-sm dark:text-neutral-300">
+								Manage the details of your member below.
+							</p>
+						</div>
+
+						<Tabs.Context>
+							{(api) => (
+								<>
+									{api.value === 'reservations' && (
+										<AddReservation
+											memberId={query.data.id}
+											onAdded={() => {
+												client.invalidateQueries({queryKey: useReservationsQuery.getQueryKey()});
+											}}
+										/>
+									)}
+								</>
+							)}
+						</Tabs.Context>
+					</div>
+
 					<Tabs.List className="mb-8 w-100">
-						<Tabs.Trigger value="transactions">Transactions</Tabs.Trigger>
 						<Tabs.Trigger value="reservations">Reservations</Tabs.Trigger>
+						<Tabs.Trigger value="transactions">Transactions</Tabs.Trigger>
 						<Tabs.Trigger value="settings">Settings</Tabs.Trigger>
 						<Tabs.Indicator />
 					</Tabs.List>

@@ -7,6 +7,7 @@ const {withProvider, withContext} = createRecipeContext(tabsRecipe);
 export const Root = withProvider(Tabs.Root, 'root', {
 	defaultProps: {
 		lazyMount: true,
+		unmountOnExit: true,
 	},
 });
 export const Content = withContext(Tabs.Content, 'content');

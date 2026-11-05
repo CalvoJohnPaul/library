@@ -10,6 +10,7 @@ export const Root = withRootProvider(Dialog.Root, {
 	defaultProps: {
 		role: 'dialog',
 		lazyMount: true,
+		unmountOnExit: true,
 		closeOnEscape: false,
 		closeOnInteractOutside: false,
 	},

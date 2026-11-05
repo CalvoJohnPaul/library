@@ -185,6 +185,7 @@ export function Reservations() {
 					cell: (reservation) => reservation.remarks,
 					hideable: true,
 					orderable: true,
+					defaultHidden: true,
 				},
 				{
 					id: 'dateTimeCreated',

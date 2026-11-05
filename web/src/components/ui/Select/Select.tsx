@@ -9,6 +9,7 @@ const {withProvider, withContext} = createRecipeContext(selectRecipe);
 export const Root = withProvider(Select.Root<CollectionItem>, 'root', {
 	defaultProps: {
 		lazyMount: true,
+		unmountOnExit: true,
 		loopFocus: true,
 		deselectable: true,
 		positioning: {

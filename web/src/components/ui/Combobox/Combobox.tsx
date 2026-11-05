@@ -10,6 +10,7 @@ export const Root = withProvider(Combobox.Root<CollectionItem>, 'root', {
 	defaultProps: {
 		lazyMount: true,
 		loopFocus: true,
+		unmountOnExit: true,
 		positioning: {
 			placement: 'bottom',
 			sameWidth: true,

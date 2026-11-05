@@ -1,6 +1,10 @@
 import {Portal} from '@ark-ui/react';
 import {zodResolver} from '@hookform/resolvers/zod';
-import {type CreateReservationInput, CreateReservationInputDefinition} from '@library/types';
+import {
+	type CreateReservationInput,
+	CreateReservationInputDefinition,
+	type Reservation,
+} from '@library/types';
 import {isFunction} from 'es-toolkit';
 import {PlusIcon} from 'lucide-react';
 import type {ReactNode} from 'react';
@@ -15,25 +19,35 @@ import {type BooksInput, useBooksQuery} from '@/hooks/useBooksQuery';
 import {useCreateReservationMutation} from '@/hooks/useCreateReservationMutation';
 import {type UseDisclosureReturn, useDisclosure} from '@/hooks/useDisclosure';
 import {type MembersInput, useMembersQuery} from '@/hooks/useMembersQuery';
-import {useReservationsQuery} from '@/hooks/useReservationsQuery';
 import {client} from '@/utils/client';
 import {toaster} from '@/utils/toaster';
 
-export function AddReservation({
-	trigger,
-}: {
+export interface AddReservationProps {
+	bookId?: number;
+	memberId?: number;
 	trigger?: ReactNode | ((disclosure: UseDisclosureReturn) => ReactNode);
-}) {
-	const disclosure = useDisclosure();
+	disabled?: boolean;
+	onAdded?: (data: Reservation) => void;
+}
+
+export function AddReservation(props: AddReservationProps) {
+	const {bookId, memberId, trigger, disabled, onAdded} = props;
+
 	const form = useForm<CreateReservationInput>({
 		resolver: zodResolver(CreateReservationInputDefinition),
-		defaultValues: {remarks: ''},
+		defaultValues: {
+			bookId,
+			memberId,
+			remarks: '',
+		},
 	});
+
+	const disclosure = useDisclosure();
 	const mutation = useCreateReservationMutation({
-		onSuccess: () => {
+		onSuccess: (data) => {
 			disclosure.setOpen(false);
 			toaster.success({description: 'Reservation has been created.'});
-			client.invalidateQueries({queryKey: useReservationsQuery.getQueryKey()});
+			onAdded?.(data);
 		},
 		onError: (error) => toaster.error({description: error.message}),
 	});
@@ -46,7 +60,7 @@ export function AddReservation({
 			}}
 			onExitComplete={() => form.reset({remarks: ''})}
 		>
-			<Dialog.Trigger asChild>
+			<Dialog.Trigger asChild disabled={disabled}>
 				{isFunction(trigger)
 					? trigger(disclosure)
 					: (trigger ?? (
@@ -79,72 +93,82 @@ export function AddReservation({
 								<Dialog.CloseTrigger />
 							</Dialog.Header>
 							<Dialog.Body>
-								<Controller
-									control={form.control}
-									name="bookId"
-									render={({field, fieldState}) => (
-										<Field.Root invalid={fieldState.invalid}>
-											<Field.Label>Book</Field.Label>
-											<AsyncComboboxField
-												placeholder="Search book"
-												value={field.value?.toString() ?? ''}
-												onChange={(value) => field.onChange(value ? Number(value) : undefined)}
-												options={async (search, value) => {
-													const input: BooksInput =
-														search.trim() === '' && value
-															? {id: {in: [value]}, page: 1}
-															: {title: {contains: search}, page: 1, pageSize: 25};
-													try {
-														const data = await client.query({
-															queryKey: useBooksQuery.getQueryKey(input),
-															queryFn: useBooksQuery.getQueryFn(input),
-														});
-														return data.rows.map((book) => ({
-															value: book.id.toString(),
-															label: `${book.title} (${book.author})`,
-														}));
-													} catch {
-														return [];
-													}
-												}}
-											/>
-											<Field.ErrorText>{fieldState.error?.message}</Field.ErrorText>
-										</Field.Root>
-									)}
-								/>
-								<Controller
-									control={form.control}
-									name="memberId"
-									render={({field, fieldState}) => (
-										<Field.Root invalid={fieldState.invalid}>
-											<Field.Label>Member</Field.Label>
-											<AsyncComboboxField
-												placeholder="Search member"
-												value={field.value?.toString() ?? ''}
-												onChange={(value) => field.onChange(value ? Number(value) : undefined)}
-												options={async (search, value) => {
-													const input: MembersInput =
-														search.trim() === '' && value
-															? {id: {in: [value]}, page: 1}
-															: {name: {contains: search}, page: 1, pageSize: 25};
-													try {
-														const data = await client.query({
-															queryKey: useMembersQuery.getQueryKey(input),
-															queryFn: useMembersQuery.getQueryFn(input),
-														});
-														return data.rows.map((member) => ({
-															value: member.id.toString(),
-															label: `${member.name} (${member.externalId})`,
-														}));
-													} catch {
-														return [];
-													}
-												}}
-											/>
-											<Field.ErrorText>{fieldState.error?.message}</Field.ErrorText>
-										</Field.Root>
-									)}
-								/>
+								{!bookId && (
+									<Controller
+										control={form.control}
+										name="bookId"
+										render={({field, fieldState}) => (
+											<Field.Root invalid={fieldState.invalid} disabled={!!bookId}>
+												<Field.Label>Book</Field.Label>
+												<AsyncComboboxField
+													placeholder="Search book"
+													value={field.value?.toString() ?? ''}
+													onChange={(value) => field.onChange(value ? Number(value) : undefined)}
+													options={async (search, value) => {
+														const input: BooksInput =
+															search.trim() === '' && value
+																? {id: {in: [value]}, page: 1}
+																: {title: {contains: search}, page: 1, pageSize: 25};
+
+														try {
+															const data = await client.query({
+																queryKey: useBooksQuery.getQueryKey(input),
+																queryFn: useBooksQuery.getQueryFn(input),
+															});
+
+															return data.rows.map((book) => ({
+																value: book.id.toString(),
+																label: `${book.title} (${book.author})`,
+															}));
+														} catch {
+															return [];
+														}
+													}}
+												/>
+												<Field.ErrorText>{fieldState.error?.message}</Field.ErrorText>
+											</Field.Root>
+										)}
+									/>
+								)}
+
+								{!memberId && (
+									<Controller
+										control={form.control}
+										name="memberId"
+										render={({field, fieldState}) => (
+											<Field.Root invalid={fieldState.invalid} disabled={!!memberId}>
+												<Field.Label>Member</Field.Label>
+												<AsyncComboboxField
+													placeholder="Search member"
+													value={field.value?.toString() ?? ''}
+													onChange={(value) => field.onChange(value ? Number(value) : undefined)}
+													options={async (search, value) => {
+														const input: MembersInput =
+															search.trim() === '' && value
+																? {id: {in: [value]}, page: 1}
+																: {name: {contains: search}, page: 1, pageSize: 25};
+
+														try {
+															const data = await client.query({
+																queryKey: useMembersQuery.getQueryKey(input),
+																queryFn: useMembersQuery.getQueryFn(input),
+															});
+
+															return data.rows.map((member) => ({
+																value: member.id.toString(),
+																label: `${member.name} (${member.externalId})`,
+															}));
+														} catch {
+															return [];
+														}
+													}}
+												/>
+												<Field.ErrorText>{fieldState.error?.message}</Field.ErrorText>
+											</Field.Root>
+										)}
+									/>
+								)}
+
 								<Field.Root invalid={!!form.formState.errors.remarks}>
 									<Field.Label>Remarks</Field.Label>
 									<Field.Textarea placeholder="Enter remarks" {...form.register('remarks')} />

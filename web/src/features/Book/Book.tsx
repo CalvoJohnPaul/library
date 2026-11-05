@@ -5,6 +5,9 @@ import {SpinnerIcon} from '@/components/icons/SpinnerIcon';
 import {Button} from '@/components/ui/Button';
 import {Tabs} from '@/components/ui/Tabs';
 import {useBookQuery} from '@/hooks/useBookQuery';
+import {useReservationsQuery} from '@/hooks/useReservationsQuery';
+import {AddReservation} from '@/templates/AddReservation';
+import {client} from '@/utils/client';
 import {AddBookCopy} from './AddBookCopy';
 import {BookProvider} from './BookContext';
 import {Copies} from './BookCopies';
@@ -13,7 +16,7 @@ import {Settings} from './Settings';
 import {Transactions} from './Transactions';
 
 const TabDefinition = z
-	.enum(['copies', 'transactions', 'reservations', 'settings'])
+	.enum(['copies', 'reservations', 'transactions', 'settings'])
 	.catch('copies');
 
 export function Book() {
@@ -91,13 +94,27 @@ export function Book() {
 							</p>
 						</div>
 
-						<Tabs.Context>{(api) => <>{api.value === 'copies' && <AddBookCopy />}</>}</Tabs.Context>
+						<Tabs.Context>
+							{(api) => (
+								<>
+									{api.value === 'copies' && <AddBookCopy />}
+									{api.value === 'reservations' && (
+										<AddReservation
+											bookId={query.data.id}
+											onAdded={() => {
+												client.invalidateQueries({queryKey: useReservationsQuery.getQueryKey()});
+											}}
+										/>
+									)}
+								</>
+							)}
+						</Tabs.Context>
 					</div>
 
 					<Tabs.List className="mb-8 w-120">
 						<Tabs.Trigger value="copies">Copies</Tabs.Trigger>
-						<Tabs.Trigger value="transactions">Transactions</Tabs.Trigger>
 						<Tabs.Trigger value="reservations">Reservations</Tabs.Trigger>
+						<Tabs.Trigger value="transactions">Transactions</Tabs.Trigger>
 						<Tabs.Trigger value="settings">Settings</Tabs.Trigger>
 						<Tabs.Indicator />
 					</Tabs.List>

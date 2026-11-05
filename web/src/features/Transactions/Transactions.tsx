@@ -323,6 +323,7 @@ export function Transactions() {
 						},
 						hideable: true,
 						orderable: true,
+						defaultHidden: true,
 					},
 					{
 						id: 'dateTimeCreated',

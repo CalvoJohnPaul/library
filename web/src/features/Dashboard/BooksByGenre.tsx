@@ -15,32 +15,32 @@ import {useDashboardContext} from './DashboardContext';
 const GENRE_SLICE_COUNT = 6;
 const GENRE_COLORS_MAP = [
 	{
-		fill: 'light-dark(#3b82f6, #2563eb)',
-		label: 'light-dark(#2563eb, #93c5fd)',
+		fill: 'light-dark(var(--color-blue-500), var(--color-blue-600))',
+		label: 'light-dark(var(--color-blue-600), var(--color-blue-300))',
 	},
 	{
-		fill: 'light-dark(#10b981, #059669)',
-		label: 'light-dark(#059669, #6ee7b7)',
+		fill: 'light-dark(var(--color-emerald-500), var(--color-emerald-600))',
+		label: 'light-dark(var(--color-emerald-600), var(--color-emerald-300))',
 	},
 	{
-		fill: 'light-dark(#a855f7, #9333ea)',
-		label: 'light-dark(#9333ea, #d8b4fe)',
+		fill: 'light-dark(var(--color-purple-500), var(--color-purple-600))',
+		label: 'light-dark(var(--color-purple-600), var(--color-purple-300))',
 	},
 	{
-		fill: 'light-dark(#f59e0b, #d97706)',
-		label: 'light-dark(#d97706, #fcd34d)',
+		fill: 'light-dark(var(--color-amber-500), var(--color-amber-600))',
+		label: 'light-dark(var(--color-amber-600), var(--color-amber-300))',
 	},
 	{
-		fill: 'light-dark(#f43f5e, #e11d48)',
-		label: 'light-dark(#e11d48, #fda4af)',
+		fill: 'light-dark(var(--color-rose-500), var(--color-rose-600))',
+		label: 'light-dark(var(--color-rose-600), var(--color-rose-300))',
 	},
 	{
-		fill: 'light-dark(#06b6d4, #0891b2)',
-		label: 'light-dark(#0891b2, #67e8f9)',
+		fill: 'light-dark(var(--color-cyan-500), var(--color-cyan-600))',
+		label: 'light-dark(var(--color-cyan-600), var(--color-cyan-300))',
 	},
 	{
-		fill: 'light-dark(#a8a29e, #57534e)',
-		label: 'light-dark(#78716c, #d4d4d4)',
+		fill: 'light-dark(var(--color-stone-200), var(--color-stone-700))',
+		label: 'light-dark(var(--color-stone-500), var(--color-neutral-300))',
 	},
 ];
 

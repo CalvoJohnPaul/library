@@ -8,6 +8,7 @@ const {withProvider, withContext} = createRecipeContext(datePickerRecipe);
 export const Root = withProvider(DatePicker.Root, 'root', {
 	defaultProps: {
 		lazyMount: true,
+		unmountOnExit: true,
 		fixedWeeks: true,
 		positioning: {
 			placement: 'bottom-start',

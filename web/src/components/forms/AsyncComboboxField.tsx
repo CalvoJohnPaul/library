@@ -3,7 +3,7 @@ import {useListCollection} from '@ark-ui/react/collection';
 import {useControllableState} from '@radix-ui/react-use-controllable-state';
 import {useDebouncedCallback} from '@tanstack/react-pacer';
 import {SearchIcon, XIcon} from 'lucide-react';
-import {useRef, useState} from 'react';
+import {useEffect, useEffectEvent, useRef, useState} from 'react';
 import {SpinnerIcon} from '@/components/icons/SpinnerIcon';
 import type {Option} from '@/types/index';
 import {Combobox} from '../ui/Combobox';
@@ -98,6 +98,27 @@ function AsyncComboboxField__single(props: AsyncComboboxField__singleProps) {
 		setIsLoading(true);
 		loadOptions(inputValue, value, ++loadSeqRef.current);
 	};
+
+	const loadSelectedOption = useEffectEvent(async (value: string, isCurrent: () => boolean) => {
+		try {
+			const options = await props.options('', value);
+			if (!isCurrent()) return;
+			set(options);
+			setInputValue(options.find((option) => option.value === value)?.label ?? '');
+		} catch {
+			// Keep the current value if its label cannot be loaded.
+		}
+	});
+
+	useEffect(() => {
+		if (!value || openRef.current) return;
+		let cancelled = false;
+		const seq = ++loadSeqRef.current;
+		void loadSelectedOption(value, () => !cancelled && seq === loadSeqRef.current);
+		return () => {
+			cancelled = true;
+		};
+	}, [value]);
 
 	const content = (
 		<Combobox.Positioner>

@@ -8,6 +8,7 @@ const {withRootProvider, withContext} = createRecipeContext(menuRecipe);
 export const Root = withRootProvider(Menu.Root, {
 	defaultProps: {
 		lazyMount: true,
+		unmountOnExit: true,
 		loopFocus: true,
 	},
 });
