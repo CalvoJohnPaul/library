@@ -37,7 +37,6 @@ export const TransactionDefinition = z.object({
 		.object({
 			id: z.number(),
 			status: ReservationStatusDefinition,
-			bookCopy: BookCopyDefinition.pick({status: true}).nullable(),
 		})
 		.nullable(),
 	dateTimeCreated: DateDefinition,

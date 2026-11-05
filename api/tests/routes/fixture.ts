@@ -2,7 +2,9 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import {faker} from '@faker-js/faker';
+import cors from '@fastify/cors';
 import csrf from '@fastify/csrf-protection';
+import rateLimit from '@fastify/rate-limit';
 import session from '@fastify/secure-session';
 import sensible from '@fastify/sensible';
 import {hash} from 'bcrypt';
@@ -10,7 +12,15 @@ import fastify, {type FastifyInstance} from 'fastify';
 import {serializerCompiler, validatorCompiler} from 'fastify-type-provider-zod';
 import {afterAll, beforeAll, beforeEach, vi} from 'vitest';
 import {prisma as configuredPrisma} from '../../src/config/prisma.js';
+import {
+	corsOptions,
+	handleError,
+	rateLimitOptions,
+	options as serverOptions,
+	sessionOptions,
+} from '../../src/createApp.js';
 import authPlugin from '../../src/plugins/auth.js';
+import exportsPlugin from '../../src/plugins/exports.js';
 import prismaPlugin from '../../src/plugins/prisma.js';
 import bookCopiesRoute from '../../src/routes/bookCopies.js';
 import booksRoute from '../../src/routes/books.js';
@@ -47,8 +57,63 @@ const {mock, mockPrisma} = vi.hoisted(() => {
 		};
 	}
 	function mockPrisma() {
+		const sessions = new Map<
+			string,
+			{
+				id: string;
+				accountId: number;
+				accountVersion: number;
+				expiresAt: Date;
+			}
+		>();
 		const client = {
 			account: model(),
+			session: {
+				...model(),
+				create: async ({
+					data,
+				}: {
+					data: {
+						id: string;
+						accountId: number;
+						accountVersion: number;
+						expiresAt: Date;
+					};
+				}) => {
+					sessions.set(data.id, data);
+					return data;
+				},
+				findUnique: async ({where}: {where: {id: string}}) => {
+					const session = sessions.get(where.id);
+					if (!session) return null;
+					const account: unknown = await client.account.findUnique({
+						where: {id: session.accountId},
+					} as never);
+					return account ? {...session, account} : null;
+				},
+				deleteMany: async ({
+					where,
+				}: {
+					where: {
+						id?: string;
+						accountId?: number;
+						expiresAt?: {lte: Date};
+					};
+				}) => {
+					let count = 0;
+					for (const [id, session] of sessions) {
+						if (
+							(where.id == null || where.id === id) &&
+							(where.accountId == null || where.accountId === session.accountId) &&
+							(where.expiresAt == null || session.expiresAt <= where.expiresAt.lte)
+						) {
+							sessions.delete(id);
+							count++;
+						}
+					}
+					return {count};
+				},
+			},
 			book: model(),
 			bookCopy: model(),
 			member: model(),
@@ -69,33 +134,27 @@ const {mock, mockPrisma} = vi.hoisted(() => {
 
 vi.mock('../../src/config/prisma.js', () => ({prisma: mock}));
 
-export function createFixture() {
+export function createFixture(options: {rateLimit?: boolean} = {}) {
 	let app: FastifyInstance;
 	beforeAll(async () => {
-		app = fastify();
-		app.setErrorHandler((error, _req, reply) => {
-			const statusCode =
-				error instanceof Error && 'statusCode' in error && typeof error.statusCode === 'number'
-					? error.statusCode
-					: 500;
-			reply.code(statusCode).send({
-				ok: false,
-				error: {
-					name: error instanceof Error ? error.name : 'Error',
-					message: error instanceof Error ? error.message : 'Unexpected error',
-				},
-			});
-		});
+		app = fastify({...serverOptions, logger: false});
+		app.setErrorHandler(handleError);
 		app.setValidatorCompiler(validatorCompiler);
 		app.setSerializerCompiler(serializerCompiler);
 		await app.register(sensible);
+		await app.register(cors, corsOptions);
+		await app.register(rateLimit, {
+			...rateLimitOptions,
+			allowList: () => !options.rateLimit,
+		});
 		await app.register(session, {
+			...sessionOptions,
 			key: await fs.readFile(path.resolve(__dirname, '../../session-key')),
-			cookie: {path: '/', signed: true, httpOnly: true},
 		});
 		await app.register(csrf, {sessionPlugin: '@fastify/secure-session'});
 		await app.register(prismaPlugin);
 		await app.register(authPlugin);
+		await app.register(exportsPlugin);
 		await app.register(bookCopiesRoute, {prefix: '/book-copies'});
 		await app.register(booksRoute, {prefix: '/books'});
 		await app.register(csrfRoute, {prefix: '/csrf'});
@@ -113,13 +172,14 @@ export function createFixture() {
 		const fresh = mockPrisma();
 		for (const name of [
 			'account',
+			'session',
 			'book',
 			'bookCopy',
 			'member',
 			'reservation',
 			'transaction',
 		] as const) {
-			Object.assign(mock[name], fresh[name]);
+			Object.assign(mock, {[name]: fresh[name]});
 		}
 		mock.$queryRaw = fresh.$queryRaw;
 	});
@@ -132,14 +192,15 @@ export function createFixture() {
 			return app;
 		},
 		mock: configuredPrisma as unknown as typeof mock,
-		async auth(): Promise<Headers> {
-			const password = faker.internet.password();
-			const email = faker.internet.email();
+		async auth(credentials?: {id: number; email: string; password: string}): Promise<Headers> {
+			const password = credentials?.password ?? faker.internet.password();
+			const email = credentials?.email ?? faker.internet.email();
 			const account = {
-				id: faker.number.int({min: 1, max: 1_000_000}),
+				id: credentials?.id ?? faker.number.int({min: 1, max: 1_000_000}),
 				name: faker.person.fullName(),
 				email,
 				password: await hash(password, 4),
+				sessionVersion: 0,
 				dateTimeCreated: new Date(),
 				dateTimeUpdated: new Date(),
 			};

@@ -19,6 +19,7 @@ import * as XLSX from 'xlsx';
 import * as z from 'zod';
 import type {Prisma} from '../../prisma/.generated/client';
 import {clean} from '../helpers/clean';
+import {loadExportRows, runExport} from '../helpers/export';
 import {
 	ExcelWorkbookDefinition,
 	QueryString__DateDefinition,
@@ -198,8 +199,8 @@ const plugin: FastifyPluginAsyncZod = async (app) => {
 						req.query.sortBy == null
 							? [{dateTimeCreated: 'desc'}, {id: 'desc'}]
 							: {
-								[req.query.sortBy]: req.query.sortOrder === 'ASC' ? 'asc' : 'desc',
-							},
+									[req.query.sortBy]: req.query.sortOrder === 'ASC' ? 'asc' : 'desc',
+								},
 				}),
 			]);
 
@@ -878,7 +879,8 @@ const plugin: FastifyPluginAsyncZod = async (app) => {
 	app.post(
 		'/export',
 		{
-			preHandler: [app.verifyAuth],
+			onRequest: [app.csrfProtection],
+			preHandler: [app.verifyAuth, app.verifyExport],
 			schema: {
 				tags: ['Book Copies'],
 				querystring: z.object({
@@ -922,149 +924,158 @@ const plugin: FastifyPluginAsyncZod = async (app) => {
 				},
 			},
 		},
-		async (req, reply) => {
-			const where: Prisma.BookCopyWhereInput = {};
+		async (req, reply) =>
+			runExport(app, async () => {
+				const where: Prisma.BookCopyWhereInput = {};
 
-			if (
-				req.query.id__eq != null ||
-				req.query.id__neq != null ||
-				req.query.id__in != null ||
-				req.query.id__nin != null
-			) {
-				where.id = {
-					...(req.query.id__eq != null && {equals: req.query.id__eq}),
-					...(req.query.id__neq != null && {not: req.query.id__neq}),
-					...(req.query.id__in != null && {in: req.query.id__in}),
-					...(req.query.id__nin != null && {notIn: req.query.id__nin}),
-				};
-			}
+				if (
+					req.query.id__eq != null ||
+					req.query.id__neq != null ||
+					req.query.id__in != null ||
+					req.query.id__nin != null
+				) {
+					where.id = {
+						...(req.query.id__eq != null && {equals: req.query.id__eq}),
+						...(req.query.id__neq != null && {not: req.query.id__neq}),
+						...(req.query.id__in != null && {in: req.query.id__in}),
+						...(req.query.id__nin != null && {notIn: req.query.id__nin}),
+					};
+				}
 
-			if (
-				req.query.isbn__eq != null ||
-				req.query.isbn__neq != null ||
-				req.query.isbn__in != null ||
-				req.query.isbn__nin != null ||
-				req.query.isbn__contains
-			) {
-				where.isbn = {
-					...(req.query.isbn__eq != null && {equals: req.query.isbn__eq}),
-					...(req.query.isbn__neq != null && {not: req.query.isbn__neq}),
-					...(req.query.isbn__in != null && {in: req.query.isbn__in}),
-					...(req.query.isbn__nin != null && {notIn: req.query.isbn__nin}),
-					...(req.query.isbn__contains != null && {
-						contains: req.query.isbn__contains,
-						mode: 'insensitive',
-					}),
-				};
-			}
+				if (
+					req.query.isbn__eq != null ||
+					req.query.isbn__neq != null ||
+					req.query.isbn__in != null ||
+					req.query.isbn__nin != null ||
+					req.query.isbn__contains
+				) {
+					where.isbn = {
+						...(req.query.isbn__eq != null && {equals: req.query.isbn__eq}),
+						...(req.query.isbn__neq != null && {not: req.query.isbn__neq}),
+						...(req.query.isbn__in != null && {in: req.query.isbn__in}),
+						...(req.query.isbn__nin != null && {notIn: req.query.isbn__nin}),
+						...(req.query.isbn__contains != null && {
+							contains: req.query.isbn__contains,
+							mode: 'insensitive',
+						}),
+					};
+				}
 
-			if (
-				req.query.status__eq != null ||
-				req.query.status__neq != null ||
-				req.query.status__in != null ||
-				req.query.status__nin != null
-			) {
-				where.status = {
-					...(req.query.status__eq != null && {equals: req.query.status__eq}),
-					...(req.query.status__neq != null && {not: req.query.status__neq}),
-					...(req.query.status__in != null && {in: req.query.status__in}),
-					...(req.query.status__nin != null && {notIn: req.query.status__nin}),
-				};
-			}
+				if (
+					req.query.status__eq != null ||
+					req.query.status__neq != null ||
+					req.query.status__in != null ||
+					req.query.status__nin != null
+				) {
+					where.status = {
+						...(req.query.status__eq != null && {equals: req.query.status__eq}),
+						...(req.query.status__neq != null && {not: req.query.status__neq}),
+						...(req.query.status__in != null && {in: req.query.status__in}),
+						...(req.query.status__nin != null && {notIn: req.query.status__nin}),
+					};
+				}
 
-			if (
-				req.query.bookId__eq != null ||
-				req.query.bookId__neq != null ||
-				req.query.bookId__in != null ||
-				req.query.bookId__nin != null
-			) {
-				where.bookId = {
-					...(req.query.bookId__eq != null && {equals: req.query.bookId__eq}),
-					...(req.query.bookId__neq != null && {not: req.query.bookId__neq}),
-					...(req.query.bookId__in != null && {in: req.query.bookId__in}),
-					...(req.query.bookId__nin != null && {notIn: req.query.bookId__nin}),
-				};
-			}
+				if (
+					req.query.bookId__eq != null ||
+					req.query.bookId__neq != null ||
+					req.query.bookId__in != null ||
+					req.query.bookId__nin != null
+				) {
+					where.bookId = {
+						...(req.query.bookId__eq != null && {equals: req.query.bookId__eq}),
+						...(req.query.bookId__neq != null && {not: req.query.bookId__neq}),
+						...(req.query.bookId__in != null && {in: req.query.bookId__in}),
+						...(req.query.bookId__nin != null && {notIn: req.query.bookId__nin}),
+					};
+				}
 
-			if (
-				req.query.dateTimeCreated__gt != null ||
-				req.query.dateTimeCreated__gte != null ||
-				req.query.dateTimeCreated__lt != null ||
-				req.query.dateTimeCreated__lte != null
-			) {
-				where.dateTimeCreated = {
-					...(req.query.dateTimeCreated__gt != null && {gt: req.query.dateTimeCreated__gt}),
-					...(req.query.dateTimeCreated__gte != null && {gte: req.query.dateTimeCreated__gte}),
-					...(req.query.dateTimeCreated__lt != null && {lt: req.query.dateTimeCreated__lt}),
-					...(req.query.dateTimeCreated__lte != null && {lte: req.query.dateTimeCreated__lte}),
-				};
-			}
+				if (
+					req.query.dateTimeCreated__gt != null ||
+					req.query.dateTimeCreated__gte != null ||
+					req.query.dateTimeCreated__lt != null ||
+					req.query.dateTimeCreated__lte != null
+				) {
+					where.dateTimeCreated = {
+						...(req.query.dateTimeCreated__gt != null && {gt: req.query.dateTimeCreated__gt}),
+						...(req.query.dateTimeCreated__gte != null && {gte: req.query.dateTimeCreated__gte}),
+						...(req.query.dateTimeCreated__lt != null && {lt: req.query.dateTimeCreated__lt}),
+						...(req.query.dateTimeCreated__lte != null && {lte: req.query.dateTimeCreated__lte}),
+					};
+				}
 
-			if (
-				req.query.dateTimeUpdated__gt != null ||
-				req.query.dateTimeUpdated__gte != null ||
-				req.query.dateTimeUpdated__lt != null ||
-				req.query.dateTimeUpdated__lte != null
-			) {
-				where.dateTimeUpdated = {
-					...(req.query.dateTimeUpdated__gt != null && {gt: req.query.dateTimeUpdated__gt}),
-					...(req.query.dateTimeUpdated__gte != null && {gte: req.query.dateTimeUpdated__gte}),
-					...(req.query.dateTimeUpdated__lt != null && {lt: req.query.dateTimeUpdated__lt}),
-					...(req.query.dateTimeUpdated__lte != null && {lte: req.query.dateTimeUpdated__lte}),
-				};
-			}
+				if (
+					req.query.dateTimeUpdated__gt != null ||
+					req.query.dateTimeUpdated__gte != null ||
+					req.query.dateTimeUpdated__lt != null ||
+					req.query.dateTimeUpdated__lte != null
+				) {
+					where.dateTimeUpdated = {
+						...(req.query.dateTimeUpdated__gt != null && {gt: req.query.dateTimeUpdated__gt}),
+						...(req.query.dateTimeUpdated__gte != null && {gte: req.query.dateTimeUpdated__gte}),
+						...(req.query.dateTimeUpdated__lt != null && {lt: req.query.dateTimeUpdated__lt}),
+						...(req.query.dateTimeUpdated__lte != null && {lte: req.query.dateTimeUpdated__lte}),
+					};
+				}
 
-			const rows = await app.prisma.bookCopy.findMany({
-				where,
-				select: {
-					id: true,
-					isbn: true,
-					status: true,
-					dateTimeCreated: true,
-					dateTimeUpdated: true,
-					book: {
+				const rows = await loadExportRows(app, (take, skip) =>
+					app.prisma.bookCopy.findMany({
+						take,
+						skip,
+						where,
 						select: {
 							id: true,
-							title: true,
-							genre: true,
-							author: true,
-							yearPublished: true,
+							isbn: true,
+							status: true,
+							dateTimeCreated: true,
+							dateTimeUpdated: true,
+							book: {
+								select: {
+									id: true,
+									title: true,
+									genre: true,
+									author: true,
+									yearPublished: true,
+								},
+							},
 						},
-					},
-				},
-				orderBy:
-					req.query.sortBy == null
-						? [{dateTimeCreated: 'desc'}, {id: 'desc'}]
-						: {
-							[req.query.sortBy]: req.query.sortOrder === 'ASC' ? 'asc' : 'desc',
-						},
-			});
+						orderBy:
+							req.query.sortBy == null
+								? [{dateTimeCreated: 'desc'}, {id: 'desc'}]
+								: [
+										{[req.query.sortBy]: req.query.sortOrder === 'ASC' ? 'asc' : 'desc'},
+										{id: 'desc'},
+									],
+					}),
+				);
 
-			const worksheet = XLSX.utils.json_to_sheet(
-				rows.map((bookCopy) => ({
-					id: bookCopy.id,
-					isbn: bookCopy.isbn,
-					bookId: bookCopy.book.id,
-					title: bookCopy.book.title,
-					author: bookCopy.book.author,
-					genre: bookCopy.book.genre,
-					yearPublished: bookCopy.book.yearPublished,
-					status: bookCopy.status,
-					dateTimeCreated: bookCopy.dateTimeCreated.toISOString(),
-					dateTimeUpdated: bookCopy.dateTimeUpdated.toISOString(),
-				})),
-			);
+				const worksheet = XLSX.utils.json_to_sheet(
+					rows.map((bookCopy) => ({
+						id: bookCopy.id,
+						isbn: bookCopy.isbn,
+						bookId: bookCopy.book.id,
+						title: bookCopy.book.title,
+						author: bookCopy.book.author,
+						genre: bookCopy.book.genre,
+						yearPublished: bookCopy.book.yearPublished,
+						status: bookCopy.status,
+						dateTimeCreated: bookCopy.dateTimeCreated.toISOString(),
+						dateTimeUpdated: bookCopy.dateTimeUpdated.toISOString(),
+					})),
+				);
 
-			const workbook = XLSX.utils.book_new();
-			XLSX.utils.book_append_sheet(workbook, worksheet, 'Book Copies');
+				const workbook = XLSX.utils.book_new();
+				XLSX.utils.book_append_sheet(workbook, worksheet, 'Book Copies');
 
-			const buffer = XLSX.write(workbook, {type: 'buffer', bookType: 'xlsx'}) as Buffer;
+				const buffer = XLSX.write(workbook, {type: 'buffer', bookType: 'xlsx'}) as Buffer;
 
-			return reply
-				.header('content-type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-				.header('content-disposition', `attachment; filename="book-copies-${Date.now()}.xlsx"`)
-				.send(buffer);
-		},
+				return reply
+					.header(
+						'content-type',
+						'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+					)
+					.header('content-disposition', `attachment; filename="book-copies-${Date.now()}.xlsx"`)
+					.send(buffer);
+			}),
 	);
 };
 

@@ -15,6 +15,7 @@ import {uid} from 'uid';
 import * as XLSX from 'xlsx';
 import * as z from 'zod';
 import type {Prisma} from '../../prisma/.generated/client';
+import {loadExportRows, runExport} from '../helpers/export';
 import {
 	ExcelWorkbookDefinition,
 	QueryString__DateDefinition,
@@ -587,7 +588,8 @@ const plugin: FastifyPluginAsyncZod = async (app) => {
 	app.post(
 		'/export',
 		{
-			preHandler: [app.verifyAuth],
+			onRequest: [app.csrfProtection],
+			preHandler: [app.verifyAuth, app.verifyExport],
 			schema: {
 				tags: ['Reservations'],
 				querystring: z.object({
@@ -636,160 +638,171 @@ const plugin: FastifyPluginAsyncZod = async (app) => {
 				},
 			},
 		},
-		async (req, reply) => {
-			const query = req.query;
-			const where: Prisma.ReservationWhereInput = {};
+		async (req, reply) =>
+			runExport(app, async () => {
+				const query = req.query;
+				const where: Prisma.ReservationWhereInput = {};
 
-			if (
-				query.bookId__eq != null ||
-				query.bookId__neq != null ||
-				query.bookId__in != null ||
-				query.bookId__nin != null
-			) {
-				where.bookId = {
-					...(query.bookId__eq != null && {equals: query.bookId__eq}),
-					...(query.bookId__neq != null && {not: query.bookId__neq}),
-					...(query.bookId__in != null && {in: query.bookId__in}),
-					...(query.bookId__nin != null && {notIn: query.bookId__nin}),
-				};
-			}
+				if (
+					query.bookId__eq != null ||
+					query.bookId__neq != null ||
+					query.bookId__in != null ||
+					query.bookId__nin != null
+				) {
+					where.bookId = {
+						...(query.bookId__eq != null && {equals: query.bookId__eq}),
+						...(query.bookId__neq != null && {not: query.bookId__neq}),
+						...(query.bookId__in != null && {in: query.bookId__in}),
+						...(query.bookId__nin != null && {notIn: query.bookId__nin}),
+					};
+				}
 
-			if (
-				query.memberId__eq != null ||
-				query.memberId__neq != null ||
-				query.memberId__in != null ||
-				query.memberId__nin != null
-			) {
-				where.memberId = {
-					...(query.memberId__eq != null && {equals: query.memberId__eq}),
-					...(query.memberId__neq != null && {not: query.memberId__neq}),
-					...(query.memberId__in != null && {in: query.memberId__in}),
-					...(query.memberId__nin != null && {notIn: query.memberId__nin}),
-				};
-			}
+				if (
+					query.memberId__eq != null ||
+					query.memberId__neq != null ||
+					query.memberId__in != null ||
+					query.memberId__nin != null
+				) {
+					where.memberId = {
+						...(query.memberId__eq != null && {equals: query.memberId__eq}),
+						...(query.memberId__neq != null && {not: query.memberId__neq}),
+						...(query.memberId__in != null && {in: query.memberId__in}),
+						...(query.memberId__nin != null && {notIn: query.memberId__nin}),
+					};
+				}
 
-			if (
-				query.status__eq != null ||
-				query.status__neq != null ||
-				query.status__in != null ||
-				query.status__nin != null
-			) {
-				where.status = {
-					...(query.status__eq != null && {equals: query.status__eq}),
-					...(query.status__neq != null && {not: query.status__neq}),
-					...(query.status__in != null && {in: query.status__in}),
-					...(query.status__nin != null && {notIn: query.status__nin}),
-				};
-			}
+				if (
+					query.status__eq != null ||
+					query.status__neq != null ||
+					query.status__in != null ||
+					query.status__nin != null
+				) {
+					where.status = {
+						...(query.status__eq != null && {equals: query.status__eq}),
+						...(query.status__neq != null && {not: query.status__neq}),
+						...(query.status__in != null && {in: query.status__in}),
+						...(query.status__nin != null && {notIn: query.status__nin}),
+					};
+				}
 
-			if (
-				query.ticket__eq != null ||
-				query.ticket__neq != null ||
-				query.ticket__in != null ||
-				query.ticket__nin != null ||
-				query.ticket__contains != null
-			) {
-				where.ticket = {
-					...(query.ticket__eq != null && {equals: query.ticket__eq}),
-					...(query.ticket__neq != null && {not: query.ticket__neq}),
-					...(query.ticket__in != null && {in: query.ticket__in}),
-					...(query.ticket__nin != null && {notIn: query.ticket__nin}),
-					...(query.ticket__contains != null && {
-						contains: query.ticket__contains,
-						mode: 'insensitive',
-					}),
-				};
-			}
+				if (
+					query.ticket__eq != null ||
+					query.ticket__neq != null ||
+					query.ticket__in != null ||
+					query.ticket__nin != null ||
+					query.ticket__contains != null
+				) {
+					where.ticket = {
+						...(query.ticket__eq != null && {equals: query.ticket__eq}),
+						...(query.ticket__neq != null && {not: query.ticket__neq}),
+						...(query.ticket__in != null && {in: query.ticket__in}),
+						...(query.ticket__nin != null && {notIn: query.ticket__nin}),
+						...(query.ticket__contains != null && {
+							contains: query.ticket__contains,
+							mode: 'insensitive',
+						}),
+					};
+				}
 
-			if (
-				query.isbn__eq != null ||
-				query.isbn__neq != null ||
-				query.isbn__in != null ||
-				query.isbn__nin != null ||
-				query.isbn__contains != null
-			) {
-				where.bookCopy = {
-					is: {
-						isbn: {
-							...(query.isbn__eq != null && {equals: query.isbn__eq}),
-							...(query.isbn__neq != null && {not: query.isbn__neq}),
-							...(query.isbn__in != null && {in: query.isbn__in}),
-							...(query.isbn__nin != null && {notIn: query.isbn__nin}),
-							...(query.isbn__contains != null && {
-								contains: query.isbn__contains,
-								mode: 'insensitive',
-							}),
+				if (
+					query.isbn__eq != null ||
+					query.isbn__neq != null ||
+					query.isbn__in != null ||
+					query.isbn__nin != null ||
+					query.isbn__contains != null
+				) {
+					where.bookCopy = {
+						is: {
+							isbn: {
+								...(query.isbn__eq != null && {equals: query.isbn__eq}),
+								...(query.isbn__neq != null && {not: query.isbn__neq}),
+								...(query.isbn__in != null && {in: query.isbn__in}),
+								...(query.isbn__nin != null && {notIn: query.isbn__nin}),
+								...(query.isbn__contains != null && {
+									contains: query.isbn__contains,
+									mode: 'insensitive',
+								}),
+							},
 						},
-					},
-				};
-			}
+					};
+				}
 
-			if (
-				query.dateTimeCreated__gt != null ||
-				query.dateTimeCreated__gte != null ||
-				query.dateTimeCreated__lt != null ||
-				query.dateTimeCreated__lte != null
-			) {
-				where.dateTimeCreated = {
-					...(query.dateTimeCreated__gt != null && {gt: query.dateTimeCreated__gt}),
-					...(query.dateTimeCreated__gte != null && {gte: query.dateTimeCreated__gte}),
-					...(query.dateTimeCreated__lt != null && {lt: query.dateTimeCreated__lt}),
-					...(query.dateTimeCreated__lte != null && {lte: query.dateTimeCreated__lte}),
-				};
-			}
+				if (
+					query.dateTimeCreated__gt != null ||
+					query.dateTimeCreated__gte != null ||
+					query.dateTimeCreated__lt != null ||
+					query.dateTimeCreated__lte != null
+				) {
+					where.dateTimeCreated = {
+						...(query.dateTimeCreated__gt != null && {gt: query.dateTimeCreated__gt}),
+						...(query.dateTimeCreated__gte != null && {gte: query.dateTimeCreated__gte}),
+						...(query.dateTimeCreated__lt != null && {lt: query.dateTimeCreated__lt}),
+						...(query.dateTimeCreated__lte != null && {lte: query.dateTimeCreated__lte}),
+					};
+				}
 
-			if (
-				query.dateTimeUpdated__gt != null ||
-				query.dateTimeUpdated__gte != null ||
-				query.dateTimeUpdated__lt != null ||
-				query.dateTimeUpdated__lte != null
-			) {
-				where.dateTimeUpdated = {
-					...(query.dateTimeUpdated__gt != null && {gt: query.dateTimeUpdated__gt}),
-					...(query.dateTimeUpdated__gte != null && {gte: query.dateTimeUpdated__gte}),
-					...(query.dateTimeUpdated__lt != null && {lt: query.dateTimeUpdated__lt}),
-					...(query.dateTimeUpdated__lte != null && {lte: query.dateTimeUpdated__lte}),
-				};
-			}
+				if (
+					query.dateTimeUpdated__gt != null ||
+					query.dateTimeUpdated__gte != null ||
+					query.dateTimeUpdated__lt != null ||
+					query.dateTimeUpdated__lte != null
+				) {
+					where.dateTimeUpdated = {
+						...(query.dateTimeUpdated__gt != null && {gt: query.dateTimeUpdated__gt}),
+						...(query.dateTimeUpdated__gte != null && {gte: query.dateTimeUpdated__gte}),
+						...(query.dateTimeUpdated__lt != null && {lt: query.dateTimeUpdated__lt}),
+						...(query.dateTimeUpdated__lte != null && {lte: query.dateTimeUpdated__lte}),
+					};
+				}
 
-			const rows = await app.prisma.reservation.findMany({
-				where,
-				select: reservationSelect,
-				orderBy:
-					req.query.sortBy == null
-						? [{dateTimeCreated: 'desc'}, {id: 'desc'}]
-						: {[req.query.sortBy]: req.query.sortOrder === 'ASC' ? 'asc' : 'desc'},
-			});
+				const rows = await loadExportRows(app, (take, skip) =>
+					app.prisma.reservation.findMany({
+						take,
+						skip,
+						where,
+						select: reservationSelect,
+						orderBy:
+							req.query.sortBy == null
+								? [{dateTimeCreated: 'desc'}, {id: 'desc'}]
+								: [
+										{[req.query.sortBy]: req.query.sortOrder === 'ASC' ? 'asc' : 'desc'},
+										{id: 'desc'},
+									],
+					}),
+				);
 
-			const worksheet = XLSX.utils.json_to_sheet(
-				rows.map((reservation) => ({
-					id: reservation.id,
-					ticket: reservation.ticket,
-					status: reservation.status,
-					memberId: reservation.member.id,
-					externalId: reservation.member.externalId,
-					memberName: reservation.member.name,
-					bookId: reservation.book.id,
-					bookTitle: reservation.book.title,
-					bookCopyId: reservation.bookCopy?.id ?? null,
-					isbn: reservation.bookCopy?.isbn ?? null,
-					remarks: reservation.remarks,
-					dateTimeCreated: reservation.dateTimeCreated.toISOString(),
-					dateTimeUpdated: reservation.dateTimeUpdated.toISOString(),
-				})),
-			);
+				const worksheet = XLSX.utils.json_to_sheet(
+					rows.map((reservation) => ({
+						id: reservation.id,
+						ticket: reservation.ticket,
+						status: reservation.status,
+						memberId: reservation.member.id,
+						externalId: reservation.member.externalId,
+						memberName: reservation.member.name,
+						bookId: reservation.book.id,
+						bookTitle: reservation.book.title,
+						bookCopyId: reservation.bookCopy?.id ?? null,
+						isbn: reservation.bookCopy?.isbn ?? null,
+						remarks: reservation.remarks,
+						dateTimeCreated: reservation.dateTimeCreated.toISOString(),
+						dateTimeUpdated: reservation.dateTimeUpdated.toISOString(),
+					})),
+				);
 
-			const workbook = XLSX.utils.book_new();
+				const workbook = XLSX.utils.book_new();
 
-			XLSX.utils.book_append_sheet(workbook, worksheet, 'Reservations');
+				XLSX.utils.book_append_sheet(workbook, worksheet, 'Reservations');
 
-			const buffer = XLSX.write(workbook, {type: 'buffer', bookType: 'xlsx'}) as Buffer;
+				const buffer = XLSX.write(workbook, {type: 'buffer', bookType: 'xlsx'}) as Buffer;
 
-			return reply
-				.header('content-type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-				.header('content-disposition', `attachment; filename="reservations-${Date.now()}.xlsx"`)
-				.send(buffer);
-		},
+				return reply
+					.header(
+						'content-type',
+						'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+					)
+					.header('content-disposition', `attachment; filename="reservations-${Date.now()}.xlsx"`)
+					.send(buffer);
+			}),
 	);
 };
 

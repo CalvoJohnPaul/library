@@ -2,6 +2,7 @@ import {FailedHttpResponseDefinition} from '@library/types';
 import {type UseMutationOptions, useMutation} from '@tanstack/react-query';
 import {API_BASE_URL} from '@/config/env';
 import {downloadFile} from '@/utils/downloadFile';
+import {useCsrfQuery} from './useCsrfQuery';
 import {type TransactionsInput, useTransactionsQuery} from './useTransactionsQuery';
 
 export type ExportTransactionsInput = Omit<TransactionsInput, 'page' | 'pageSize'>;
@@ -23,11 +24,13 @@ export function useExportTransactionsMutation(
 		...options,
 		mutationKey: ['ExportTransactions'],
 		mutationFn: async (input: ExportTransactionsInput) => {
+			const csrf = await useCsrfQuery.getQueryFn()();
 			const params = useTransactionsQuery.getSearchParams(input);
 
 			const res = await fetch(`${API_BASE_URL}/transactions/export?${params.toString()}`, {
 				method: 'POST',
 				credentials: 'include',
+				headers: {'X-CSRF-Token': csrf.token},
 			});
 
 			if (!res.ok) {

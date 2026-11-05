@@ -16,7 +16,7 @@
 		"dist"
 	],
 	"scripts": {
-		"dev": "tsdown --watch",
+		"dev": "tsdown --watch --no-clean",
 		"build": "tsdown --clean"
 	},
 	"dependencies": {

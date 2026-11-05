@@ -58,7 +58,13 @@ export function AddReservation(props: AddReservationProps) {
 			onOpenChange={(details) => {
 				if (!mutation.isPending) disclosure.setOpen(details.open);
 			}}
-			onExitComplete={() => form.reset({remarks: ''})}
+			onExitComplete={() =>
+				form.reset({
+					bookId,
+					memberId,
+					remarks: '',
+				})
+			}
 		>
 			<Dialog.Trigger asChild disabled={disabled}>
 				{isFunction(trigger)

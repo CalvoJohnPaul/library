@@ -9,12 +9,25 @@ datasource db {
 }
 
 model Account {
-  id              Int      @id @default(autoincrement())
+  id              Int       @id @default(autoincrement())
   name            String
-  email           String   @unique
+  email           String    @unique
   password        String
-  dateTimeCreated DateTime @default(now())
-  dateTimeUpdated DateTime @updatedAt
+  sessionVersion  Int       @default(0)
+  sessions        Session[]
+  dateTimeCreated DateTime  @default(now())
+  dateTimeUpdated DateTime  @updatedAt
+}
+
+model Session {
+  id             String   @id
+  account        Account  @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  accountId      Int
+  accountVersion Int
+  expiresAt      DateTime
+
+  @@index([accountId])
+  @@index([expiresAt])
 }
 
 enum BookStatus {

@@ -3,6 +3,7 @@ import {type UseMutationOptions, useMutation} from '@tanstack/react-query';
 import {API_BASE_URL} from '@/config/env';
 import {downloadFile} from '@/utils/downloadFile';
 import {type BooksInput, useBooksQuery} from './useBooksQuery';
+import {useCsrfQuery} from './useCsrfQuery';
 
 export type ExportBooksInput = Omit<BooksInput, 'page' | 'pageSize'>;
 
@@ -23,10 +24,12 @@ export function useExportBooksMutation(
 		...options,
 		mutationKey: ['ExportBooks'],
 		mutationFn: async (input: ExportBooksInput) => {
+			const csrf = await useCsrfQuery.getQueryFn()();
 			const params = useBooksQuery.getSearchParams(input);
 			const res = await fetch(`${API_BASE_URL}/books/export?${params.toString()}`, {
 				method: 'POST',
 				credentials: 'include',
+				headers: {'X-CSRF-Token': csrf.token},
 			});
 
 			if (!res.ok) {

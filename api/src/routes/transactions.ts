@@ -14,6 +14,7 @@ import type {FastifyPluginAsyncZod} from 'fastify-type-provider-zod';
 import * as XLSX from 'xlsx';
 import * as z from 'zod';
 import type {Prisma} from '../../prisma/.generated/client';
+import {loadExportRows, runExport} from '../helpers/export';
 import {
 	ExcelWorkbookDefinition,
 	QueryString__DateDefinition,
@@ -24,6 +25,21 @@ import {
 	QueryString__StringArrayDefinition,
 	QueryString__StringDefinition,
 } from '../types';
+
+const bookCopySelect = {
+	id: true,
+	isbn: true,
+	status: true,
+	book: {
+		select: {
+			id: true,
+			title: true,
+			genre: true,
+			author: true,
+			yearPublished: true,
+		},
+	},
+} satisfies Prisma.BookCopySelect;
 
 const plugin: FastifyPluginAsyncZod = async (app) => {
 	app.get(
@@ -280,24 +296,9 @@ const plugin: FastifyPluginAsyncZod = async (app) => {
 								yearPublished: true,
 							},
 						},
-						bookCopy: {
-							select: {
-								id: true,
-								isbn: true,
-								status: true,
-								book: {
-									select: {
-										id: true,
-										title: true,
-										genre: true,
-										author: true,
-										yearPublished: true,
-									},
-								},
-							},
-						},
+						bookCopy: {select: bookCopySelect},
 						reservation: {
-							select: {id: true, status: true, bookCopy: {select: {status: true}}},
+							select: {id: true, status: true, bookCopy: {select: bookCopySelect}},
 						},
 					},
 					orderBy:
@@ -329,8 +330,10 @@ const plugin: FastifyPluginAsyncZod = async (app) => {
 							yearAndSection: transaction.member.yearAndSection,
 						},
 						book: transaction.book,
-						bookCopy: transaction.bookCopy,
-						reservation: transaction.reservation,
+						bookCopy: transaction.bookCopy ?? transaction.reservation?.bookCopy ?? null,
+						reservation: transaction.reservation
+							? {id: transaction.reservation.id, status: transaction.reservation.status}
+							: null,
 						dateTimeCreated: transaction.dateTimeCreated,
 						dateTimeUpdated: transaction.dateTimeUpdated,
 					})),
@@ -391,24 +394,9 @@ const plugin: FastifyPluginAsyncZod = async (app) => {
 							yearPublished: true,
 						},
 					},
-					bookCopy: {
-						select: {
-							id: true,
-							isbn: true,
-							status: true,
-							book: {
-								select: {
-									id: true,
-									title: true,
-									genre: true,
-									author: true,
-									yearPublished: true,
-								},
-							},
-						},
-					},
+					bookCopy: {select: bookCopySelect},
 					reservation: {
-						select: {id: true, status: true, bookCopy: {select: {status: true}}},
+						select: {id: true, status: true, bookCopy: {select: bookCopySelect}},
 					},
 				},
 			});
@@ -431,8 +419,10 @@ const plugin: FastifyPluginAsyncZod = async (app) => {
 						yearAndSection: transaction.member.yearAndSection,
 					},
 					book: transaction.book,
-					bookCopy: transaction.bookCopy,
-					reservation: transaction.reservation,
+					bookCopy: transaction.bookCopy ?? transaction.reservation?.bookCopy ?? null,
+					reservation: transaction.reservation
+						? {id: transaction.reservation.id, status: transaction.reservation.status}
+						: null,
 					dateTimeCreated: transaction.dateTimeCreated,
 					dateTimeUpdated: transaction.dateTimeUpdated,
 				},
@@ -443,7 +433,8 @@ const plugin: FastifyPluginAsyncZod = async (app) => {
 	app.post(
 		'/export',
 		{
-			preHandler: [app.verifyAuth],
+			onRequest: [app.csrfProtection],
+			preHandler: [app.verifyAuth, app.verifyExport],
 			schema: {
 				tags: ['Transactions'],
 				querystring: z.object({
@@ -504,195 +495,185 @@ const plugin: FastifyPluginAsyncZod = async (app) => {
 				},
 			},
 		},
-		async (req, reply) => {
-			const where: Prisma.TransactionWhereInput = {};
+		async (req, reply) =>
+			runExport(app, async () => {
+				const where: Prisma.TransactionWhereInput = {};
 
-			if (
-				req.query.id__eq != null ||
-				req.query.id__neq != null ||
-				req.query.id__in != null ||
-				req.query.id__nin != null
-			) {
-				where.id = {
-					...(req.query.id__eq != null && {equals: req.query.id__eq}),
-					...(req.query.id__neq != null && {not: req.query.id__neq}),
-					...(req.query.id__in != null && {in: req.query.id__in}),
-					...(req.query.id__nin != null && {notIn: req.query.id__nin}),
-				};
-			}
+				if (
+					req.query.id__eq != null ||
+					req.query.id__neq != null ||
+					req.query.id__in != null ||
+					req.query.id__nin != null
+				) {
+					where.id = {
+						...(req.query.id__eq != null && {equals: req.query.id__eq}),
+						...(req.query.id__neq != null && {not: req.query.id__neq}),
+						...(req.query.id__in != null && {in: req.query.id__in}),
+						...(req.query.id__nin != null && {notIn: req.query.id__nin}),
+					};
+				}
 
-			if (
-				req.query.type__eq != null ||
-				req.query.type__neq != null ||
-				req.query.type__in != null ||
-				req.query.type__nin != null
-			) {
-				where.type = {
-					...(req.query.type__eq != null && {equals: req.query.type__eq}),
-					...(req.query.type__neq != null && {not: req.query.type__neq}),
-					...(req.query.type__in != null && {in: req.query.type__in}),
-					...(req.query.type__nin != null && {notIn: req.query.type__nin}),
-				};
-			}
+				if (
+					req.query.type__eq != null ||
+					req.query.type__neq != null ||
+					req.query.type__in != null ||
+					req.query.type__nin != null
+				) {
+					where.type = {
+						...(req.query.type__eq != null && {equals: req.query.type__eq}),
+						...(req.query.type__neq != null && {not: req.query.type__neq}),
+						...(req.query.type__in != null && {in: req.query.type__in}),
+						...(req.query.type__nin != null && {notIn: req.query.type__nin}),
+					};
+				}
 
-			if (
-				req.query.status__eq != null ||
-				req.query.status__neq != null ||
-				req.query.status__in != null ||
-				req.query.status__nin != null
-			) {
-				where.status = {
-					...(req.query.status__eq != null && {equals: req.query.status__eq}),
-					...(req.query.status__neq != null && {not: req.query.status__neq}),
-					...(req.query.status__in != null && {in: req.query.status__in}),
-					...(req.query.status__nin != null && {notIn: req.query.status__nin}),
-				};
-			}
+				if (
+					req.query.status__eq != null ||
+					req.query.status__neq != null ||
+					req.query.status__in != null ||
+					req.query.status__nin != null
+				) {
+					where.status = {
+						...(req.query.status__eq != null && {equals: req.query.status__eq}),
+						...(req.query.status__neq != null && {not: req.query.status__neq}),
+						...(req.query.status__in != null && {in: req.query.status__in}),
+						...(req.query.status__nin != null && {notIn: req.query.status__nin}),
+					};
+				}
 
-			if (
-				req.query.ticket__eq != null ||
-				req.query.ticket__neq != null ||
-				req.query.ticket__in != null ||
-				req.query.ticket__nin != null ||
-				req.query.ticket__contains != null
-			) {
-				where.ticket = {
-					...(req.query.ticket__eq != null && {equals: req.query.ticket__eq}),
-					...(req.query.ticket__neq != null && {not: req.query.ticket__neq}),
-					...(req.query.ticket__in != null && {in: req.query.ticket__in}),
-					...(req.query.ticket__nin != null && {notIn: req.query.ticket__nin}),
-					...(req.query.ticket__contains != null && {
-						contains: req.query.ticket__contains,
-						mode: 'insensitive',
-					}),
-				};
-			}
-
-			if (
-				req.query.memberId__eq != null ||
-				req.query.memberId__neq != null ||
-				req.query.memberId__in != null ||
-				req.query.memberId__nin != null
-			) {
-				where.memberId = {
-					...(req.query.memberId__eq != null && {equals: req.query.memberId__eq}),
-					...(req.query.memberId__neq != null && {not: req.query.memberId__neq}),
-					...(req.query.memberId__in != null && {in: req.query.memberId__in}),
-					...(req.query.memberId__nin != null && {notIn: req.query.memberId__nin}),
-				};
-			}
-
-			if (
-				req.query.bookCopyId__eq != null ||
-				req.query.bookCopyId__neq != null ||
-				req.query.bookCopyId__in != null ||
-				req.query.bookCopyId__nin != null
-			) {
-				where.bookCopyId = {
-					...(req.query.bookCopyId__eq != null && {equals: req.query.bookCopyId__eq}),
-					...(req.query.bookCopyId__neq != null && {not: req.query.bookCopyId__neq}),
-					...(req.query.bookCopyId__in != null && {in: req.query.bookCopyId__in}),
-					...(req.query.bookCopyId__nin != null && {notIn: req.query.bookCopyId__nin}),
-				};
-			}
-
-			if (
-				req.query.isbn__eq != null ||
-				req.query.isbn__neq != null ||
-				req.query.isbn__in != null ||
-				req.query.isbn__nin != null ||
-				req.query.isbn__contains != null
-			) {
-				where.bookCopy = assign(where.bookCopy || {}, {
-					isbn: {
-						...(req.query.isbn__eq != null && {equals: req.query.isbn__eq}),
-						...(req.query.isbn__neq != null && {not: req.query.isbn__neq}),
-						...(req.query.isbn__in != null && {in: req.query.isbn__in}),
-						...(req.query.isbn__nin != null && {notIn: req.query.isbn__nin}),
-						...(req.query.isbn__contains != null && {
-							contains: req.query.isbn__contains,
+				if (
+					req.query.ticket__eq != null ||
+					req.query.ticket__neq != null ||
+					req.query.ticket__in != null ||
+					req.query.ticket__nin != null ||
+					req.query.ticket__contains != null
+				) {
+					where.ticket = {
+						...(req.query.ticket__eq != null && {equals: req.query.ticket__eq}),
+						...(req.query.ticket__neq != null && {not: req.query.ticket__neq}),
+						...(req.query.ticket__in != null && {in: req.query.ticket__in}),
+						...(req.query.ticket__nin != null && {notIn: req.query.ticket__nin}),
+						...(req.query.ticket__contains != null && {
+							contains: req.query.ticket__contains,
 							mode: 'insensitive',
 						}),
-					},
-				});
-			}
+					};
+				}
 
-			if (
-				req.query.bookId__eq != null ||
-				req.query.bookId__neq != null ||
-				req.query.bookId__in != null ||
-				req.query.bookId__nin != null
-			) {
-				const bookId = {
-					...(req.query.bookId__eq != null && {equals: req.query.bookId__eq}),
-					...(req.query.bookId__neq != null && {not: req.query.bookId__neq}),
-					...(req.query.bookId__in != null && {in: req.query.bookId__in}),
-					...(req.query.bookId__nin != null && {notIn: req.query.bookId__nin}),
-				};
-				where.AND = [{OR: [{bookId}, {bookCopy: {is: {bookId}}}]}];
-			}
+				if (
+					req.query.memberId__eq != null ||
+					req.query.memberId__neq != null ||
+					req.query.memberId__in != null ||
+					req.query.memberId__nin != null
+				) {
+					where.memberId = {
+						...(req.query.memberId__eq != null && {equals: req.query.memberId__eq}),
+						...(req.query.memberId__neq != null && {not: req.query.memberId__neq}),
+						...(req.query.memberId__in != null && {in: req.query.memberId__in}),
+						...(req.query.memberId__nin != null && {notIn: req.query.memberId__nin}),
+					};
+				}
 
-			if (
-				req.query.dateTimeCreated__gt != null ||
-				req.query.dateTimeCreated__gte != null ||
-				req.query.dateTimeCreated__lt != null ||
-				req.query.dateTimeCreated__lte != null
-			) {
-				where.dateTimeCreated = {
-					...(req.query.dateTimeCreated__gt != null && {gt: req.query.dateTimeCreated__gt}),
-					...(req.query.dateTimeCreated__gte != null && {gte: req.query.dateTimeCreated__gte}),
-					...(req.query.dateTimeCreated__lt != null && {lt: req.query.dateTimeCreated__lt}),
-					...(req.query.dateTimeCreated__lte != null && {lte: req.query.dateTimeCreated__lte}),
-				};
-			}
+				if (
+					req.query.bookCopyId__eq != null ||
+					req.query.bookCopyId__neq != null ||
+					req.query.bookCopyId__in != null ||
+					req.query.bookCopyId__nin != null
+				) {
+					where.bookCopyId = {
+						...(req.query.bookCopyId__eq != null && {equals: req.query.bookCopyId__eq}),
+						...(req.query.bookCopyId__neq != null && {not: req.query.bookCopyId__neq}),
+						...(req.query.bookCopyId__in != null && {in: req.query.bookCopyId__in}),
+						...(req.query.bookCopyId__nin != null && {notIn: req.query.bookCopyId__nin}),
+					};
+				}
 
-			if (
-				req.query.dateTimeUpdated__gt != null ||
-				req.query.dateTimeUpdated__gte != null ||
-				req.query.dateTimeUpdated__lt != null ||
-				req.query.dateTimeUpdated__lte != null
-			) {
-				where.dateTimeUpdated = {
-					...(req.query.dateTimeUpdated__gt != null && {gt: req.query.dateTimeUpdated__gt}),
-					...(req.query.dateTimeUpdated__gte != null && {gte: req.query.dateTimeUpdated__gte}),
-					...(req.query.dateTimeUpdated__lt != null && {lt: req.query.dateTimeUpdated__lt}),
-					...(req.query.dateTimeUpdated__lte != null && {lte: req.query.dateTimeUpdated__lte}),
-				};
-			}
-
-			const rows = await app.prisma.transaction.findMany({
-				where,
-				select: {
-					id: true,
-					type: true,
-					status: true,
-					ticket: true,
-					remarks: true,
-					dateTimeCreated: true,
-					dateTimeUpdated: true,
-					member: {
-						select: {
-							id: true,
-							externalId: true,
-							name: true,
-							course: true,
-							yearAndSection: true,
+				if (
+					req.query.isbn__eq != null ||
+					req.query.isbn__neq != null ||
+					req.query.isbn__in != null ||
+					req.query.isbn__nin != null ||
+					req.query.isbn__contains != null
+				) {
+					where.bookCopy = assign(where.bookCopy || {}, {
+						isbn: {
+							...(req.query.isbn__eq != null && {equals: req.query.isbn__eq}),
+							...(req.query.isbn__neq != null && {not: req.query.isbn__neq}),
+							...(req.query.isbn__in != null && {in: req.query.isbn__in}),
+							...(req.query.isbn__nin != null && {notIn: req.query.isbn__nin}),
+							...(req.query.isbn__contains != null && {
+								contains: req.query.isbn__contains,
+								mode: 'insensitive',
+							}),
 						},
-					},
-					book: {
+					});
+				}
+
+				if (
+					req.query.bookId__eq != null ||
+					req.query.bookId__neq != null ||
+					req.query.bookId__in != null ||
+					req.query.bookId__nin != null
+				) {
+					const bookId = {
+						...(req.query.bookId__eq != null && {equals: req.query.bookId__eq}),
+						...(req.query.bookId__neq != null && {not: req.query.bookId__neq}),
+						...(req.query.bookId__in != null && {in: req.query.bookId__in}),
+						...(req.query.bookId__nin != null && {notIn: req.query.bookId__nin}),
+					};
+					where.AND = [{OR: [{bookId}, {bookCopy: {is: {bookId}}}]}];
+				}
+
+				if (
+					req.query.dateTimeCreated__gt != null ||
+					req.query.dateTimeCreated__gte != null ||
+					req.query.dateTimeCreated__lt != null ||
+					req.query.dateTimeCreated__lte != null
+				) {
+					where.dateTimeCreated = {
+						...(req.query.dateTimeCreated__gt != null && {gt: req.query.dateTimeCreated__gt}),
+						...(req.query.dateTimeCreated__gte != null && {gte: req.query.dateTimeCreated__gte}),
+						...(req.query.dateTimeCreated__lt != null && {lt: req.query.dateTimeCreated__lt}),
+						...(req.query.dateTimeCreated__lte != null && {lte: req.query.dateTimeCreated__lte}),
+					};
+				}
+
+				if (
+					req.query.dateTimeUpdated__gt != null ||
+					req.query.dateTimeUpdated__gte != null ||
+					req.query.dateTimeUpdated__lt != null ||
+					req.query.dateTimeUpdated__lte != null
+				) {
+					where.dateTimeUpdated = {
+						...(req.query.dateTimeUpdated__gt != null && {gt: req.query.dateTimeUpdated__gt}),
+						...(req.query.dateTimeUpdated__gte != null && {gte: req.query.dateTimeUpdated__gte}),
+						...(req.query.dateTimeUpdated__lt != null && {lt: req.query.dateTimeUpdated__lt}),
+						...(req.query.dateTimeUpdated__lte != null && {lte: req.query.dateTimeUpdated__lte}),
+					};
+				}
+
+				const rows = await loadExportRows(app, (take, skip) =>
+					app.prisma.transaction.findMany({
+						take,
+						skip,
+						where,
 						select: {
 							id: true,
-							title: true,
-							genre: true,
-							author: true,
-							yearPublished: true,
-						},
-					},
-					bookCopy: {
-						select: {
-							id: true,
-							isbn: true,
+							type: true,
 							status: true,
+							ticket: true,
+							remarks: true,
+							dateTimeCreated: true,
+							dateTimeUpdated: true,
+							member: {
+								select: {
+									id: true,
+									externalId: true,
+									name: true,
+									course: true,
+									yearAndSection: true,
+								},
+							},
 							book: {
 								select: {
 									id: true,
@@ -702,52 +683,62 @@ const plugin: FastifyPluginAsyncZod = async (app) => {
 									yearPublished: true,
 								},
 							},
+							bookCopy: {select: bookCopySelect},
+							reservation: {select: {bookCopy: {select: bookCopySelect}}},
 						},
-					},
-				},
-				orderBy:
-					req.query.sortBy == null
-						? [{dateTimeCreated: 'desc'}, {id: 'desc'}]
-						: {[req.query.sortBy]: req.query.sortOrder === 'ASC' ? 'asc' : 'desc'},
-			});
+						orderBy:
+							req.query.sortBy == null
+								? [{dateTimeCreated: 'desc'}, {id: 'desc'}]
+								: [
+										{[req.query.sortBy]: req.query.sortOrder === 'ASC' ? 'asc' : 'desc'},
+										{id: 'desc'},
+									],
+					}),
+				);
 
-			const worksheet = XLSX.utils.json_to_sheet(
-				rows.map((transaction) => ({
-					id: transaction.id,
-					type: transaction.type,
-					status: transaction.status,
-					ticket: transaction.ticket,
-					remarks: transaction.remarks,
-					memberId: transaction.member.id,
-					externalId: transaction.member.externalId,
-					name: transaction.member.name,
-					course: transaction.member.course,
-					yearAndSection: transaction.member.yearAndSection,
-					bookId: transaction.bookCopy?.book.id ?? transaction.book?.id ?? null,
-					bookCopyId: transaction.bookCopy?.id ?? null,
-					isbn: transaction.bookCopy?.isbn ?? null,
-					title: transaction.bookCopy?.book.title ?? transaction.book?.title ?? null,
-					author: transaction.bookCopy?.book.author ?? transaction.book?.author ?? null,
-					genre: transaction.bookCopy?.book.genre ?? transaction.book?.genre ?? null,
-					yearPublished:
-						transaction.bookCopy?.book.yearPublished ?? transaction.book?.yearPublished ?? null,
-					bookStatus: transaction.bookCopy?.status ?? null,
-					dateTimeCreated: transaction.dateTimeCreated.toISOString(),
-					dateTimeUpdated: transaction.dateTimeUpdated.toISOString(),
-				})),
-			);
+				const worksheet = XLSX.utils.json_to_sheet(
+					rows.map((transaction) => {
+						const bookCopy = transaction.bookCopy ?? transaction.reservation?.bookCopy ?? null;
+						return {
+							id: transaction.id,
+							type: transaction.type,
+							status: transaction.status,
+							ticket: transaction.ticket,
+							remarks: transaction.remarks,
+							memberId: transaction.member.id,
+							externalId: transaction.member.externalId,
+							name: transaction.member.name,
+							course: transaction.member.course,
+							yearAndSection: transaction.member.yearAndSection,
+							bookId: bookCopy?.book.id ?? transaction.book?.id ?? null,
+							bookCopyId: bookCopy?.id ?? null,
+							isbn: bookCopy?.isbn ?? null,
+							title: bookCopy?.book.title ?? transaction.book?.title ?? null,
+							author: bookCopy?.book.author ?? transaction.book?.author ?? null,
+							genre: bookCopy?.book.genre ?? transaction.book?.genre ?? null,
+							yearPublished:
+								bookCopy?.book.yearPublished ?? transaction.book?.yearPublished ?? null,
+							bookStatus: bookCopy?.status ?? null,
+							dateTimeCreated: transaction.dateTimeCreated.toISOString(),
+							dateTimeUpdated: transaction.dateTimeUpdated.toISOString(),
+						};
+					}),
+				);
 
-			const workbook = XLSX.utils.book_new();
+				const workbook = XLSX.utils.book_new();
 
-			XLSX.utils.book_append_sheet(workbook, worksheet, 'Transactions');
+				XLSX.utils.book_append_sheet(workbook, worksheet, 'Transactions');
 
-			const buffer = XLSX.write(workbook, {type: 'buffer', bookType: 'xlsx'}) as Buffer;
+				const buffer = XLSX.write(workbook, {type: 'buffer', bookType: 'xlsx'}) as Buffer;
 
-			return reply
-				.header('content-type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-				.header('content-disposition', `attachment; filename="transactions-${Date.now()}.xlsx"`)
-				.send(buffer);
-		},
+				return reply
+					.header(
+						'content-type',
+						'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+					)
+					.header('content-disposition', `attachment; filename="transactions-${Date.now()}.xlsx"`)
+					.send(buffer);
+			}),
 	);
 };
 

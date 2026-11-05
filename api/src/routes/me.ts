@@ -8,6 +8,7 @@ import {compare, hash} from 'bcrypt';
 import type {FastifyPluginAsyncZod} from 'fastify-type-provider-zod';
 import * as z from 'zod';
 import {clean} from '../helpers/clean';
+import {createSession} from '../helpers/session';
 
 const plugin: FastifyPluginAsyncZod = async (app) => {
 	app.get(
@@ -21,21 +22,7 @@ const plugin: FastifyPluginAsyncZod = async (app) => {
 			},
 		},
 		async (req, reply) => {
-			const id = req.session.get('account');
-
-			const data =
-				id == null
-					? null
-					: await app.prisma.account.findUnique({
-							where: {id},
-							select: {
-								id: true,
-								name: true,
-								email: true,
-								dateTimeCreated: true,
-								dateTimeUpdated: true,
-							},
-						});
+			const data = await app.getAuthAccount(req);
 
 			return reply.send({
 				ok: true,
@@ -84,20 +71,31 @@ const plugin: FastifyPluginAsyncZod = async (app) => {
 				password = await hash(newPassword, 10);
 			}
 
-			const account = await app.prisma.account.update({
-				where: {id},
-				data: {
-					...clean(rest),
-					...(password != null && {password}),
-				},
-				select: {
-					id: true,
-					name: true,
-					email: true,
-					dateTimeCreated: true,
-					dateTimeUpdated: true,
-				},
+			const [account, token] = await app.prisma.$transaction(async (tx) => {
+				const updated = await tx.account.update({
+					where: {id},
+					data: {
+						...clean(rest),
+						...(password != null && {password, sessionVersion: {increment: 1}}),
+					},
+					select: {
+						id: true,
+						name: true,
+						email: true,
+						dateTimeCreated: true,
+						dateTimeUpdated: true,
+						sessionVersion: true,
+					},
+				});
+				if (password == null) return [updated, null] as const;
+				await tx.session.deleteMany({where: {accountId: id}});
+				return [updated, await createSession(tx, updated)] as const;
 			});
+
+			if (token != null) {
+				req.session.set('token', token);
+				req.session.touch();
+			}
 
 			return reply.send({
 				ok: true,

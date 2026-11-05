@@ -310,6 +310,7 @@ export function Reservations() {
 										<Menu.Content>
 											<ClaimReservation
 												id={reservation.id}
+												disabled={!reservation.bookCopy?.isbn.trim()}
 												onClaimed={() => {
 													client.invalidateQueries({queryKey: useReservationsQuery.getQueryKey()});
 												}}

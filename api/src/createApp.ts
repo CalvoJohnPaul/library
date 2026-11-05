@@ -30,17 +30,18 @@ z.globalRegistry.add(ExcelWorkbookDefinition, {
 	format: 'binary',
 });
 
-const options: FastifyServerOptions = {
+export const options: FastifyServerOptions = {
 	logger: {
-		enabled: process.env.NODE_ENV === 'development',
+		enabled: true,
+		level: process.env.NODE_ENV === 'development' ? 'info' : 'error',
 		transport: {
 			target: '@fastify/one-line-logger',
 		},
 	},
-	trustProxy: true,
+	trustProxy: false,
 };
 
-const swaggerOptions: FastifyDynamicSwaggerOptions = {
+export const swaggerOptions: FastifyDynamicSwaggerOptions = {
 	transform: jsonSchemaTransform,
 	openapi: {
 		info: {
@@ -51,19 +52,19 @@ const swaggerOptions: FastifyDynamicSwaggerOptions = {
 	},
 };
 
-const swaggerUiOptions: FastifySwaggerUiOptions = {
+export const swaggerUiOptions: FastifySwaggerUiOptions = {
 	routePrefix: '/',
 };
 
-const sensibleOptions: FastifySensibleOptions = {};
+export const sensibleOptions: FastifySensibleOptions = {};
 
-const corsOptions: FastifyCorsOptions = {
+export const corsOptions: FastifyCorsOptions = {
 	origin: ['http://localhost', 'http://127.0.0.1'],
 	methods: ['HEAD', 'GET', 'PUT', 'POST', 'PATCH', 'DELETE', 'OPTIONS', 'QUERY'],
 	credentials: true,
 };
 
-const rateLimitOptions: FastifyRateLimitOptions = {
+export const rateLimitOptions: FastifyRateLimitOptions = {
 	global: true,
 	timeWindow: 1000 * 60,
 	max: 100,
@@ -71,14 +72,14 @@ const rateLimitOptions: FastifyRateLimitOptions = {
 	addHeadersOnExceeding: true,
 };
 
-const helmetOptions: FastifyHelmetOptions = {
+export const helmetOptions: FastifyHelmetOptions = {
 	global: true,
 	crossOriginResourcePolicy: {
 		policy: 'cross-origin',
 	},
 };
 
-const sessionOptions: SecureSessionPluginOptions = {
+export const sessionOptions: SecureSessionPluginOptions = {
 	key: fs.readFileSync(path.resolve('./session-key')),
 	cookie: {
 		path: '/',
@@ -90,23 +91,23 @@ const sessionOptions: SecureSessionPluginOptions = {
 	},
 };
 
-const csrfOptions: FastifyCsrfProtectionOptions = {
+export const csrfOptions: FastifyCsrfProtectionOptions = {
 	sessionPlugin: '@fastify/secure-session',
 };
 
-const autoloadOptions_0: AutoloadPluginOptions = {
+export const autoloadOptions_0: AutoloadPluginOptions = {
 	dir: path.join(__dirname, 'plugins'),
 	options,
 };
 
-const autoloadOptions_1: AutoloadPluginOptions = {
+export const autoloadOptions_1: AutoloadPluginOptions = {
 	dir: path.join(__dirname, 'routes'),
 	options,
 };
 
-const scheduleOptions: ToadSchedulerOptions = {};
+export const scheduleOptions: ToadSchedulerOptions = {};
 
-function handleError(error: unknown, _: FastifyRequest, reply: FastifyReply) {
+export function handleError(error: unknown, request: FastifyRequest, reply: FastifyReply) {
 	const map_0: Record<number, string> = {
 		400: 'BadRequestError',
 		401: 'UnauthorizedError',
@@ -174,12 +175,23 @@ function handleError(error: unknown, _: FastifyRequest, reply: FastifyReply) {
 		}
 	}
 
-	const statusCode = get(error, 'statusCode', 500);
+	const suppliedStatus = get(error, 'statusCode');
+	const statusCode =
+		typeof suppliedStatus === 'number' &&
+		Number.isInteger(suppliedStatus) &&
+		suppliedStatus >= 400 &&
+		suppliedStatus <= 599
+			? suppliedStatus
+			: 500;
 
 	let name: string;
 	let message: string;
 
-	if (error instanceof Error) {
+	if (statusCode >= 500) {
+		request.log.error({err: error, requestId: request.id}, 'Request failed');
+		name = map_0[500];
+		message = map_1[500];
+	} else if (error instanceof Error) {
 		name = error.name;
 		message = error.message;
 	} else {
@@ -223,6 +235,6 @@ export async function createApp(): Promise<FastifyInstance> {
 
 declare module '@fastify/secure-session' {
 	interface SessionData {
-		account: number;
+		token: string;
 	}
 }

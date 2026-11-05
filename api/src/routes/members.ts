@@ -15,6 +15,7 @@ import * as XLSX from 'xlsx';
 import * as z from 'zod';
 import type {Prisma} from '../../prisma/.generated/client';
 import {clean} from '../helpers/clean';
+import {loadExportRows, runExport} from '../helpers/export';
 import {
 	ExcelWorkbookDefinition,
 	QueryString__DateDefinition,
@@ -249,11 +250,11 @@ const plugin: FastifyPluginAsyncZod = async (app) => {
 						req.query.sortBy == null
 							? [{dateTimeCreated: 'desc'}, {id: 'desc'}]
 							: {
-								[req.query.sortBy]:
-									req.query.sortBy === 'dateTimeLastBorrowedBook'
-										? {sort: sortOrder, nulls: 'last'}
-										: sortOrder,
-							},
+									[req.query.sortBy]:
+										req.query.sortBy === 'dateTimeLastBorrowedBook'
+											? {sort: sortOrder, nulls: 'last'}
+											: sortOrder,
+								},
 				}),
 			]);
 
@@ -516,7 +517,8 @@ const plugin: FastifyPluginAsyncZod = async (app) => {
 	app.post(
 		'/export',
 		{
-			preHandler: [app.verifyAuth],
+			onRequest: [app.csrfProtection],
+			preHandler: [app.verifyAuth, app.verifyExport],
 			schema: {
 				tags: ['Members'],
 				querystring: z.object({
@@ -575,203 +577,214 @@ const plugin: FastifyPluginAsyncZod = async (app) => {
 				},
 			},
 		},
-		async (req, reply) => {
-			const where: Prisma.MemberWhereInput = {};
+		async (req, reply) =>
+			runExport(app, async () => {
+				const where: Prisma.MemberWhereInput = {};
 
-			if (
-				req.query.id__eq != null ||
-				req.query.id__neq != null ||
-				req.query.id__in != null ||
-				req.query.id__nin != null
-			) {
-				where.id = {
-					...(req.query.id__eq != null && {equals: req.query.id__eq}),
-					...(req.query.id__neq != null && {not: req.query.id__neq}),
-					...(req.query.id__in != null && {in: req.query.id__in}),
-					...(req.query.id__nin != null && {notIn: req.query.id__nin}),
-				};
-			}
+				if (
+					req.query.id__eq != null ||
+					req.query.id__neq != null ||
+					req.query.id__in != null ||
+					req.query.id__nin != null
+				) {
+					where.id = {
+						...(req.query.id__eq != null && {equals: req.query.id__eq}),
+						...(req.query.id__neq != null && {not: req.query.id__neq}),
+						...(req.query.id__in != null && {in: req.query.id__in}),
+						...(req.query.id__nin != null && {notIn: req.query.id__nin}),
+					};
+				}
 
-			if (
-				req.query.externalId__eq != null ||
-				req.query.externalId__neq != null ||
-				req.query.externalId__in != null ||
-				req.query.externalId__nin != null ||
-				req.query.externalId__contains
-			) {
-				where.externalId = {
-					...(req.query.externalId__eq != null && {equals: req.query.externalId__eq}),
-					...(req.query.externalId__neq != null && {not: req.query.externalId__neq}),
-					...(req.query.externalId__in != null && {in: req.query.externalId__in}),
-					...(req.query.externalId__nin != null && {notIn: req.query.externalId__nin}),
-					...(req.query.externalId__contains != null && {
-						contains: req.query.externalId__contains,
-						mode: 'insensitive',
-					}),
-				};
-			}
+				if (
+					req.query.externalId__eq != null ||
+					req.query.externalId__neq != null ||
+					req.query.externalId__in != null ||
+					req.query.externalId__nin != null ||
+					req.query.externalId__contains
+				) {
+					where.externalId = {
+						...(req.query.externalId__eq != null && {equals: req.query.externalId__eq}),
+						...(req.query.externalId__neq != null && {not: req.query.externalId__neq}),
+						...(req.query.externalId__in != null && {in: req.query.externalId__in}),
+						...(req.query.externalId__nin != null && {notIn: req.query.externalId__nin}),
+						...(req.query.externalId__contains != null && {
+							contains: req.query.externalId__contains,
+							mode: 'insensitive',
+						}),
+					};
+				}
 
-			if (
-				req.query.name__eq != null ||
-				req.query.name__neq != null ||
-				req.query.name__in != null ||
-				req.query.name__nin != null ||
-				req.query.name__contains
-			) {
-				where.name = {
-					...(req.query.name__eq != null && {equals: req.query.name__eq}),
-					...(req.query.name__neq != null && {not: req.query.name__neq}),
-					...(req.query.name__in != null && {in: req.query.name__in}),
-					...(req.query.name__nin != null && {notIn: req.query.name__nin}),
-					...(req.query.name__contains != null && {
-						contains: req.query.name__contains,
-						mode: 'insensitive',
-					}),
-				};
-			}
+				if (
+					req.query.name__eq != null ||
+					req.query.name__neq != null ||
+					req.query.name__in != null ||
+					req.query.name__nin != null ||
+					req.query.name__contains
+				) {
+					where.name = {
+						...(req.query.name__eq != null && {equals: req.query.name__eq}),
+						...(req.query.name__neq != null && {not: req.query.name__neq}),
+						...(req.query.name__in != null && {in: req.query.name__in}),
+						...(req.query.name__nin != null && {notIn: req.query.name__nin}),
+						...(req.query.name__contains != null && {
+							contains: req.query.name__contains,
+							mode: 'insensitive',
+						}),
+					};
+				}
 
-			if (
-				req.query.course__eq != null ||
-				req.query.course__neq != null ||
-				req.query.course__in != null ||
-				req.query.course__nin != null ||
-				req.query.course__contains
-			) {
-				where.course = {
-					...(req.query.course__eq != null && {equals: req.query.course__eq}),
-					...(req.query.course__neq != null && {not: req.query.course__neq}),
-					...(req.query.course__in != null && {in: req.query.course__in}),
-					...(req.query.course__nin != null && {notIn: req.query.course__nin}),
-					...(req.query.course__contains != null && {
-						contains: req.query.course__contains,
-						mode: 'insensitive',
-					}),
-				};
-			}
+				if (
+					req.query.course__eq != null ||
+					req.query.course__neq != null ||
+					req.query.course__in != null ||
+					req.query.course__nin != null ||
+					req.query.course__contains
+				) {
+					where.course = {
+						...(req.query.course__eq != null && {equals: req.query.course__eq}),
+						...(req.query.course__neq != null && {not: req.query.course__neq}),
+						...(req.query.course__in != null && {in: req.query.course__in}),
+						...(req.query.course__nin != null && {notIn: req.query.course__nin}),
+						...(req.query.course__contains != null && {
+							contains: req.query.course__contains,
+							mode: 'insensitive',
+						}),
+					};
+				}
 
-			if (
-				req.query.yearAndSection__eq != null ||
-				req.query.yearAndSection__neq != null ||
-				req.query.yearAndSection__in != null ||
-				req.query.yearAndSection__nin != null ||
-				req.query.yearAndSection__contains
-			) {
-				where.yearAndSection = {
-					...(req.query.yearAndSection__eq != null && {
-						equals: req.query.yearAndSection__eq,
-					}),
-					...(req.query.yearAndSection__neq != null && {
-						not: req.query.yearAndSection__neq,
-					}),
-					...(req.query.yearAndSection__in != null && {in: req.query.yearAndSection__in}),
-					...(req.query.yearAndSection__nin != null && {
-						notIn: req.query.yearAndSection__nin,
-					}),
-					...(req.query.yearAndSection__contains != null && {
-						contains: req.query.yearAndSection__contains,
-						mode: 'insensitive',
-					}),
-				};
-			}
+				if (
+					req.query.yearAndSection__eq != null ||
+					req.query.yearAndSection__neq != null ||
+					req.query.yearAndSection__in != null ||
+					req.query.yearAndSection__nin != null ||
+					req.query.yearAndSection__contains
+				) {
+					where.yearAndSection = {
+						...(req.query.yearAndSection__eq != null && {
+							equals: req.query.yearAndSection__eq,
+						}),
+						...(req.query.yearAndSection__neq != null && {
+							not: req.query.yearAndSection__neq,
+						}),
+						...(req.query.yearAndSection__in != null && {in: req.query.yearAndSection__in}),
+						...(req.query.yearAndSection__nin != null && {
+							notIn: req.query.yearAndSection__nin,
+						}),
+						...(req.query.yearAndSection__contains != null && {
+							contains: req.query.yearAndSection__contains,
+							mode: 'insensitive',
+						}),
+					};
+				}
 
-			if (
-				req.query.dateTimeLastBorrowedBook__gt != null ||
-				req.query.dateTimeLastBorrowedBook__gte != null ||
-				req.query.dateTimeLastBorrowedBook__lt != null ||
-				req.query.dateTimeLastBorrowedBook__lte != null
-			) {
-				where.dateTimeLastBorrowedBook = {
-					...(req.query.dateTimeLastBorrowedBook__gt != null && {
-						gt: req.query.dateTimeLastBorrowedBook__gt,
-					}),
-					...(req.query.dateTimeLastBorrowedBook__gte != null && {
-						gte: req.query.dateTimeLastBorrowedBook__gte,
-					}),
-					...(req.query.dateTimeLastBorrowedBook__lt != null && {
-						lt: req.query.dateTimeLastBorrowedBook__lt,
-					}),
-					...(req.query.dateTimeLastBorrowedBook__lte != null && {
-						lte: req.query.dateTimeLastBorrowedBook__lte,
-					}),
-				};
-			}
+				if (
+					req.query.dateTimeLastBorrowedBook__gt != null ||
+					req.query.dateTimeLastBorrowedBook__gte != null ||
+					req.query.dateTimeLastBorrowedBook__lt != null ||
+					req.query.dateTimeLastBorrowedBook__lte != null
+				) {
+					where.dateTimeLastBorrowedBook = {
+						...(req.query.dateTimeLastBorrowedBook__gt != null && {
+							gt: req.query.dateTimeLastBorrowedBook__gt,
+						}),
+						...(req.query.dateTimeLastBorrowedBook__gte != null && {
+							gte: req.query.dateTimeLastBorrowedBook__gte,
+						}),
+						...(req.query.dateTimeLastBorrowedBook__lt != null && {
+							lt: req.query.dateTimeLastBorrowedBook__lt,
+						}),
+						...(req.query.dateTimeLastBorrowedBook__lte != null && {
+							lte: req.query.dateTimeLastBorrowedBook__lte,
+						}),
+					};
+				}
 
-			if (
-				req.query.dateTimeCreated__gt != null ||
-				req.query.dateTimeCreated__gte != null ||
-				req.query.dateTimeCreated__lt != null ||
-				req.query.dateTimeCreated__lte != null
-			) {
-				where.dateTimeCreated = {
-					...(req.query.dateTimeCreated__gt != null && {gt: req.query.dateTimeCreated__gt}),
-					...(req.query.dateTimeCreated__gte != null && {gte: req.query.dateTimeCreated__gte}),
-					...(req.query.dateTimeCreated__lt != null && {lt: req.query.dateTimeCreated__lt}),
-					...(req.query.dateTimeCreated__lte != null && {lte: req.query.dateTimeCreated__lte}),
-				};
-			}
+				if (
+					req.query.dateTimeCreated__gt != null ||
+					req.query.dateTimeCreated__gte != null ||
+					req.query.dateTimeCreated__lt != null ||
+					req.query.dateTimeCreated__lte != null
+				) {
+					where.dateTimeCreated = {
+						...(req.query.dateTimeCreated__gt != null && {gt: req.query.dateTimeCreated__gt}),
+						...(req.query.dateTimeCreated__gte != null && {gte: req.query.dateTimeCreated__gte}),
+						...(req.query.dateTimeCreated__lt != null && {lt: req.query.dateTimeCreated__lt}),
+						...(req.query.dateTimeCreated__lte != null && {lte: req.query.dateTimeCreated__lte}),
+					};
+				}
 
-			if (
-				req.query.dateTimeUpdated__gt != null ||
-				req.query.dateTimeUpdated__gte != null ||
-				req.query.dateTimeUpdated__lt != null ||
-				req.query.dateTimeUpdated__lte != null
-			) {
-				where.dateTimeUpdated = {
-					...(req.query.dateTimeUpdated__gt != null && {gt: req.query.dateTimeUpdated__gt}),
-					...(req.query.dateTimeUpdated__gte != null && {gte: req.query.dateTimeUpdated__gte}),
-					...(req.query.dateTimeUpdated__lt != null && {lt: req.query.dateTimeUpdated__lt}),
-					...(req.query.dateTimeUpdated__lte != null && {lte: req.query.dateTimeUpdated__lte}),
-				};
-			}
+				if (
+					req.query.dateTimeUpdated__gt != null ||
+					req.query.dateTimeUpdated__gte != null ||
+					req.query.dateTimeUpdated__lt != null ||
+					req.query.dateTimeUpdated__lte != null
+				) {
+					where.dateTimeUpdated = {
+						...(req.query.dateTimeUpdated__gt != null && {gt: req.query.dateTimeUpdated__gt}),
+						...(req.query.dateTimeUpdated__gte != null && {gte: req.query.dateTimeUpdated__gte}),
+						...(req.query.dateTimeUpdated__lt != null && {lt: req.query.dateTimeUpdated__lt}),
+						...(req.query.dateTimeUpdated__lte != null && {lte: req.query.dateTimeUpdated__lte}),
+					};
+				}
 
-			const sortOrder = req.query.sortOrder === 'ASC' ? 'asc' : 'desc';
+				const sortOrder = req.query.sortOrder === 'ASC' ? 'asc' : 'desc';
 
-			const rows = await app.prisma.member.findMany({
-				where,
-				select: {
-					id: true,
-					externalId: true,
-					name: true,
-					course: true,
-					yearAndSection: true,
-					dateTimeLastBorrowedBook: true,
-					dateTimeCreated: true,
-					dateTimeUpdated: true,
-				},
-				orderBy:
-					req.query.sortBy == null
-						? [{dateTimeCreated: 'desc'}, {id: 'desc'}]
-						: {
-							[req.query.sortBy]:
-								req.query.sortBy === 'dateTimeLastBorrowedBook'
-									? {sort: sortOrder, nulls: 'last'}
-									: sortOrder,
+				const rows = await loadExportRows(app, (take, skip) =>
+					app.prisma.member.findMany({
+						take,
+						skip,
+						where,
+						select: {
+							id: true,
+							externalId: true,
+							name: true,
+							course: true,
+							yearAndSection: true,
+							dateTimeLastBorrowedBook: true,
+							dateTimeCreated: true,
+							dateTimeUpdated: true,
 						},
-			});
+						orderBy:
+							req.query.sortBy == null
+								? [{dateTimeCreated: 'desc'}, {id: 'desc'}]
+								: [
+										{
+											[req.query.sortBy]:
+												req.query.sortBy === 'dateTimeLastBorrowedBook'
+													? {sort: sortOrder, nulls: 'last'}
+													: sortOrder,
+										},
+										{id: 'desc'},
+									],
+					}),
+				);
 
-			const worksheet = XLSX.utils.json_to_sheet(
-				rows.map((member) => ({
-					id: member.id,
-					externalId: member.externalId,
-					name: member.name,
-					course: member.course,
-					yearAndSection: member.yearAndSection,
-					dateTimeLastBorrowedBook: member.dateTimeLastBorrowedBook?.toISOString() ?? null,
-					dateTimeCreated: member.dateTimeCreated.toISOString(),
-					dateTimeUpdated: member.dateTimeUpdated.toISOString(),
-				})),
-			);
+				const worksheet = XLSX.utils.json_to_sheet(
+					rows.map((member) => ({
+						id: member.id,
+						externalId: member.externalId,
+						name: member.name,
+						course: member.course,
+						yearAndSection: member.yearAndSection,
+						dateTimeLastBorrowedBook: member.dateTimeLastBorrowedBook?.toISOString() ?? null,
+						dateTimeCreated: member.dateTimeCreated.toISOString(),
+						dateTimeUpdated: member.dateTimeUpdated.toISOString(),
+					})),
+				);
 
-			const workbook = XLSX.utils.book_new();
-			XLSX.utils.book_append_sheet(workbook, worksheet, 'Members');
+				const workbook = XLSX.utils.book_new();
+				XLSX.utils.book_append_sheet(workbook, worksheet, 'Members');
 
-			const buffer = XLSX.write(workbook, {type: 'buffer', bookType: 'xlsx'}) as Buffer;
+				const buffer = XLSX.write(workbook, {type: 'buffer', bookType: 'xlsx'}) as Buffer;
 
-			return reply
-				.header('content-type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-				.header('content-disposition', `attachment; filename="members-${Date.now()}.xlsx"`)
-				.send(buffer);
-		},
+				return reply
+					.header(
+						'content-type',
+						'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+					)
+					.header('content-disposition', `attachment; filename="members-${Date.now()}.xlsx"`)
+					.send(buffer);
+			}),
 	);
 };
 

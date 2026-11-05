@@ -201,7 +201,10 @@ test('GET /reservations defaults to newest first and supports descending created
 		headers,
 	});
 	assert.equal(sortedResponse.statusCode, 200, sortedResponse.body);
-	assert.deepEqual(sortOrders, [[{dateTimeCreated: 'desc'}, {id: 'desc'}], {dateTimeCreated: 'desc'}]);
+	assert.deepEqual(sortOrders, [
+		[{dateTimeCreated: 'desc'}, {id: 'desc'}],
+		{dateTimeCreated: 'desc'},
+	]);
 });
 
 test('GET /reservations requires authentication', async () => {
@@ -268,6 +271,8 @@ test('POST /reservations/export applies combined filters and sorting without pag
 	});
 	assert.equal(response.statusCode, 200, response.body);
 	assert.deepEqual(args, {
+		take: 25,
+		skip: 0,
 		where: {
 			bookId: {not: 5},
 			memberId: {equals: 3},
@@ -287,12 +292,20 @@ test('POST /reservations/export applies combined filters and sorting without pag
 			dateTimeCreated: true,
 			dateTimeUpdated: true,
 		},
-		orderBy: {dateTimeUpdated: 'asc'},
+		orderBy: [{dateTimeUpdated: 'asc'}, {id: 'desc'}],
 	});
 });
 
 test('POST /reservations/export requires authentication', async () => {
-	const response = await fixture.app.inject({method: 'POST', url: '/reservations/export'});
+	const csrf = await fixture.app.inject({method: 'GET', url: '/csrf'});
+	const cookie = csrf.cookies
+		.map(({name, value}) => `${name}=${encodeURIComponent(value)}`)
+		.join('; ');
+	const response = await fixture.app.inject({
+		method: 'POST',
+		url: '/reservations/export',
+		headers: {cookie, 'x-csrf-token': csrf.json().data.token},
+	});
 	assert.equal(response.statusCode, 401);
 });
 

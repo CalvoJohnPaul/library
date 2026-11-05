@@ -2,6 +2,7 @@ import {FailedHttpResponseDefinition} from '@library/types';
 import {type UseMutationOptions, useMutation} from '@tanstack/react-query';
 import {API_BASE_URL} from '@/config/env';
 import {downloadFile} from '@/utils/downloadFile';
+import {useCsrfQuery} from './useCsrfQuery';
 import {type ReservationsInput, useReservationsQuery} from './useReservationsQuery';
 
 export type ExportReservationsInput = Omit<ReservationsInput, 'page' | 'pageSize'>;
@@ -23,10 +24,12 @@ export function useExportReservationsMutation(
 		...options,
 		mutationKey: ['ExportReservations'],
 		mutationFn: async (input: ExportReservationsInput) => {
+			const csrf = await useCsrfQuery.getQueryFn()();
 			const params = useReservationsQuery.getSearchParams(input);
 			const res = await fetch(`${API_BASE_URL}/reservations/export?${params}`, {
 				method: 'POST',
 				credentials: 'include',
+				headers: {'X-CSRF-Token': csrf.token},
 			});
 			if (!res.ok) {
 				const obj = FailedHttpResponseDefinition.parse(await res.json());

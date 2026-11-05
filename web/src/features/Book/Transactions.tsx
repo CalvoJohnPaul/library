@@ -364,7 +364,10 @@ export function Transactions() {
 												<>
 													<ClaimReservation
 														id={reservation.id}
-														disabled={reservation.bookCopy?.status !== 'RESERVED'}
+														disabled={
+															transaction.bookCopy?.status !== 'RESERVED' ||
+															!transaction.bookCopy.isbn.trim()
+														}
 														onClaimed={() => {
 															client.invalidateQueries({
 																queryKey: useTransactionsQuery.getQueryKey(),
