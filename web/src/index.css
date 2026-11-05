@@ -412,6 +412,14 @@
 	}
 }
 
+@utility datatable-sticky-cell-left {
+	@apply sticky left-0 z-10 bg-white shadow-[inset_-1px_0_0_var(--color-neutral-200)] dark:bg-neutral-950 dark:shadow-[inset_-1px_0_0_var(--color-neutral-800)];
+}
+
+@utility datatable-sticky-cell-right {
+	@apply sticky right-0 z-10 w-0 bg-white text-center shadow-[inset_1px_0_0_var(--color-neutral-200)] dark:bg-neutral-950 dark:shadow-[inset_1px_0_0_var(--color-neutral-800)];
+}
+
 @utility z-* {
 	z-index: --value(--z-\*, integer);
 }

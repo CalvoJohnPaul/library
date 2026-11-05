@@ -33,7 +33,7 @@ export function ColumnsControl() {
 	);
 
 	const columns = (() => {
-		const cols = dataTable.columns.slice();
+		const cols = dataTable.columns.filter((col) => col.id !== 'actions');
 
 		cols.sort((i, j) => {
 			return dataTable.columnsOrder.indexOf(i.id) - dataTable.columnsOrder.indexOf(j.id);

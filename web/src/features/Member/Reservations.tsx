@@ -16,6 +16,7 @@ import {
 } from 'nuqs';
 import {Link} from 'react-router';
 import {DataTable} from '@/components/DataTable';
+import {SettingsOffIcon} from '@/components/icons/SettingsOffIcon';
 import {Badge} from '@/components/ui/Badge';
 import {Menu} from '@/components/ui/Menu';
 import {type BooksInput, useBooksQuery} from '@/hooks/useBooksQuery';
@@ -181,7 +182,6 @@ export function Reservations() {
 					cell: (reservation) => reservation.remarks,
 					hideable: true,
 					orderable: true,
-					defaultHidden: true,
 				},
 				{
 					id: 'dateTimeCreated',
@@ -211,9 +211,13 @@ export function Reservations() {
 						<Menu.Root>
 							<Menu.Trigger
 								disabled={reservation.status !== 'PENDING'}
-								className="disabled:opacity-50"
+								className="disabled:opacity-75"
 							>
-								<SettingsIcon className="size-5" />
+								{reservation.status === 'PENDING' ? (
+									<SettingsIcon className="size-5" />
+								) : (
+									<SettingsOffIcon className="size-5" />
+								)}
 							</Menu.Trigger>
 							<Portal>
 								<Menu.Positioner>

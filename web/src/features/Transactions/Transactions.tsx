@@ -18,6 +18,7 @@ import {
 } from 'nuqs';
 import {Link} from 'react-router';
 import {DataTable} from '@/components/DataTable';
+import {SettingsOffIcon} from '@/components/icons/SettingsOffIcon';
 import {Badge} from '@/components/ui/Badge';
 import {Menu} from '@/components/ui/Menu';
 import {Tooltip} from '@/components/ui/Tooltip';
@@ -199,7 +200,6 @@ export function Transactions() {
 						},
 						hideable: true,
 						orderable: true,
-						defaultHidden: true,
 					},
 					{
 						id: 'book',
@@ -323,7 +323,6 @@ export function Transactions() {
 						},
 						hideable: true,
 						orderable: true,
-						defaultHidden: true,
 					},
 					{
 						id: 'dateTimeCreated',
@@ -399,9 +398,13 @@ export function Transactions() {
 								<Menu.Root>
 									<Menu.Trigger
 										disabled={!canReturn && !canManageReservation}
-										className="disabled:opacity-50"
+										className="disabled:opacity-75"
 									>
-										<SettingsIcon className="size-5" />
+										{canReturn || canManageReservation ? (
+											<SettingsIcon className="size-5" />
+										) : (
+											<SettingsOffIcon className="size-5" />
+										)}
 									</Menu.Trigger>
 									<Portal>
 										<Menu.Positioner>

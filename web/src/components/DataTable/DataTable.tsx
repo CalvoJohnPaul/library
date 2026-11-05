@@ -22,8 +22,23 @@ export function DataTable<Data = any>(props: DataTableProps<Data>) {
 	const [useDataTableProps, localProps] = useDataTable.splitProps(props);
 
 	const dataTable = useDataTable(useDataTableProps);
-	const filters = useDisclosure();
-	const columnsControl = useDisclosure();
+
+	const filters = useDisclosure({
+		onChange(open) {
+			if (open) {
+				columnsControl.setOpen(false);
+			}
+		},
+	});
+
+	const columnsControl = useDisclosure({
+		onChange(open) {
+			if (open) {
+				filters.setOpen(false);
+			}
+		},
+	});
+
 	const empty = dataTable.collection.size < 1 && !dataTable.loading;
 
 	return (

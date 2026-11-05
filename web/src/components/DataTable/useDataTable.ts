@@ -29,7 +29,7 @@ export type DataTableFilter =
 
 // biome-ignore lint/suspicious/noExplicitAny: ""
 export interface DataTableColumn<Data = any> {
-	id: string;
+	id: 'actions' | (string & {});
 	cell: (data: Data, index: number) => ReactNode;
 	enabled?: boolean;
 	heading?: ReactNode;
