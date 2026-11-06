@@ -21,6 +21,11 @@ export function Logout({
 	const navigate = useNavigate();
 	const mutation = useDestroySessionMutation({
 		onSuccess() {
+			try {
+				localStorage.removeItem('library/recent-searches');
+			} catch (error) {
+				console.error(error);
+			}
 			client
 				.invalidateQueries({queryKey: useMeQuery.getQueryKey()})
 				.then(() => {
