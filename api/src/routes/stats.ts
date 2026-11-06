@@ -29,6 +29,7 @@ const plugin: FastifyPluginAsyncZod = async (app) => {
 			const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
 			const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
 			const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+			const startOfLast30Days = new Date(now.getTime() - 30 * DAY_IN_MILLISECONDS);
 			const startOfLast14Days = new Date(startOfToday);
 			startOfLast14Days.setDate(startOfLast14Days.getDate() - 13);
 			const startOfLast7Days = new Date(startOfToday);
@@ -106,7 +107,7 @@ const plugin: FastifyPluginAsyncZod = async (app) => {
 				app.prisma.transaction.findMany({
 					where: {
 						type: 'BORROW',
-						dateTimeCreated: {gte: startOfMonth},
+						dateTimeCreated: {gte: startOfLast30Days, lte: now},
 					},
 					select: {
 						bookCopy: {
@@ -121,7 +122,7 @@ const plugin: FastifyPluginAsyncZod = async (app) => {
 				app.prisma.transaction.findMany({
 					where: {
 						type: 'BORROW',
-						dateTimeCreated: {gte: startOfMonth},
+						dateTimeCreated: {gte: startOfLast30Days, lte: now},
 					},
 					select: {
 						member: {
@@ -186,7 +187,7 @@ const plugin: FastifyPluginAsyncZod = async (app) => {
 				else last7DaysReservationActivity[index].totalBooksUnreserved += 1;
 			}
 
-			const topBorrowedBooksThisMonthMap = new Map<
+			const topBorrowedBooksLast30DaysMap = new Map<
 				number,
 				{book: {id: number; title: string; author: string; genre: BookGenre}; total: number}
 			>();
@@ -195,33 +196,33 @@ const plugin: FastifyPluginAsyncZod = async (app) => {
 				if (!row.bookCopy) continue;
 
 				const {id, title, author, genre} = row.bookCopy.book;
-				const existing = topBorrowedBooksThisMonthMap.get(id);
+				const existing = topBorrowedBooksLast30DaysMap.get(id);
 
 				if (existing) existing.total += 1;
-				else topBorrowedBooksThisMonthMap.set(id, {book: {id, title, author, genre}, total: 1});
+				else topBorrowedBooksLast30DaysMap.set(id, {book: {id, title, author, genre}, total: 1});
 			}
 
 			// Keep enough books for the dashboard to filter by genre client-side.
 			const TOP_BORROWED_BOOKS_LIMIT = 30;
 
-			const topBorrowedBooksThisMonth = [...topBorrowedBooksThisMonthMap.values()]
+			const topBorrowedBooksLast30Days = [...topBorrowedBooksLast30DaysMap.values()]
 				.sort((a, b) => b.total - a.total || a.book.title.localeCompare(b.book.title))
 				.slice(0, TOP_BORROWED_BOOKS_LIMIT);
 
-			const topBorrowedMembersThisMonthMap = new Map<
+			const topBorrowedMembersLast30DaysMap = new Map<
 				number,
 				{member: {id: number; name: string; externalId: string}; total: number}
 			>();
 
 			for (const row of memberRows) {
 				const {id, name, externalId} = row.member;
-				const existing = topBorrowedMembersThisMonthMap.get(id);
+				const existing = topBorrowedMembersLast30DaysMap.get(id);
 
 				if (existing) existing.total += 1;
-				else topBorrowedMembersThisMonthMap.set(id, {member: {id, name, externalId}, total: 1});
+				else topBorrowedMembersLast30DaysMap.set(id, {member: {id, name, externalId}, total: 1});
 			}
 
-			const topBorrowedMembersThisMonth = [...topBorrowedMembersThisMonthMap.values()]
+			const topBorrowedMembersLast30Days = [...topBorrowedMembersLast30DaysMap.values()]
 				.sort((a, b) => b.total - a.total || a.member.name.localeCompare(b.member.name))
 				.slice(0, 5);
 
@@ -249,8 +250,8 @@ const plugin: FastifyPluginAsyncZod = async (app) => {
 					totalReadyToClaimReservations,
 					last14DaysActivity,
 					last7DaysReservationActivity,
-					topBorrowedBooksThisMonth,
-					topBorrowedMembersThisMonth,
+					topBorrowedBooksLast30Days,
+					topBorrowedMembersLast30Days,
 					totalBookCopiesByGenre,
 					monthOverMonth: {
 						newBooks: {current: newBooksThisMonth, previous: newBooksLastMonth},

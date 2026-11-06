@@ -52,8 +52,8 @@ export const StatsDefinition = z.object({
 	totalReadyToClaimReservations: z.number(),
 	last14DaysActivity: z.array(StatsActivityPointDefinition),
 	last7DaysReservationActivity: z.array(StatsReservationActivityPointDefinition),
-	topBorrowedBooksThisMonth: z.array(StatsTopBorrowedBookDefinition),
-	topBorrowedMembersThisMonth: z.array(StatsTopBorrowedMemberDefinition),
+	topBorrowedBooksLast30Days: z.array(StatsTopBorrowedBookDefinition),
+	topBorrowedMembersLast30Days: z.array(StatsTopBorrowedMemberDefinition),
 	totalBookCopiesByGenre: z.array(StatsGenreCountDefinition),
 	monthOverMonth: z.object({
 		newBooks: StatsMonthOverMonthDeltaDefinition,

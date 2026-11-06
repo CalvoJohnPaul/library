@@ -10,7 +10,7 @@ export const BookStatsDefinition = StatsDefinition.pick({
 	last14DaysActivity: true,
 	last7DaysReservationActivity: true,
 }).extend({
-	topBorrowedMembersLast90Days: StatsDefinition.shape.topBorrowedMembersThisMonth,
+	topBorrowedMembersLast90Days: StatsDefinition.shape.topBorrowedMembersLast30Days,
 	monthOverMonth: StatsDefinition.shape.monthOverMonth.pick({newCopies: true, borrows: true}),
 });
 

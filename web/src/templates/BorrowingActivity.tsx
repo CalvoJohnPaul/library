@@ -1,3 +1,4 @@
+import type {StatsActivityPoint} from '@library/types';
 import {format} from 'date-fns';
 import {
 	Bar,
@@ -9,22 +10,26 @@ import {
 	XAxis,
 	YAxis,
 } from 'recharts';
-import {useOverviewContext} from './OverviewContext';
 
 const ACTIVITY_SERIES = {
 	borrowed: {fill: 'light-dark(#fbbf24, #d97706)', label: 'light-dark(#d97706, #fcd34d)'},
 	returned: {fill: 'light-dark(#34d399, #059669)', label: 'light-dark(#059669, #6ee7b7)'},
 } as const;
 
-export function BorrowingActivity() {
-	const {last14DaysActivity} = useOverviewContext();
-	const activity = last14DaysActivity.map((point) => ({
+export function BorrowingActivity({data}: {data: StatsActivityPoint[]}) {
+	const activity: {
+		date: string;
+		borrowed: number;
+		returned: number;
+	}[] = data.map((point) => ({
 		date: format(point.timestamp, 'MMM dd'),
 		borrowed: point.totalBooksBorrowed,
 		returned: point.totalBooksReturned,
 	}));
+
 	const max = Math.max(0, ...activity.map((point) => Math.max(point.borrowed, point.returned)));
-	const tickStep = Math.max(250, Math.ceil(max / (8 * 250)) * 250);
+	const axisMax = Math.max(500, Math.ceil(max / 500) * 500);
+	const tickStep = Math.ceil(axisMax / (9 * 250)) * 250;
 	const ticks = Array.from({length: 9}, (_, index) => index * tickStep);
 
 	return (
@@ -35,6 +40,7 @@ export function BorrowingActivity() {
 					Borrowed and returned copies over the last 14 days
 				</p>
 			</div>
+
 			<div className="relative min-h-68.75 flex-1">
 				<ResponsiveContainer width="100%" height="100%" style={{position: 'absolute', inset: 0}}>
 					<BarChart data={activity} barGap={2}>
@@ -92,6 +98,7 @@ export function BorrowingActivity() {
 							fill={ACTIVITY_SERIES.borrowed.fill}
 							radius={[4, 4, 0, 0]}
 							maxBarSize={20}
+							isAnimationActive
 						/>
 						<Bar
 							dataKey="returned"
@@ -99,6 +106,7 @@ export function BorrowingActivity() {
 							fill={ACTIVITY_SERIES.returned.fill}
 							radius={[4, 4, 0, 0]}
 							maxBarSize={20}
+							isAnimationActive
 						/>
 					</BarChart>
 				</ResponsiveContainer>

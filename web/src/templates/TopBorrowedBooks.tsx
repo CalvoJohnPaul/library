@@ -1,18 +1,18 @@
-import type {BookGenre} from '@library/types';
+import type {BookGenre, StatsTopBorrowedBook} from '@library/types';
 import {useControllableState} from '@radix-ui/react-use-controllable-state';
 import {Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis} from 'recharts';
 import {getBookGenreLabel} from '@/utils/common';
-import {useDashboardContext} from './DashboardContext';
-import {roundedAxisMax} from './utils';
 
 interface TopBorrowedBooksProps {
+	data: StatsTopBorrowedBook[];
+	numOfDays: number;
 	genre?: BookGenre | null;
 	onGenreChange?: (genre: BookGenre | null) => void;
 	defaultGenre?: BookGenre | null;
 }
 
 export function TopBorrowedBooks(props: TopBorrowedBooksProps) {
-	const {topBorrowedBooksThisMonth} = useDashboardContext();
+	const {data, numOfDays} = props;
 	const [genre, setGenre] = useControllableState<BookGenre | null>({
 		prop: props.genre,
 		defaultProp: props.defaultGenre ?? null,
@@ -24,7 +24,7 @@ export function TopBorrowedBooks(props: TopBorrowedBooksProps) {
 		title: string;
 		author: string;
 		count: number;
-	}[] = topBorrowedBooksThisMonth
+	}[] = data
 		.filter((book) => genre === null || book.book.genre === genre)
 		.map((book) => ({
 			id: book.book.id,
@@ -34,7 +34,8 @@ export function TopBorrowedBooks(props: TopBorrowedBooksProps) {
 		}))
 		.slice(0, 5);
 
-	const axisMax = roundedAxisMax(items.map((item) => item.count));
+	const max = Math.max(0, ...items.map((item) => item.count));
+	const axisMax = Math.max(500, Math.ceil(max / 500) * 500);
 	const tickStep = Math.ceil(axisMax / (4 * 250)) * 250;
 	const ticks = Array.from({length: 5}, (_, index) => index * tickStep);
 	const shorten = (text: string) => (text.length > 25 ? `${text.slice(0, 24)}…` : text);
@@ -46,8 +47,8 @@ export function TopBorrowedBooks(props: TopBorrowedBooksProps) {
 					<h2 className="font-semibold text-sm">Top borrowed books</h2>
 					<p className="text-neutral-600 text-xs dark:text-neutral-300">
 						{genre === null
-							? 'Most borrowed this month'
-							: `Most borrowed this month · ${getBookGenreLabel(genre)}`}
+							? `Most borrowed over the last ${numOfDays} days`
+							: `Most borrowed over the last ${numOfDays} days · ${getBookGenreLabel(genre)}`}
 					</p>
 				</div>
 				{genre !== null && (
@@ -63,11 +64,13 @@ export function TopBorrowedBooks(props: TopBorrowedBooksProps) {
 
 			{items.length === 0 ? (
 				<p className="grid min-h-68.75 flex-1 place-items-center text-center text-neutral-600 text-xs dark:text-neutral-300">
-					No borrows in this genre this month
+					{genre === null
+						? `No borrows in the last ${numOfDays} days.`
+						: `No borrows in this genre in the last ${numOfDays} days.`}
 				</p>
 			) : (
-				<div className="min-h-68.75 flex-1">
-					<ResponsiveContainer width="100%" height="100%">
+				<div className="relative min-h-68.75 flex-1">
+					<ResponsiveContainer width="100%" height="100%" style={{position: 'absolute', inset: 0}}>
 						<BarChart data={items} layout="vertical" barCategoryGap="25%" margin={{right: 32}}>
 							<CartesianGrid
 								strokeDasharray="3 3"

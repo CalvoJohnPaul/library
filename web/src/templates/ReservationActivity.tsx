@@ -1,3 +1,4 @@
+import type {StatsReservationActivityPoint} from '@library/types';
 import {format} from 'date-fns';
 import {
 	Bar,
@@ -9,19 +10,15 @@ import {
 	XAxis,
 	YAxis,
 } from 'recharts';
-import {useDashboardContext} from './DashboardContext';
-import {roundedAxisMax} from './utils';
 
-export function ReservationActivity() {
-	const {last7DaysReservationActivity: data} = useDashboardContext();
+export function ReservationActivity({data}: {data: StatsReservationActivityPoint[]}) {
 	const activity = data.map((point) => ({
 		date: format(point.timestamp, 'MMM d'),
 		reserved: point.totalBooksReserved,
 		unreserved: point.totalBooksUnreserved,
 	}));
-	const axisMax = roundedAxisMax(
-		activity.map((point) => Math.max(point.reserved, point.unreserved)),
-	);
+	const max = Math.max(0, ...activity.map((point) => Math.max(point.reserved, point.unreserved)));
+	const axisMax = Math.max(500, Math.ceil(max / 500) * 500);
 	const tickStep = Math.ceil(axisMax / (4 * 250)) * 250;
 	const ticks = Array.from({length: 5}, (_, index) => index * tickStep);
 

@@ -1,14 +1,18 @@
 import assert from 'node:assert/strict';
-import {test} from 'vitest';
+import {test, vi} from 'vitest';
 import {createFixture} from './fixture.js';
 
 const fixture = createFixture();
 
-test('GET /stats', async () => {
+test('GET /stats', async ({onTestFinished}) => {
+	vi.useFakeTimers({toFake: ['Date']});
+	vi.setSystemTime(new Date('2026-11-06T12:00:00.000Z'));
+	onTestFinished(() => vi.useRealTimers());
 	const anonymous = await fixture.app.inject({method: 'GET', url: '/stats'});
 	assert.equal(anonymous.statusCode, 401);
 	const headers = await fixture.auth();
 	const book = await fixture.book();
+	const member = await fixture.member();
 	fixture.mock.book.count = async () => 1;
 	fixture.mock.bookCopy.count = async (args?: {where?: {status?: string}}) => {
 		if (!args?.where?.status) return 1;
@@ -29,9 +33,15 @@ test('GET /stats', async () => {
 	const yesterday = new Date(today);
 	yesterday.setDate(yesterday.getDate() - 1);
 	fixture.mock.transaction.findMany = async (args: {
-		where: {type: {in?: string[]}; dateTimeCreated?: {gte: Date}};
-		select?: {bookCopy?: {select: {book: {select: unknown}}}};
+		where: {type: string | {in?: string[]}; dateTimeCreated?: {gte: Date; lte?: Date}};
+		select?: {bookCopy?: {select: {book: {select: unknown}}}; member?: {select: unknown}};
 	}) => {
+		if (args.where.type === 'BORROW') {
+			assert.deepEqual(args.where.dateTimeCreated, {
+				gte: new Date('2026-10-07T12:00:00.000Z'),
+				lte: today,
+			});
+		}
 		if (args.select?.bookCopy) {
 			assert.deepEqual(args.select.bookCopy.select.book.select, {
 				id: true,
@@ -47,7 +57,10 @@ test('GET /stats', async () => {
 				},
 			];
 		}
-		if (args.where.type?.in?.includes('RESERVE')) {
+		if (args.select?.member) {
+			return [{member: {id: member.id, name: member.name, externalId: member.externalId}}];
+		}
+		if (typeof args.where.type !== 'string' && args.where.type.in?.includes('RESERVE')) {
 			assert.deepEqual(args.where.type.in, ['RESERVE', 'UNRESERVE']);
 			const startOfLast7Days = new Date(today.getFullYear(), today.getMonth(), today.getDate() - 6);
 			assert.equal(args.where.dateTimeCreated?.gte.getTime(), startOfLast7Days.getTime());
@@ -66,8 +79,11 @@ test('GET /stats', async () => {
 	assert.equal(response.json().data.totalAvailableCopies, 0);
 	assert.equal(response.json().data.totalPendingReservations, 2);
 	assert.equal(response.json().data.totalReadyToClaimReservations, 1);
-	assert.deepEqual(response.json().data.topBorrowedBooksThisMonth, [
+	assert.deepEqual(response.json().data.topBorrowedBooksLast30Days, [
 		{book: {id: book.id, title: book.title, author: book.author, genre: book.genre}, total: 1},
+	]);
+	assert.deepEqual(response.json().data.topBorrowedMembersLast30Days, [
+		{member: {id: member.id, name: member.name, externalId: member.externalId}, total: 1},
 	]);
 	const activity = response.json().data.last7DaysReservationActivity;
 	assert.equal(activity.length, 7);
