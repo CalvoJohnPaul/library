@@ -6,8 +6,7 @@ import {useDashboardContext} from './DashboardContext';
 import {roundedBarMax} from './utils';
 
 export function TopBorrowingMembers() {
-	const data = useDashboardContext();
-	const members = data.topBorrowedMembersThisMonth;
+	const {topBorrowedMembersThisMonth: members} = useDashboardContext();
 	const max = roundedBarMax(members.map((member) => member.total));
 
 	return (
@@ -19,6 +18,9 @@ export function TopBorrowingMembers() {
 				</p>
 			</div>
 			<ol className="flex flex-col gap-4">
+				{members.length === 0 && (
+					<li className="text-neutral-600 text-sm dark:text-neutral-300">No borrows this month.</li>
+				)}
 				{members.map(({member, total}) => (
 					<li key={member.id} className="flex items-center gap-3">
 						<Avatar.Root size="sm" className="shrink-0">

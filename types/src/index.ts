@@ -1,6 +1,7 @@
 export * from './Account.js';
 export * from './Book.js';
 export * from './BookCopy.js';
+export * from './BookStats.js';
 export * from './Csrf.js';
 export * from './common.js';
 export * from './HttpResponse.js';

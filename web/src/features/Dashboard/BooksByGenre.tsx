@@ -59,15 +59,14 @@ interface BooksByGenreProps {
 }
 
 export function BooksByGenre(props: BooksByGenreProps) {
-	const data = useDashboardContext();
-
+	const {totalBookCopiesByGenre} = useDashboardContext();
 	const [genre, setGenre] = useControllableState<BookGenre | null>({
 		prop: props.genre,
 		defaultProp: props.defaultGenre ?? null,
 		onChange: props.onGenreChange,
 	});
 
-	const sortedGenres = data.totalBookCopiesByGenre
+	const sortedGenres = totalBookCopiesByGenre
 		.map((genre) => ({
 			genre: getBookGenreLabel(genre.genre),
 			value: genre.genre,

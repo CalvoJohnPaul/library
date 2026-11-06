@@ -4,8 +4,9 @@ import {useStatsQuery} from '@/hooks/useStatsQuery';
 import {BooksByGenre} from './BooksByGenre';
 import {BorrowingActivity} from './BorrowingActivity';
 import {DashboardProvider} from './DashboardContext';
+import {PendingReservations} from './PendingReservations';
+import {ReadyToClaim} from './ReadyToClaim';
 import {ReservationActivity} from './ReservationActivity';
-import {ReservationStats} from './ReservationStats';
 import {Stats} from './Stats';
 import {TopBorrowedBooks} from './TopBorrowedBooks';
 import {TopBorrowingMembers} from './TopBorrowingMembers';
@@ -57,7 +58,10 @@ export function Dashboard() {
 					<div className="flex min-w-0 flex-col gap-4">
 						<BooksByGenre genre={genre} onGenreChange={setGenre} />
 						<TopBorrowingMembers />
-						<ReservationStats />
+						<div className="grid min-w-0 grid-cols-2 gap-4">
+							<PendingReservations />
+							<ReadyToClaim />
+						</div>
 						<ReservationActivity />
 					</div>
 				</div>

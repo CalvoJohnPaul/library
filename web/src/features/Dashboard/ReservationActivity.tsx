@@ -13,8 +13,8 @@ import {useDashboardContext} from './DashboardContext';
 import {roundedAxisMax} from './utils';
 
 export function ReservationActivity() {
-	const data = useDashboardContext();
-	const activity = data.last7DaysReservationActivity.map((point) => ({
+	const {last7DaysReservationActivity: data} = useDashboardContext();
+	const activity = data.map((point) => ({
 		date: format(point.timestamp, 'MMM d'),
 		reserved: point.totalBooksReserved,
 		unreserved: point.totalBooksUnreserved,
@@ -35,7 +35,11 @@ export function ReservationActivity() {
 			</div>
 			<ResponsiveContainer width="100%" height={180}>
 				<BarChart data={activity} barGap={1}>
-					<CartesianGrid strokeDasharray="3 3" stroke="var(--dashboard-chart-grid)" vertical={false} />
+					<CartesianGrid
+						strokeDasharray="3 3"
+						stroke="var(--dashboard-chart-grid)"
+						vertical={false}
+					/>
 					<XAxis
 						dataKey="date"
 						tickLine={false}

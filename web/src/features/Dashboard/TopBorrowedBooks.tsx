@@ -12,8 +12,7 @@ interface TopBorrowedBooksProps {
 }
 
 export function TopBorrowedBooks(props: TopBorrowedBooksProps) {
-	const data = useDashboardContext();
-
+	const {topBorrowedBooksThisMonth} = useDashboardContext();
 	const [genre, setGenre] = useControllableState<BookGenre | null>({
 		prop: props.genre,
 		defaultProp: props.defaultGenre ?? null,
@@ -25,7 +24,7 @@ export function TopBorrowedBooks(props: TopBorrowedBooksProps) {
 		title: string;
 		author: string;
 		count: number;
-	}[] = data.topBorrowedBooksThisMonth
+	}[] = topBorrowedBooksThisMonth
 		.filter((book) => genre === null || book.book.genre === genre)
 		.map((book) => ({
 			id: book.book.id,
@@ -70,7 +69,11 @@ export function TopBorrowedBooks(props: TopBorrowedBooksProps) {
 				<div className="min-h-68.75 flex-1">
 					<ResponsiveContainer width="100%" height="100%">
 						<BarChart data={items} layout="vertical" barCategoryGap="25%" margin={{right: 32}}>
-							<CartesianGrid strokeDasharray="3 3" stroke="var(--dashboard-chart-grid)" horizontal={false} />
+							<CartesianGrid
+								strokeDasharray="3 3"
+								stroke="var(--dashboard-chart-grid)"
+								horizontal={false}
+							/>
 							<XAxis
 								type="number"
 								tickLine={false}

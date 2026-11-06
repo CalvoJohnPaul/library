@@ -11,13 +11,14 @@ import {client} from '@/utils/client';
 import {AddBookCopy} from './AddBookCopy';
 import {BookProvider} from './BookContext';
 import {Copies} from './BookCopies';
+import {Overview} from './Overview';
 import {Reservations} from './Reservations';
 import {Settings} from './Settings';
 import {Transactions} from './Transactions';
 
 const TabDefinition = z
-	.enum(['copies', 'reservations', 'transactions', 'settings'])
-	.catch('copies');
+	.enum(['overview', 'copies', 'reservations', 'transactions', 'settings'])
+	.catch('overview');
 
 export function Book() {
 	const {id} = useParams<{id: string}>();
@@ -28,7 +29,7 @@ export function Book() {
 	const setTab = (value: string) => {
 		const tab = TabDefinition.parse(value);
 
-		if (tab === 'copies') {
+		if (tab === 'overview') {
 			navigate(`/books/${id}`);
 		} else {
 			navigate(`/books/${id}?tab=${tab}`);
@@ -111,13 +112,17 @@ export function Book() {
 						</Tabs.Context>
 					</div>
 
-					<Tabs.List className="mb-8 w-120">
+					<Tabs.List className="mb-8 w-full max-w-150">
+						<Tabs.Trigger value="overview">Overview</Tabs.Trigger>
 						<Tabs.Trigger value="copies">Copies</Tabs.Trigger>
 						<Tabs.Trigger value="reservations">Reservations</Tabs.Trigger>
 						<Tabs.Trigger value="transactions">Transactions</Tabs.Trigger>
 						<Tabs.Trigger value="settings">Settings</Tabs.Trigger>
 						<Tabs.Indicator />
 					</Tabs.List>
+					<Tabs.Content value="overview">
+						<Overview />
+					</Tabs.Content>
 					<Tabs.Content value="copies">
 						<Copies />
 					</Tabs.Content>

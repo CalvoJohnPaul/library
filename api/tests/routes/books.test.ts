@@ -1,10 +1,218 @@
 import assert from 'node:assert/strict';
 import {faker} from '@faker-js/faker';
-import {test} from 'vitest';
+import {BookStatsDefinition} from '@library/types';
+import {test, vi} from 'vitest';
 import * as XLSX from 'xlsx';
 import {createFixture} from './fixture.js';
 
 const fixture = createFixture();
+
+test('GET /books/:id/stats requires authentication', async () => {
+	const response = await fixture.app.inject({url: '/books/1/stats'});
+	assert.equal(response.statusCode, 401, response.body);
+});
+
+test('GET /books/:id/stats rejects invalid book IDs', async () => {
+	const headers = await fixture.auth();
+	for (const id of ['0', '-1', '1.5', 'invalid']) {
+		const response = await fixture.app.inject({url: `/books/${id}/stats`, headers});
+		assert.equal(response.statusCode, 400, response.body);
+	}
+});
+
+test('GET /books/:id/stats returns 404 for a missing book', async () => {
+	const headers = await fixture.auth();
+	fixture.mock.book.exists = async (where: unknown) => {
+		assert.deepEqual(where, {id: 1});
+		return false;
+	};
+	const response = await fixture.app.inject({url: '/books/1/stats', headers});
+	assert.equal(response.statusCode, 404, response.body);
+});
+
+test('GET /books/:id/stats returns zero counts and complete empty activity windows', async () => {
+	const headers = await fixture.auth();
+	fixture.mock.book.exists = async () => true;
+	fixture.mock.bookCopy.count = async () => 0;
+	fixture.mock.reservation.count = async () => 0;
+	fixture.mock.transaction.count = async () => 0;
+	fixture.mock.transaction.findMany = async () => [];
+
+	const response = await fixture.app.inject({url: '/books/1/stats', headers});
+	assert.equal(response.statusCode, 200, response.body);
+	const data = BookStatsDefinition.parse(response.json().data);
+	assert.equal(data.totalBookCopies, 0);
+	assert.equal(data.totalAvailableCopies, 0);
+	assert.equal(data.totalOutstandingBorrows, 0);
+	assert.equal(data.totalPendingReservations, 0);
+	assert.equal(data.totalReadyToClaimReservations, 0);
+	assert.deepEqual(data.monthOverMonth, {
+		newCopies: {current: 0, previous: 0},
+		borrows: {current: 0, previous: 0},
+	});
+	assert.deepEqual(data.topBorrowedMembersThisMonth, []);
+	assert.equal(data.last14DaysActivity.length, 14);
+	assert.equal(data.last7DaysReservationActivity.length, 7);
+	assert.ok(
+		data.last14DaysActivity.every(
+			(point) => point.totalBooksBorrowed === 0 && point.totalBooksReturned === 0,
+		),
+	);
+	assert.ok(
+		data.last7DaysReservationActivity.every(
+			(point) => point.totalBooksReserved === 0 && point.totalBooksUnreserved === 0,
+		),
+	);
+});
+
+test('GET /books/:id/stats scopes counts, activity, monthly comparisons and member rankings to the book', async ({
+	onTestFinished,
+}) => {
+	vi.useFakeTimers({toFake: ['Date']});
+	vi.setSystemTime(new Date(2026, 10, 15, 12));
+	onTestFinished(() => vi.useRealTimers());
+	const headers = await fixture.auth();
+	const bookId = 42;
+	const startOfMonth = new Date(2026, 10, 1);
+	const startOfLastMonth = new Date(2026, 9, 1);
+	const startOfLast14Days = new Date(2026, 10, 2);
+	const startOfLast7Days = new Date(2026, 10, 9);
+	fixture.mock.book.exists = async (where: unknown) => {
+		assert.deepEqual(where, {id: bookId});
+		return true;
+	};
+	fixture.mock.bookCopy.count = async ({
+		where,
+	}: {
+		where: {bookId: number; status?: string; dateTimeCreated?: {gte: Date; lt?: Date}};
+	}) => {
+		assert.equal(where.bookId, bookId);
+		if (where.dateTimeCreated) {
+			if (where.dateTimeCreated.lt) {
+				assert.deepEqual(where, {
+					bookId,
+					dateTimeCreated: {gte: startOfLastMonth, lt: startOfMonth},
+				});
+				return 2;
+			}
+			assert.deepEqual(where, {bookId, dateTimeCreated: {gte: startOfMonth}});
+			return 3;
+		}
+		if (where.status) {
+			assert.ok(['AVAILABLE', 'BORROWED'].includes(where.status));
+			assert.deepEqual(where, {bookId, status: where.status});
+			return where.status === 'AVAILABLE' ? 4 : 5;
+		}
+		assert.deepEqual(where, {bookId});
+		return 10;
+	};
+	fixture.mock.reservation.count = async ({where}: {where: {bookCopy?: unknown}}) => {
+		if (where.bookCopy) {
+			assert.deepEqual(where, {bookId, status: 'PENDING', bookCopy: {is: {status: 'RESERVED'}}});
+			return 1;
+		}
+		assert.deepEqual(where, {bookId, status: 'PENDING'});
+		return 3;
+	};
+	fixture.mock.transaction.count = async (args: unknown) => {
+		assert.deepEqual(args, {
+			where: {
+				bookCopy: {is: {bookId}},
+				type: 'BORROW',
+				dateTimeCreated: {gte: startOfLastMonth, lt: startOfMonth},
+			},
+		});
+		return 8;
+	};
+	const members = ['Zulu', 'Yankee', 'Bravo', 'Alpha', 'Charlie', 'Delta', 'Echo'].map(
+		(name, index) => ({id: index + 1, name, externalId: `MEM-${index + 1}`}),
+	);
+	const memberRows = [
+		members[0],
+		members[0],
+		members[1],
+		members[1],
+		members[1],
+		...members.slice(2),
+	].map((member) => ({member}));
+	fixture.mock.transaction.findMany = async (args: {
+		where: {type: string | {in: string[]}};
+		select: unknown;
+	}) => {
+		if (args.where.type === 'BORROW') {
+			assert.deepEqual(args, {
+				where: {bookCopy: {is: {bookId}}, type: 'BORROW', dateTimeCreated: {gte: startOfMonth}},
+				select: {member: {select: {id: true, name: true, externalId: true}}},
+			});
+			return memberRows;
+		}
+		if (typeof args.where.type !== 'string' && args.where.type.in.includes('BORROW')) {
+			assert.deepEqual(args, {
+				where: {
+					bookCopy: {is: {bookId}},
+					type: {in: ['BORROW', 'RETURN']},
+					dateTimeCreated: {gte: startOfLast14Days},
+				},
+				select: {type: true, dateTimeCreated: true},
+			});
+			return [
+				{type: 'BORROW', dateTimeCreated: startOfLast14Days},
+				{type: 'BORROW', dateTimeCreated: new Date(2026, 10, 15, 9)},
+				{type: 'BORROW', dateTimeCreated: new Date(2026, 10, 15, 10)},
+				{type: 'RETURN', dateTimeCreated: new Date(2026, 10, 14, 23, 59)},
+			];
+		}
+		assert.deepEqual(args, {
+			where: {
+				bookId,
+				type: {in: ['RESERVE', 'UNRESERVE']},
+				dateTimeCreated: {gte: startOfLast7Days},
+			},
+			select: {type: true, dateTimeCreated: true},
+		});
+		return [
+			{type: 'RESERVE', dateTimeCreated: startOfLast7Days},
+			{type: 'RESERVE', dateTimeCreated: new Date(2026, 10, 15, 8)},
+			{type: 'UNRESERVE', dateTimeCreated: new Date(2026, 10, 14, 16)},
+		];
+	};
+
+	const response = await fixture.app.inject({url: `/books/${bookId}/stats`, headers});
+	assert.equal(response.statusCode, 200, response.body);
+	const data = BookStatsDefinition.parse(response.json().data);
+	assert.equal(data.totalBookCopies, 10);
+	assert.equal(data.totalAvailableCopies, 4);
+	assert.equal(data.totalOutstandingBorrows, 5);
+	assert.equal(data.totalPendingReservations, 3);
+	assert.equal(data.totalReadyToClaimReservations, 1);
+	assert.deepEqual(data.monthOverMonth, {
+		newCopies: {current: 3, previous: 2},
+		borrows: {current: 10, previous: 8},
+	});
+	assert.deepEqual(data.topBorrowedMembersThisMonth, [
+		{member: members[1], total: 3},
+		{member: members[0], total: 2},
+		{member: members[3], total: 1},
+		{member: members[2], total: 1},
+		{member: members[4], total: 1},
+	]);
+	assert.deepEqual(
+		data.last14DaysActivity,
+		Array.from({length: 14}, (_, index) => ({
+			timestamp: new Date(2026, 10, index + 2),
+			totalBooksBorrowed: index === 0 ? 1 : index === 13 ? 2 : 0,
+			totalBooksReturned: index === 12 ? 1 : 0,
+		})),
+	);
+	assert.deepEqual(
+		data.last7DaysReservationActivity,
+		Array.from({length: 7}, (_, index) => ({
+			timestamp: new Date(2026, 10, index + 9),
+			totalBooksReserved: index === 0 || index === 6 ? 1 : 0,
+			totalBooksUnreserved: index === 5 ? 1 : 0,
+		})),
+	);
+});
 
 test('GET /books', async () => {
 	const headers = await fixture.auth();

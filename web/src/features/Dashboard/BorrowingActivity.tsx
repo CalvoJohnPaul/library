@@ -18,13 +18,12 @@ const ACTIVITY_SERIES = {
 } as const;
 
 export function BorrowingActivity() {
-	const data = useDashboardContext();
-
+	const {last14DaysActivity: data} = useDashboardContext();
 	const activity: {
 		date: string;
 		borrowed: number;
 		returned: number;
-	}[] = data.last14DaysActivity.map((point) => ({
+	}[] = data.map((point) => ({
 		date: format(point.timestamp, 'MMM dd'),
 		borrowed: point.totalBooksBorrowed,
 		returned: point.totalBooksReturned,
@@ -43,10 +42,14 @@ export function BorrowingActivity() {
 				</p>
 			</div>
 
-			<div className="min-h-68.75 flex-1">
-				<ResponsiveContainer width="100%" height="100%">
+			<div className="relative min-h-68.75 flex-1">
+				<ResponsiveContainer width="100%" height="100%" style={{position: 'absolute', inset: 0}}>
 					<BarChart data={activity} barGap={2}>
-						<CartesianGrid strokeDasharray="3 3" stroke="var(--dashboard-chart-grid)" vertical={false} />
+						<CartesianGrid
+							strokeDasharray="3 3"
+							stroke="var(--dashboard-chart-grid)"
+							vertical={false}
+						/>
 						<XAxis
 							dataKey="date"
 							tickLine={false}

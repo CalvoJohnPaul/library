@@ -64,6 +64,7 @@ export const StatsDefinition = z.object({
 });
 
 export type StatsActivityPoint = z.infer<typeof StatsActivityPointDefinition>;
+export type StatsReservationActivityPoint = z.infer<typeof StatsReservationActivityPointDefinition>;
 export type StatsTopBorrowedBook = z.infer<typeof StatsTopBorrowedBookDefinition>;
 export type StatsTopBorrowedMember = z.infer<typeof StatsTopBorrowedMemberDefinition>;
 export type StatsGenreCount = z.infer<typeof StatsGenreCountDefinition>;
