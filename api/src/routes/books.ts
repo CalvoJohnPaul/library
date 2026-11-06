@@ -362,6 +362,7 @@ const plugin: FastifyPluginAsyncZod = async (app) => {
 			startOfLast14Days.setDate(startOfLast14Days.getDate() - 13);
 			const startOfLast7Days = new Date(startOfToday);
 			startOfLast7Days.setDate(startOfLast7Days.getDate() - 6);
+			const startOfLast90Days = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000);
 
 			const [
 				totalBookCopies,
@@ -375,6 +376,7 @@ const plugin: FastifyPluginAsyncZod = async (app) => {
 				reservationActivityRows,
 				memberRows,
 				borrowsLastMonth,
+				borrowsThisMonth,
 			] = await app.prisma.$transaction([
 				app.prisma.bookCopy.count({where: {bookId}}),
 				app.prisma.bookCopy.count({where: {bookId, status: 'AVAILABLE'}}),
@@ -409,7 +411,7 @@ const plugin: FastifyPluginAsyncZod = async (app) => {
 					where: {
 						bookCopy: {is: {bookId}},
 						type: 'BORROW',
-						dateTimeCreated: {gte: startOfMonth},
+						dateTimeCreated: {gte: startOfLast90Days, lte: now},
 					},
 					select: {member: {select: {id: true, name: true, externalId: true}}},
 				}),
@@ -418,6 +420,13 @@ const plugin: FastifyPluginAsyncZod = async (app) => {
 						bookCopy: {is: {bookId}},
 						type: 'BORROW',
 						dateTimeCreated: {gte: startOfLastMonth, lt: startOfMonth},
+					},
+				}),
+				app.prisma.transaction.count({
+					where: {
+						bookCopy: {is: {bookId}},
+						type: 'BORROW',
+						dateTimeCreated: {gte: startOfMonth},
 					},
 				}),
 			]);
@@ -459,7 +468,7 @@ const plugin: FastifyPluginAsyncZod = async (app) => {
 				if (existing) existing.total += 1;
 				else members.set(member.id, {member, total: 1});
 			}
-			const topBorrowedMembersThisMonth = [...members.values()]
+			const topBorrowedMembersLast90Days = [...members.values()]
 				.sort((a, b) => b.total - a.total || a.member.name.localeCompare(b.member.name))
 				.slice(0, 5);
 
@@ -473,10 +482,10 @@ const plugin: FastifyPluginAsyncZod = async (app) => {
 					totalReadyToClaimReservations,
 					last14DaysActivity,
 					last7DaysReservationActivity,
-					topBorrowedMembersThisMonth,
+					topBorrowedMembersLast90Days,
 					monthOverMonth: {
 						newCopies: {current: newCopiesThisMonth, previous: newCopiesLastMonth},
-						borrows: {current: memberRows.length, previous: borrowsLastMonth},
+						borrows: {current: borrowsThisMonth, previous: borrowsLastMonth},
 					},
 				},
 			});

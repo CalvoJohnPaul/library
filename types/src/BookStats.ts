@@ -9,8 +9,8 @@ export const BookStatsDefinition = StatsDefinition.pick({
 	totalReadyToClaimReservations: true,
 	last14DaysActivity: true,
 	last7DaysReservationActivity: true,
-	topBorrowedMembersThisMonth: true,
 }).extend({
+	topBorrowedMembersLast90Days: StatsDefinition.shape.topBorrowedMembersThisMonth,
 	monthOverMonth: StatsDefinition.shape.monthOverMonth.pick({newCopies: true, borrows: true}),
 });
 

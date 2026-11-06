@@ -50,7 +50,7 @@ test('GET /books/:id/stats returns zero counts and complete empty activity windo
 		newCopies: {current: 0, previous: 0},
 		borrows: {current: 0, previous: 0},
 	});
-	assert.deepEqual(data.topBorrowedMembersThisMonth, []);
+	assert.deepEqual(data.topBorrowedMembersLast90Days, []);
 	assert.equal(data.last14DaysActivity.length, 14);
 	assert.equal(data.last7DaysReservationActivity.length, 7);
 	assert.ok(
@@ -65,7 +65,7 @@ test('GET /books/:id/stats returns zero counts and complete empty activity windo
 	);
 });
 
-test('GET /books/:id/stats scopes counts, activity, monthly comparisons and member rankings to the book', async ({
+test('GET /books/:id/stats scopes 90-day rankings to the book and keeps monthly comparisons separate', async ({
 	onTestFinished,
 }) => {
 	vi.useFakeTimers({toFake: ['Date']});
@@ -73,6 +73,8 @@ test('GET /books/:id/stats scopes counts, activity, monthly comparisons and memb
 	onTestFinished(() => vi.useRealTimers());
 	const headers = await fixture.auth();
 	const bookId = 42;
+	const now = new Date();
+	const startOfLast90Days = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000);
 	const startOfMonth = new Date(2026, 10, 1);
 	const startOfLastMonth = new Date(2026, 9, 1);
 	const startOfLast14Days = new Date(2026, 10, 2);
@@ -114,7 +116,13 @@ test('GET /books/:id/stats scopes counts, activity, monthly comparisons and memb
 		assert.deepEqual(where, {bookId, status: 'PENDING'});
 		return 3;
 	};
-	fixture.mock.transaction.count = async (args: unknown) => {
+	fixture.mock.transaction.count = async (args: {where: {dateTimeCreated: {lt?: Date}}}) => {
+		if (!args.where.dateTimeCreated.lt) {
+			assert.deepEqual(args, {
+				where: {bookCopy: {is: {bookId}}, type: 'BORROW', dateTimeCreated: {gte: startOfMonth}},
+			});
+			return 4;
+		}
 		assert.deepEqual(args, {
 			where: {
 				bookCopy: {is: {bookId}},
@@ -141,7 +149,11 @@ test('GET /books/:id/stats scopes counts, activity, monthly comparisons and memb
 	}) => {
 		if (args.where.type === 'BORROW') {
 			assert.deepEqual(args, {
-				where: {bookCopy: {is: {bookId}}, type: 'BORROW', dateTimeCreated: {gte: startOfMonth}},
+				where: {
+					bookCopy: {is: {bookId}},
+					type: 'BORROW',
+					dateTimeCreated: {gte: startOfLast90Days, lte: now},
+				},
 				select: {member: {select: {id: true, name: true, externalId: true}}},
 			});
 			return memberRows;
@@ -187,9 +199,9 @@ test('GET /books/:id/stats scopes counts, activity, monthly comparisons and memb
 	assert.equal(data.totalReadyToClaimReservations, 1);
 	assert.deepEqual(data.monthOverMonth, {
 		newCopies: {current: 3, previous: 2},
-		borrows: {current: 10, previous: 8},
+		borrows: {current: 4, previous: 8},
 	});
-	assert.deepEqual(data.topBorrowedMembersThisMonth, [
+	assert.deepEqual(data.topBorrowedMembersLast90Days, [
 		{member: members[1], total: 3},
 		{member: members[0], total: 2},
 		{member: members[3], total: 1},

@@ -3,8 +3,10 @@ import {
 	FailedHttpResponseDefinition,
 	MemberDefinition,
 	MemberSortByInputDefinition,
+	MemberStatsDefinition,
 	PaginatedDefinition,
 	SortOrderDefinition,
+	type StatsTopBorrowedBook,
 	SuccessfulHttpResponseDefinition,
 	UpdateMemberDataInputDefinition,
 	VoidSuccessfulHttpResponseDefinition,
@@ -332,6 +334,142 @@ const plugin: FastifyPluginAsyncZod = async (app) => {
 					dateTimeCreated: member.dateTimeCreated,
 					dateTimeUpdated: member.dateTimeUpdated,
 					dateTimeLastBorrowedBook: member.dateTimeLastBorrowedBook,
+				},
+			});
+		},
+	);
+
+	app.get(
+		'/:id/stats',
+		{
+			preHandler: [app.verifyAuth],
+			schema: {
+				tags: ['Members'],
+				params: z.object({id: z.coerce.number().int().positive()}),
+				response: {
+					200: SuccessfulHttpResponseDefinition(MemberStatsDefinition),
+					400: FailedHttpResponseDefinition,
+					401: FailedHttpResponseDefinition,
+					403: FailedHttpResponseDefinition,
+					404: FailedHttpResponseDefinition,
+					500: FailedHttpResponseDefinition,
+				},
+			},
+		},
+		async (req, reply) => {
+			const memberId = req.params.id;
+			if (!(await app.prisma.member.exists({id: memberId}))) return reply.notFound();
+
+			const now = new Date();
+			const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+			const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+			const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+			const startOfLast14Days = new Date(startOfToday);
+			startOfLast14Days.setDate(startOfLast14Days.getDate() - 13);
+			const startOfLast7Days = new Date(startOfToday);
+			startOfLast7Days.setDate(startOfLast7Days.getDate() - 6);
+			const startOfLast90Days = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000);
+
+			const [
+				totalOutstandingBorrows,
+				totalPendingReservations,
+				totalReadyToClaimReservations,
+				borrowsLastMonth,
+				activityRows,
+				reservationActivityRows,
+				bookRows,
+				borrowsThisMonth,
+			] = await app.prisma.$transaction([
+				app.prisma.transaction.count({where: {memberId, type: 'BORROW', status: 'PENDING'}}),
+				app.prisma.reservation.count({where: {memberId, status: 'PENDING'}}),
+				app.prisma.reservation.count({
+					where: {memberId, status: 'PENDING', bookCopy: {is: {status: 'RESERVED'}}},
+				}),
+				app.prisma.transaction.count({
+					where: {
+						memberId,
+						type: 'BORROW',
+						dateTimeCreated: {gte: startOfLastMonth, lt: startOfMonth},
+					},
+				}),
+				app.prisma.transaction.findMany({
+					where: {
+						memberId,
+						type: {in: ['BORROW', 'RETURN']},
+						dateTimeCreated: {gte: startOfLast14Days},
+					},
+					select: {type: true, dateTimeCreated: true},
+				}),
+				app.prisma.transaction.findMany({
+					where: {
+						memberId,
+						type: {in: ['RESERVE', 'UNRESERVE']},
+						dateTimeCreated: {gte: startOfLast7Days},
+					},
+					select: {type: true, dateTimeCreated: true},
+				}),
+				app.prisma.transaction.findMany({
+					where: {memberId, type: 'BORROW', dateTimeCreated: {gte: startOfLast90Days, lte: now}},
+					select: {
+						bookCopy: {
+							select: {book: {select: {id: true, title: true, author: true, genre: true}}},
+						},
+					},
+				}),
+				app.prisma.transaction.count({
+					where: {memberId, type: 'BORROW', dateTimeCreated: {gte: startOfMonth}},
+				}),
+			]);
+
+			const last14DaysActivity = Array.from({length: 14}, (_, index) => {
+				const timestamp = new Date(startOfLast14Days);
+				timestamp.setDate(timestamp.getDate() + index);
+				return {timestamp, totalBooksBorrowed: 0, totalBooksReturned: 0};
+			});
+			const last7DaysReservationActivity = Array.from({length: 7}, (_, index) => {
+				const timestamp = new Date(startOfLast7Days);
+				timestamp.setDate(timestamp.getDate() + index);
+				return {timestamp, totalBooksReserved: 0, totalBooksUnreserved: 0};
+			});
+			for (const row of activityRows) {
+				const point = last14DaysActivity.find(
+					(point) => point.timestamp.toDateString() === row.dateTimeCreated.toDateString(),
+				);
+				if (!point) continue;
+				if (row.type === 'BORROW') point.totalBooksBorrowed += 1;
+				else point.totalBooksReturned += 1;
+			}
+			for (const row of reservationActivityRows) {
+				const point = last7DaysReservationActivity.find(
+					(point) => point.timestamp.toDateString() === row.dateTimeCreated.toDateString(),
+				);
+				if (!point) continue;
+				if (row.type === 'RESERVE') point.totalBooksReserved += 1;
+				else point.totalBooksUnreserved += 1;
+			}
+
+			const books = new Map<number, StatsTopBorrowedBook>();
+			for (const {bookCopy} of bookRows) {
+				if (!bookCopy) continue;
+				const {book} = bookCopy;
+				const existing = books.get(book.id);
+				if (existing) existing.total += 1;
+				else books.set(book.id, {book, total: 1});
+			}
+			const topBorrowedBooksLast90Days = [...books.values()]
+				.sort((a, b) => b.total - a.total || a.book.title.localeCompare(b.book.title))
+				.slice(0, 5);
+
+			return reply.send({
+				ok: true,
+				data: {
+					totalOutstandingBorrows,
+					totalPendingReservations,
+					totalReadyToClaimReservations,
+					last14DaysActivity,
+					last7DaysReservationActivity,
+					topBorrowedBooksLast90Days,
+					monthOverMonth: {borrows: {current: borrowsThisMonth, previous: borrowsLastMonth}},
 				},
 			});
 		},

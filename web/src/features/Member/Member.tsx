@@ -9,11 +9,14 @@ import {useReservationsQuery} from '@/hooks/useReservationsQuery';
 import {AddReservation} from '@/templates/AddReservation';
 import {client} from '@/utils/client';
 import {MemberProvider} from './MemberContext';
+import {Overview} from './Overview';
 import {Reservations} from './Reservations';
 import {Settings} from './Settings';
 import {Transactions} from './Transactions';
 
-const TabDefinition = z.enum(['reservations', 'transactions', 'settings']).catch('reservations');
+const TabDefinition = z
+	.enum(['overview', 'reservations', 'transactions', 'settings'])
+	.catch('overview');
 
 export function Member() {
 	const {id} = useParams<{id: string}>();
@@ -24,7 +27,7 @@ export function Member() {
 	const setTab = (value: string) => {
 		const tab = TabDefinition.parse(value);
 
-		if (tab === 'reservations') {
+		if (tab === 'overview') {
 			navigate(`/members/${id}`);
 		} else {
 			navigate(`/members/${id}?tab=${tab}`);
@@ -106,12 +109,16 @@ export function Member() {
 						</Tabs.Context>
 					</div>
 
-					<Tabs.List className="mb-8 w-100">
+					<Tabs.List className="mb-8 w-full max-w-120">
+						<Tabs.Trigger value="overview">Overview</Tabs.Trigger>
 						<Tabs.Trigger value="reservations">Reservations</Tabs.Trigger>
 						<Tabs.Trigger value="transactions">Transactions</Tabs.Trigger>
 						<Tabs.Trigger value="settings">Settings</Tabs.Trigger>
 						<Tabs.Indicator />
 					</Tabs.List>
+					<Tabs.Content value="overview">
+						<Overview />
+					</Tabs.Content>
 					<Tabs.Content value="transactions">
 						<Transactions />
 					</Tabs.Content>

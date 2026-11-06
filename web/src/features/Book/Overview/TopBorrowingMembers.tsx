@@ -6,7 +6,7 @@ import {useOverviewContext} from './OverviewContext';
 import {roundedBarMax} from './utils';
 
 export function TopBorrowingMembers() {
-	const {topBorrowedMembersThisMonth: members} = useOverviewContext();
+	const {topBorrowedMembersLast90Days: members} = useOverviewContext();
 	const max = roundedBarMax(members.map((member) => member.total));
 
 	return (
@@ -14,12 +14,14 @@ export function TopBorrowingMembers() {
 			<div className="mb-5">
 				<h2 className="font-semibold text-sm">Top borrowing members</h2>
 				<p className="text-neutral-600 text-xs dark:text-neutral-300">
-					Most active members this month
+					Most active members over the last 90 days
 				</p>
 			</div>
 			<ol className="flex flex-col gap-4">
 				{members.length === 0 && (
-					<li className="text-neutral-600 text-sm dark:text-neutral-300">No borrows this month.</li>
+					<li className="text-neutral-600 text-sm dark:text-neutral-300">
+						No borrows in the last 90 days.
+					</li>
 				)}
 				{members.map(({member, total}) => (
 					<li key={member.id} className="flex items-center gap-3">
