@@ -20,7 +20,7 @@ import {Field} from '@/components/ui/Field';
 import {Tooltip} from '@/components/ui/Tooltip';
 import {useGlobalStore} from '@/hooks/useGlobalStore';
 import {useSearchQuery} from '@/hooks/useSearchQuery';
-import {Logout} from '@/templates/Logout';
+import {Logout} from './Logout';
 
 const links = [
 	{

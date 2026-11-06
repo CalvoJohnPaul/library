@@ -4,14 +4,7 @@ import {createAvatar} from '@dicebear/core';
 import {zodResolver} from '@hookform/resolvers/zod';
 import {isNil, omitBy} from 'es-toolkit';
 import {isEmpty} from 'es-toolkit/compat';
-import {
-	CloudMoonIcon,
-	CloudSunIcon,
-	LockKeyholeIcon,
-	LogOutIcon,
-	MenuIcon,
-	SquarePenIcon,
-} from 'lucide-react';
+import {LockKeyholeIcon, LogOutIcon, MenuIcon, SquarePenIcon} from 'lucide-react';
 import {Controller, useForm} from 'react-hook-form';
 import {Link} from 'react-router';
 import * as z from 'zod';
@@ -28,14 +21,13 @@ import {useDisclosure} from '@/hooks/useDisclosure';
 import {useGlobalStore} from '@/hooks/useGlobalStore';
 import {useMeQuery} from '@/hooks/useMeQuery';
 import {useUpdateMeMutation} from '@/hooks/useUpdateMeMutation';
-import {useThemeContext} from '@/providers/ThemeProvider';
-import {Logout} from '@/templates/Logout';
 import {client} from '@/utils/client';
 import {toaster} from '@/utils/toaster';
+import {Logout} from './Logout';
+import {ThemeToggle} from './ThemeToggle';
 
 export function Navbar() {
 	const query = useMeQuery();
-	const [theme, setTheme] = useThemeContext();
 	const avatar = query.data
 		? createAvatar(funEmoji, {seed: query.data.id.toString()}).toDataUri()
 		: '';
@@ -65,17 +57,7 @@ export function Navbar() {
 			</div>
 			<div />
 			<div className="flex justify-end gap-3">
-				<button
-					type="button"
-					className="shrink-0 p-2 text-neutral-700 dark:text-neutral-300"
-					onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-				>
-					{theme === 'dark' ? (
-						<CloudSunIcon className="size-5.5" />
-					) : (
-						<CloudMoonIcon className="size-5.5" />
-					)}
-				</button>
+				<ThemeToggle />
 				<Menu.Root ids={{trigger: 'settings-trigger'}}>
 					<Menu.Trigger disabled={query.isLoading}>
 						<Avatar.Root size="sm">

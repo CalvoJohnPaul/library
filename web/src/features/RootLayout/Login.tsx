@@ -9,6 +9,7 @@ import {useCreateSessionMutation} from '@/hooks/useCreateSessionMutation';
 import {useMeQuery} from '@/hooks/useMeQuery';
 import {client} from '@/utils/client';
 import {toaster} from '@/utils/toaster';
+import {ThemeToggle} from './ThemeToggle';
 
 export function Login() {
 	const form = useForm({
@@ -78,6 +79,10 @@ export function Login() {
 						{mutation.isPending ? <SpinnerIcon className="size-5" /> : 'Log in'}
 					</Button>
 				</form>
+
+				<div className="mt-16 flex items-center justify-center">
+					<ThemeToggle className="rounded-md" />
+				</div>
 			</main>
 		</>
 	);
