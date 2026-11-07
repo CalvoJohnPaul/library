@@ -1,5 +1,5 @@
 import {useEffect} from 'react';
-import {Outlet} from 'react-router';
+import {Outlet, useLocation} from 'react-router';
 import {useMeQuery} from '@/hooks/useMeQuery';
 import {Login} from './Login';
 import {Navbar} from './Navbar';
@@ -7,6 +7,19 @@ import {Sidebar} from './Sidebar';
 
 export function RootLayout() {
 	const query = useMeQuery();
+	const {pathname, hash} = useLocation();
+
+	useEffect(() => {
+		pathname;
+
+		if (hash) return;
+
+		window.scrollTo({
+			top: 0,
+			left: 0,
+			behavior: 'smooth',
+		});
+	}, [pathname, hash]);
 
 	useEffect(() => {
 		const interval = setInterval(() => {
