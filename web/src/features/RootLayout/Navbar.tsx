@@ -1,5 +1,3 @@
-import {funEmoji} from '@dicebear/collection';
-import {createAvatar} from '@dicebear/core';
 import {LogOutIcon, MenuIcon} from 'lucide-react';
 import {Link} from 'react-router';
 import {useShallow} from 'zustand/shallow';
@@ -7,6 +5,7 @@ import {Avatar} from '@/components/ui/Avatar';
 import {Menu} from '@/components/ui/Menu';
 import {useGlobalStore} from '@/hooks/useGlobalStore';
 import {useMeQuery} from '@/hooks/useMeQuery';
+import {generateAvatar} from '@/utils/generateAvatar';
 import {ChangePassword} from './ChangePassword';
 import {EditAccount} from './EditAccount';
 import {Logout} from './Logout';
@@ -14,9 +13,7 @@ import {ThemeToggle} from './ThemeToggle';
 
 export function Navbar() {
 	const query = useMeQuery();
-	const avatar = query.data
-		? createAvatar(funEmoji, {seed: query.data.id.toString()}).toDataUri()
-		: '';
+	const avatar = generateAvatar(query.data?.id);
 
 	const [sidebarCollapsed, setSidebarCollapsed] = useGlobalStore(
 		useShallow((o) => [o.sidebarCollapsed, o.setSidebarCollapsed]),

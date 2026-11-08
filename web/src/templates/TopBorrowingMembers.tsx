@@ -1,8 +1,7 @@
-import {funEmoji} from '@dicebear/collection';
-import {createAvatar} from '@dicebear/core';
 import type {StatsTopBorrowedMember} from '@library/types';
 import {Avatar} from '@/components/ui/Avatar';
 import {ProgressLinear} from '@/components/ui/ProgressLinear';
+import {generateAvatar} from '@/utils/generateAvatar';
 
 export function TopBorrowingMembers({
 	data: members,
@@ -31,9 +30,7 @@ export function TopBorrowingMembers({
 				{members.map(({member, total}) => (
 					<li key={member.id} className="flex items-center gap-3">
 						<Avatar.Root size="sm" className="shrink-0">
-							<Avatar.Image
-								src={createAvatar(funEmoji, {seed: member.id.toString()}).toDataUri()}
-							/>
+							<Avatar.Image src={generateAvatar(member.id)} />
 							<Avatar.Fallback />
 						</Avatar.Root>
 
