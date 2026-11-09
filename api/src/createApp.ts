@@ -59,7 +59,14 @@ export const swaggerUiOptions: FastifySwaggerUiOptions = {
 export const sensibleOptions: FastifySensibleOptions = {};
 
 export const corsOptions: FastifyCorsOptions = {
-	origin: ['http://localhost', 'http://127.0.0.1'],
+	origin: [
+		'http://localhost',
+		'http://localhost:3000',
+		'http://localhost:5000',
+		'http://127.0.0.1',
+		'http://127.0.0.1:3000',
+		'http://127.0.0.1:5000',
+	],
 	methods: ['HEAD', 'GET', 'PUT', 'POST', 'PATCH', 'DELETE', 'OPTIONS', 'QUERY'],
 	credentials: true,
 };
