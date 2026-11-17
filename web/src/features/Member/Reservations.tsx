@@ -39,6 +39,8 @@ export function Reservations() {
 		isbn: parseAsString,
 		dateTimeCreated__from: parseAsIsoDate,
 		dateTimeCreated__to: parseAsIsoDate,
+		dateTimeUpdated__from: parseAsIsoDate,
+		dateTimeUpdated__to: parseAsIsoDate,
 		sortBy: parseAsStringEnum(ReservationSortByInputDefinition.options),
 		sortOrder: parseAsStringEnum(SortOrderDefinition.options),
 	});
@@ -55,6 +57,12 @@ export function Reservations() {
 			dateTimeCreated: {
 				gte: state.dateTimeCreated__from ?? null,
 				lte: state.dateTimeCreated__to ?? null,
+			},
+		}),
+		...((state.dateTimeUpdated__from != null || state.dateTimeUpdated__to != null) && {
+			dateTimeUpdated: {
+				gte: state.dateTimeUpdated__from ?? null,
+				lte: state.dateTimeUpdated__to ?? null,
 			},
 		}),
 		...(state.sortBy && {sortBy: state.sortBy}),
@@ -204,6 +212,28 @@ export function Reservations() {
 					sortable: true,
 					orderable: true,
 					hideable: true,
+				},
+				{
+					id: 'dateTimeUpdated',
+					heading: 'Date updated',
+					cell: (reservation) => format(reservation.dateTimeUpdated, 'MMM dd, yyyy hh:mm a'),
+					filter: {
+						type: 'DATE_RANGE',
+						placeholder: 'Select date',
+						value: {
+							from: state.dateTimeUpdated__from ?? null,
+							to: state.dateTimeUpdated__to ?? null,
+						},
+						onChange: (dateTimeUpdated) => {
+							setState({
+								dateTimeUpdated__from: dateTimeUpdated?.from ?? null,
+								dateTimeUpdated__to: dateTimeUpdated?.to ?? null,
+							});
+						},
+					},
+					sortable: true,
+					hideable: true,
+					orderable: true,
 				},
 				{
 					id: 'actions',

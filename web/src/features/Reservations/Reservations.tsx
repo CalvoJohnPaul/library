@@ -247,6 +247,14 @@ export function Reservations() {
 						hideable: true,
 					},
 					{
+						id: 'remarks',
+						heading: 'Remarks',
+						cell: (reservation) => reservation.remarks,
+						hideable: true,
+						orderable: true,
+						defaultHidden: true,
+					},
+					{
 						id: 'dateTimeCreated',
 						heading: 'Date created',
 						cell: (reservation) => format(reservation.dateTimeCreated, 'MMM dd, yyyy hh:mm a'),
